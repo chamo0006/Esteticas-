@@ -1,0 +1,191 @@
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
+import { Calendar, Users, DollarSign, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
+
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+const ESTADO_STYLES: Record<string, string> = {
+  pendiente:  'bg-amber-100 text-amber-700',
+  confirmado: 'bg-blue-100 text-blue-700',
+  completado: 'bg-emerald-100 text-emerald-700',
+  cancelado:  'bg-red-100 text-red-700',
+};
+
+function formatARS(n: number) {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency', currency: 'ARS', minimumFractionDigits: 0,
+  }).format(n);
+}
+
+function formatFecha(dt: string | Date) {
+  const d = new Date(dt);
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} · ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} hs`;
+}
+
+interface Props {
+  params: Promise<{ tenantSlug: string }>;
+}
+
+export default async function AdminDashboard({ params }: Props) {
+  await params; // ensure params resolved
+  const cookieStore = await cookies();
+  const token = cookieStore.get('admin_token')!.value;
+  const payload = (await verifyToken(token))!;
+  const tenantId = payload.tenantId;
+  const today = new Date().toISOString().split('T')[0];
+  const todayStart = `${today}T00:00:00.000Z`;
+  const todayEnd   = `${today}T23:59:59.999Z`;
+  const nowIso = new Date().toISOString();
+
+  const [
+    turnosHoyResult,
+    pendientesResult,
+    totalClientesResult,
+    ingresosResult,
+    proximosResult,
+  ] = await Promise.all([
+    // Turnos hoy (not cancelled)
+    supabase
+      .from('turnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .neq('estado', 'cancelado')
+      .gte('fecha_hora', todayStart)
+      .lte('fecha_hora', todayEnd),
+
+    // Turnos pendientes
+    supabase
+      .from('turnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('estado', 'pendiente'),
+
+    // Total clientes
+    supabase
+      .from('clientes')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId),
+
+    // Ingresos acreditados hoy (need to join pagos → turnos)
+    supabase
+      .from('pagos')
+      .select('monto, turnos!inner(tenant_id)')
+      .eq('turnos.tenant_id', tenantId)
+      .eq('estado', 'acreditado')
+      .gte('created_at', todayStart)
+      .lte('created_at', todayEnd),
+
+    // Próximos 6 turnos (from now, not cancelled/completed)
+    supabase
+      .from('turnos')
+      .select(`
+        id,
+        fecha_hora,
+        estado,
+        clientes!inner(nombre),
+        servicios!inner(nombre, precio)
+      `)
+      .eq('tenant_id', tenantId)
+      .gte('fecha_hora', nowIso)
+      .not('estado', 'in', '("cancelado","completado")')
+      .order('fecha_hora')
+      .limit(6),
+  ]);
+
+  const ingresosTotal = (ingresosResult.data ?? []).reduce(
+    (sum, p) => sum + Number(p.monto),
+    0
+  );
+
+  const stats = [
+    { label: 'Turnos hoy',     value: turnosHoyResult.count ?? 0,       icon: Calendar,    color: 'text-violet-500 bg-violet-50' },
+    { label: 'Pendientes',     value: pendientesResult.count ?? 0,      icon: Clock,       color: 'text-amber-500 bg-amber-50'   },
+    { label: 'Ingresos hoy',   value: formatARS(ingresosTotal),         icon: DollarSign,  color: 'text-emerald-500 bg-emerald-50' },
+    { label: 'Total clientes', value: totalClientesResult.count ?? 0,   icon: Users,       color: 'text-blue-500 bg-blue-50'     },
+  ];
+
+  const proximos = (proximosResult.data ?? []).map((t) => {
+    const cliente = t.clientes as unknown as { nombre: string };
+    const servicio = t.servicios as unknown as { nombre: string; precio: number };
+    return {
+      id: t.id,
+      fecha_hora: t.fecha_hora,
+      estado: t.estado,
+      cliente: cliente?.nombre ?? '',
+      servicio: servicio?.nombre ?? '',
+      precio: servicio?.precio ?? 0,
+    };
+  });
+
+  return (
+    <div className="p-4 md:p-8 max-w-5xl mx-auto">
+
+      {/* Título */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-zinc-900">Dashboard</h1>
+        <p className="text-zinc-400 text-sm mt-1">
+          {new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-white rounded-2xl p-5 border border-zinc-100 shadow-sm">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
+              <s.icon className="w-5 h-5" />
+            </div>
+            <p className="text-2xl font-bold text-zinc-900">{s.value}</p>
+            <p className="text-xs text-zinc-400 mt-0.5 font-medium">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Próximos turnos */}
+      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-zinc-400" />
+            <h2 className="font-semibold text-zinc-900">Próximos turnos</h2>
+          </div>
+          <a href={`/admin/${payload.tenantSlug}/turnos`} className="text-xs text-violet-600 hover:underline font-medium">
+            Ver todos →
+          </a>
+        </div>
+
+        {proximos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
+            <CheckCircle2 className="w-8 h-8 mb-2 text-zinc-200" />
+            <p className="text-sm">No hay turnos próximos</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-zinc-50">
+            {proximos.map((t) => (
+              <div key={t.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-violet-600">
+                      {t.cliente.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-zinc-900 text-sm">{t.cliente}</p>
+                    <p className="text-xs text-zinc-400">{t.servicio} · {formatFecha(t.fecha_hora)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <span className="text-sm font-semibold text-zinc-700">{formatARS(Number(t.precio))}</span>
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${ESTADO_STYLES[t.estado]}`}>
+                    {t.estado}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
