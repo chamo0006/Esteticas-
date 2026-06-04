@@ -216,23 +216,21 @@ function TurnoModal({
   );
 }
 
-// ─── Weekly Calendar ──────────────────────────────────────────────────────────
+// ─── Daily Calendar ───────────────────────────────────────────────────────────
 
-function WeeklyCalendar({
+function DailyCalendar({
   turnos,
   profesionales,
-  weekStart,
+  selectedDate,
   onOpenModal,
 }: {
   turnos: Turno[];
   profesionales: Profesional[];
-  weekStart: Date;
+  selectedDate: Date;
   onOpenModal: (t: Turno) => void;
 }) {
-  const weekDays = getWeekDays(weekStart);
-  const today = toDateStr(new Date());
+  const isToday = toDateStr(selectedDate) === toDateStr(new Date());
 
-  // Build columns: one per active profesional, plus "Sin asignar" if needed
   const unassigned = turnos.filter(t => !t.profesional_id);
   const columns: Array<{ id: string | null; nombre: string; color: string; turnos: Turno[] }> = [
     ...profesionales
@@ -248,180 +246,95 @@ function WeeklyCalendar({
       : []),
   ];
 
+  // Si no hay profesionales, una sola columna con todos los turnos
+  if (columns.length === 0) {
+    columns.push({ id: null, nombre: 'Turnos', color: '#2c4a6e', turnos });
+  }
+
   const totalGridHeight = TIME_SLOTS.length * SLOT_HEIGHT;
 
-  // Current-time indicator
   const now = new Date();
-  const todayIsInWeek = weekDays.some(d => toDateStr(d) === today);
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const nowTopPx = ((nowMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT;
-  const showNowLine = todayIsInWeek && nowMinutes >= HORA_INICIO * 60 && nowMinutes <= HORA_FIN * 60;
+  const showNowLine = isToday && nowMinutes >= HORA_INICIO * 60 && nowMinutes <= HORA_FIN * 60;
 
-  // Position a turno card within its column
   const cardStyle = (t: Turno): React.CSSProperties => {
     const d = new Date(t.fecha_hora);
     const startMinutes = d.getHours() * 60 + d.getMinutes();
-    const top = ((startMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT;
+    const top = ((startMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT + 2;
     const height = Math.max((t.duracion_minutos / 30) * SLOT_HEIGHT - 4, 64);
-    return { position: 'absolute', top, height, left: 4, right: 4 };
-  };
-
-  // Filter turnos for a specific day column
-  const turnosForDay = (colTurnos: Turno[], day: Date): Turno[] => {
-    const ds = toDateStr(day);
-    return colTurnos.filter(t => {
-      const d = new Date(t.fecha_hora);
-      return toDateStr(d) === ds;
-    });
+    return { position: 'absolute', top, height, left: 3, right: 3 };
   };
 
   return (
     <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
-      {/* Sticky header row */}
+      {/* Header: columna por empleada */}
       <div className="flex border-b border-zinc-200 sticky top-0 bg-white z-20">
-        {/* Time gutter header */}
-        <div className="w-14 flex-shrink-0 border-r border-zinc-100" />
-
-        {/* Day × Employee headers */}
-        {weekDays.map((day) => {
-          const ds = toDateStr(day);
-          const isToday = ds === today;
-          return (
+        <div className="w-16 flex-shrink-0 border-r border-zinc-100" />
+        {columns.map((col) => (
+          <div
+            key={col.id ?? 'unassigned'}
+            className="flex-1 min-w-0 flex flex-col items-center justify-center py-3 px-2 gap-1.5 border-r border-zinc-100 last:border-r-0"
+          >
             <div
-              key={ds}
-              className={cn(
-                'flex-1 min-w-0 border-r border-zinc-100 last:border-r-0',
-              )}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+              style={{ backgroundColor: col.color }}
             >
-              {/* Day header */}
-              <div className={cn(
-                'flex items-center justify-center gap-1.5 py-2 px-1 border-b border-zinc-100',
-                isToday ? 'bg-violet-50' : ''
-              )}>
-                <span className={cn(
-                  'text-xs font-semibold',
-                  isToday ? 'text-violet-600' : 'text-zinc-400'
-                )}>
-                  {DAYS_SHORT[day.getDay()]}
-                </span>
-                <span className={cn(
-                  'text-sm font-bold',
-                  isToday ? 'text-violet-700' : 'text-zinc-700'
-                )}>
-                  {day.getDate()}
-                </span>
-              </div>
-              {/* Employee sub-headers */}
-              <div className="flex">
-                {columns.map((col) => (
-                  <div
-                    key={col.id ?? 'unassigned'}
-                    className="flex-1 min-w-0 flex flex-col items-center justify-center py-2 px-1 gap-1 border-r border-zinc-100 last:border-r-0"
-                  >
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-                      style={{ backgroundColor: col.color }}
-                    >
-                      {getInitials(col.nombre)}
-                    </div>
-                    <span
-                      className="text-[10px] font-medium text-zinc-500 truncate w-full text-center leading-tight"
-                      title={col.nombre}
-                    >
-                      {col.nombre}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {getInitials(col.nombre)}
             </div>
-          );
-        })}
+            <span className="text-xs font-semibold text-zinc-600 truncate w-full text-center" title={col.nombre}>
+              {col.nombre}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Scrollable grid body */}
+      {/* Grid */}
       <div className="overflow-y-auto max-h-[65vh]">
         <div className="flex" style={{ height: totalGridHeight }}>
 
-          {/* Time gutter */}
-          <div className="w-14 flex-shrink-0 relative border-r border-zinc-100">
+          {/* Horas */}
+          <div className="w-16 flex-shrink-0 relative border-r border-zinc-100">
             {TIME_SLOTS.map((label, i) => (
               <div
                 key={label}
-                className="absolute inset-x-0 flex items-start justify-end pr-2 pt-0.5"
+                className="absolute inset-x-0 flex items-start justify-end pr-2 pt-1"
                 style={{ top: i * SLOT_HEIGHT, height: SLOT_HEIGHT }}
               >
-                <span className={cn(
-                  'text-xs font-medium',
-                  label.endsWith(':00') ? 'text-zinc-500' : 'text-zinc-300'
-                )}>
+                <span className={cn('text-xs font-medium', label.endsWith(':00') ? 'text-zinc-500' : 'text-zinc-300')}>
                   {label}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* Day columns */}
-          {weekDays.map((day) => {
-            const ds = toDateStr(day);
-            const isToday = ds === today;
-            return (
-              <div
-                key={ds}
-                className={cn(
-                  'flex-1 min-w-0 relative border-r border-zinc-100 last:border-r-0',
-                  isToday ? 'bg-violet-50/30' : ''
-                )}
-              >
-                {/* Horizontal grid lines */}
-                {TIME_SLOTS.map((label, i) => (
-                  <div
-                    key={label}
-                    className={cn(
-                      'absolute left-0 right-0',
-                      label.endsWith(':00')
-                        ? 'border-t border-zinc-200'
-                        : 'border-t border-zinc-100 border-dashed'
-                    )}
-                    style={{ top: i * SLOT_HEIGHT }}
-                  />
-                ))}
+          {/* Columnas por empleada */}
+          {columns.map((col) => (
+            <div key={col.id ?? 'unassigned'} className="flex-1 min-w-0 relative border-r border-zinc-100 last:border-r-0">
 
-                {/* Current-time line (shown on today's column) */}
-                {showNowLine && isToday && (
-                  <div
-                    className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
-                    style={{ top: nowTopPx }}
-                  >
-                    <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
-                    <div className="flex-1 border-t-2 border-red-400" />
-                  </div>
-                )}
+              {/* Grid lines */}
+              {TIME_SLOTS.map((label, i) => (
+                <div
+                  key={label}
+                  className={cn('absolute left-0 right-0', label.endsWith(':00') ? 'border-t border-zinc-200' : 'border-t border-zinc-100 border-dashed')}
+                  style={{ top: i * SLOT_HEIGHT }}
+                />
+              ))}
 
-                {/* Employee sub-columns */}
-                <div className="absolute inset-0 flex">
-                  {columns.map((col) => {
-                    const dayTurnos = turnosForDay(col.turnos, day);
-                    return (
-                      <div
-                        key={col.id ?? 'unassigned'}
-                        className="flex-1 min-w-0 relative border-r border-zinc-100/60 last:border-r-0"
-                      >
-                        {dayTurnos.map((t) => (
-                          <TurnoCard
-                            key={t.id}
-                            turno={t}
-                            color={col.color}
-                            style={cardStyle(t)}
-                            onOpen={() => onOpenModal(t)}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })}
+              {/* Línea hora actual */}
+              {showNowLine && (
+                <div className="absolute left-0 right-0 z-10 flex items-center pointer-events-none" style={{ top: nowTopPx }}>
+                  <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
+                  <div className="flex-1 border-t-2 border-red-400" />
                 </div>
-              </div>
-            );
-          })}
+              )}
+
+              {/* Turnos */}
+              {col.turnos.map((t) => (
+                <TurnoCard key={t.id} turno={t} color={col.color} style={cardStyle(t)} onOpen={() => onOpenModal(t)} />
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -475,11 +388,6 @@ export default function TurnosPage() {
   const params = useParams();
   const tenantSlug = params.tenantSlug as string;
 
-  // Week navigation state — anchor on Monday of the current week
-  const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
-  const weekDays = getWeekDays(weekStart);
-
-  // For the agenda (list) view, keep a single selected date
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [turnos, setTurnos] = useState<Turno[]>([]);
@@ -500,19 +408,6 @@ export default function TurnosPage() {
     if (Array.isArray(data)) setProfesionales(data);
   }, [tenantSlug]);
 
-  const fetchWeekTurnos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const fechaInicio = toDateStr(weekDays[0]);
-      const fechaFin    = toDateStr(weekDays[6]);
-      const res = await fetch(`/api/admin/${tenantSlug}/turnos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
-      const data = await res.json();
-      if (Array.isArray(data)) setTurnos(data);
-    } finally {
-      setLoading(false);
-    }
-  }, [tenantSlug, weekStart]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const fetchDayTurnos = useCallback(async () => {
     setLoading(true);
     try {
@@ -525,25 +420,10 @@ export default function TurnosPage() {
     }
   }, [tenantSlug, selectedDate]);
 
-  // Fetch on mount and when week/date/view changes
-  useEffect(() => {
-    fetchProfesionales();
-  }, [fetchProfesionales]);
+  useEffect(() => { fetchProfesionales(); }, [fetchProfesionales]);
+  useEffect(() => { fetchDayTurnos(); }, [fetchDayTurnos]);
 
-  useEffect(() => {
-    if (vista === 'calendario') {
-      fetchWeekTurnos();
-    } else {
-      fetchDayTurnos();
-    }
-  }, [vista, fetchWeekTurnos, fetchDayTurnos]);
-
-  const refetch = () => {
-    if (vista === 'calendario') fetchWeekTurnos();
-    else fetchDayTurnos();
-  };
-
-  // ── Estado changes ─────────────────────────────────────────────────────────
+  const refetch = () => fetchDayTurnos();
 
   const changeEstado = async (id: string, estado: Estado) => {
     setUpdating(id);
@@ -552,42 +432,14 @@ export default function TurnosPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, estado }),
     });
-    await (vista === 'calendario' ? fetchWeekTurnos() : fetchDayTurnos());
+    await fetchDayTurnos();
     setUpdating(null);
   };
 
-  // ── Week navigation ────────────────────────────────────────────────────────
-
-  const prevWeek = () => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() - 7);
-    setWeekStart(d);
-  };
-  const nextWeek = () => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 7);
-    setWeekStart(d);
-  };
-  const goToday = () => {
-    setWeekStart(getWeekStart(new Date()));
-    setSelectedDate(new Date());
-  };
-
-  // ── Day navigation (agenda view) ───────────────────────────────────────────
-
   const prevDay = () => { const d = new Date(selectedDate); d.setDate(d.getDate()-1); setSelectedDate(d); };
   const nextDay = () => { const d = new Date(selectedDate); d.setDate(d.getDate()+1); setSelectedDate(d); };
+  const goToday = () => setSelectedDate(new Date());
   const isToday = toDateStr(selectedDate) === toDateStr(new Date());
-
-  // ── Week label ─────────────────────────────────────────────────────────────
-
-  const weekEnd = weekDays[6];
-  const weekLabel =
-    weekStart.getMonth() === weekEnd.getMonth()
-      ? `${weekStart.getDate()} – ${weekEnd.getDate()} ${MONTHS_SHORT[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`
-      : `${weekStart.getDate()} ${MONTHS_SHORT[weekStart.getMonth()]} – ${weekEnd.getDate()} ${MONTHS_SHORT[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`;
-
-  // ── Modal cancel handler ───────────────────────────────────────────────────
 
   const handleCancelarModal = async () => {
     if (!modalTurno) return;
@@ -597,8 +449,7 @@ export default function TurnosPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: modalTurno.id, estado: 'cancelado' }),
     });
-    await fetchWeekTurnos();
-    // Update modal turno state to reflect cancellation
+    await fetchDayTurnos();
     setModalTurno(prev => prev ? { ...prev, estado: 'cancelado' } : null);
     setCanceling(false);
   };
@@ -705,8 +556,7 @@ export default function TurnosPage() {
           <h1 className="text-2xl font-bold text-zinc-900">Agenda de Turnos</h1>
           <p className="text-zinc-400 text-sm mt-1">
             {turnos.filter(t => t.estado !== 'cancelado').length} turno
-            {turnos.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''}{' '}
-            {vista === 'calendario' ? 'esta semana' : 'para este día'}
+            {turnos.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} para este día
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -733,44 +583,24 @@ export default function TurnosPage() {
         </div>
       </div>
 
-      {/* Navigation bar */}
-      {vista === 'calendario' ? (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4 mb-6 flex items-center justify-between">
-          <button onClick={prevWeek} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-zinc-600" />
-          </button>
-          <div className="text-center flex items-center gap-3">
-            <p className="font-semibold text-zinc-900">{weekLabel}</p>
-            <button
-              onClick={goToday}
-              className="text-xs bg-violet-100 text-violet-600 font-semibold px-2.5 py-1 rounded-full hover:bg-violet-200 transition-colors"
-            >
-              Hoy
-            </button>
-          </div>
-          <button onClick={nextWeek} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-            <ChevronRight className="w-5 h-5 text-zinc-600" />
-          </button>
+      {/* Navegación diaria — igual para ambas vistas */}
+      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4 mb-6 flex items-center justify-between">
+        <button onClick={prevDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
+          <ChevronLeft className="w-5 h-5 text-zinc-600" />
+        </button>
+        <div className="text-center">
+          <p className="font-semibold text-zinc-900">
+            {selectedDate.getDate()} de {MONTHS[selectedDate.getMonth()]} de {selectedDate.getFullYear()}
+          </p>
+          {isToday
+            ? <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">Hoy</span>
+            : <button onClick={goToday} className="text-xs text-violet-500 hover:underline">Ir a hoy</button>
+          }
         </div>
-      ) : (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4 mb-6 flex items-center justify-between">
-          <button onClick={prevDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-zinc-600" />
-          </button>
-          <div className="text-center">
-            <p className="font-semibold text-zinc-900">
-              {selectedDate.getDate()} de {MONTHS[selectedDate.getMonth()]} de {selectedDate.getFullYear()}
-            </p>
-            {isToday
-              ? <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">Hoy</span>
-              : <button onClick={goToday} className="text-xs text-violet-500 hover:underline">Ir a hoy</button>
-            }
-          </div>
-          <button onClick={nextDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-            <ChevronRight className="w-5 h-5 text-zinc-600" />
-          </button>
-        </div>
-      )}
+        <button onClick={nextDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
+          <ChevronRight className="w-5 h-5 text-zinc-600" />
+        </button>
+      </div>
 
       {/* Content */}
       {loading ? (
@@ -778,10 +608,10 @@ export default function TurnosPage() {
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
       ) : vista === 'calendario' ? (
-        <WeeklyCalendar
+        <DailyCalendar
           turnos={turnos}
           profesionales={profesionales}
-          weekStart={weekStart}
+          selectedDate={selectedDate}
           onOpenModal={setModalTurno}
         />
       ) : renderAgenda()}
