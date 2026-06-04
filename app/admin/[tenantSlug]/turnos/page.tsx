@@ -33,12 +33,6 @@ const ESTADO_STYLES: Record<Estado, string> = {
   cancelado:  'bg-zinc-100 text-zinc-500 border-zinc-200',
 };
 
-const ESTADO_BLOCK: Record<Estado, string> = {
-  pendiente:  'bg-amber-50 border-amber-300 text-amber-800',
-  confirmado: 'bg-blue-50 border-blue-300 text-blue-800',
-  completado: 'bg-emerald-50 border-emerald-300 text-emerald-800',
-  cancelado:  'bg-zinc-50 border-zinc-200 text-zinc-400',
-};
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -57,8 +51,17 @@ function toDateStr(d: Date) {
 }
 
 // Horas visibles en el calendario (8 AM a 8 PM)
-const HORAS = Array.from({ length: 13 }, (_, i) => i + 8);
-const ALTURA_HORA = 64; // px por hora
+const HORA_INICIO = 8;
+const HORA_FIN = 21;
+const HORAS = Array.from({ length: HORA_FIN - HORA_INICIO + 1 }, (_, i) => i + HORA_INICIO);
+const ALTURA_MEDIA_HORA = 40; // px por media hora → 80px por hora
+
+const TURNO_COLORS: Record<Estado, { bg: string; border: string; text: string; dot: string }> = {
+  pendiente:  { bg: 'bg-amber-50',   border: 'border-l-amber-400',   text: 'text-amber-900',   dot: 'bg-amber-400'   },
+  confirmado: { bg: 'bg-violet-50',  border: 'border-l-violet-500',  text: 'text-violet-900',  dot: 'bg-violet-500'  },
+  completado: { bg: 'bg-emerald-50', border: 'border-l-emerald-500', text: 'text-emerald-900', dot: 'bg-emerald-500' },
+  cancelado:  { bg: 'bg-zinc-50',    border: 'border-l-zinc-300',    text: 'text-zinc-400',    dot: 'bg-zinc-300'    },
+};
 
 export default function TurnosPage() {
   const params = useParams();
@@ -103,98 +106,130 @@ export default function TurnosPage() {
 
   // ── Vista Calendario ───────────────────────────────────────────────────────
   const renderCalendario = () => {
-    const turnosActivos = turnos.filter(t => t.estado !== 'cancelado');
+    const turnosVisibles = turnos.filter(t => t.estado !== 'cancelado');
+    const totalAltura = (HORA_FIN - HORA_INICIO) * ALTURA_MEDIA_HORA * 2;
+
+    const toMinutos = (dt: string) => {
+      const d = new Date(dt);
+      return d.getHours() * 60 + d.getMinutes();
+    };
+
+    const minutosToTop = (min: number) =>
+      ((min - HORA_INICIO * 60) / 30) * ALTURA_MEDIA_HORA;
 
     return (
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
-        {/* Encabezado del día */}
-        <div className="px-4 py-3 border-b border-zinc-100 flex items-center gap-3">
-          <div className="text-center">
-            <p className="text-xs text-zinc-400 font-medium uppercase">
-              {selectedDate.toLocaleDateString('es-AR', { weekday: 'short' })}
-            </p>
-            <p className={cn('text-2xl font-bold', isToday ? 'text-violet-600' : 'text-zinc-900')}>
-              {selectedDate.getDate()}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-zinc-700">
-              {MONTHS[selectedDate.getMonth()]} {selectedDate.getFullYear()}
-            </p>
-            <p className="text-xs text-zinc-400">{turnosActivos.length} turno{turnosActivos.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
 
-        {/* Grid de horas */}
-        <div className="overflow-y-auto max-h-[600px]">
-          <div className="relative" style={{ height: HORAS.length * ALTURA_HORA }}>
+        {/* Grid principal */}
+        <div className="overflow-y-auto max-h-[70vh]">
+          <div className="flex">
 
-            {/* Líneas de hora */}
-            {HORAS.map((h) => (
-              <div
-                key={h}
-                className="absolute left-0 right-0 flex items-start"
-                style={{ top: (h - 8) * ALTURA_HORA }}
-              >
-                <div className="w-14 text-right pr-3 pt-1 flex-shrink-0">
+            {/* Columna de horas */}
+            <div className="w-16 flex-shrink-0 relative" style={{ height: totalAltura }}>
+              {HORAS.map((h) => (
+                <div
+                  key={h}
+                  className="absolute right-0 left-0 flex justify-end pr-3"
+                  style={{ top: (h - HORA_INICIO) * ALTURA_MEDIA_HORA * 2 - 8 }}
+                >
                   <span className="text-xs text-zinc-400 font-medium">
-                    {h < 12 ? `${h}:00` : h === 12 ? '12:00' : `${h}:00`}
+                    {String(h).padStart(2, '0')}:00
                   </span>
                 </div>
-                <div className="flex-1 border-t border-zinc-100 h-full" />
-              </div>
-            ))}
+              ))}
+            </div>
 
-            {/* Línea de hora actual (solo si es hoy) */}
-            {isToday && (() => {
-              const now = new Date();
-              const horaActual = now.getHours() + now.getMinutes() / 60;
-              if (horaActual >= 8 && horaActual <= 21) {
-                return (
+            {/* Área de eventos */}
+            <div className="flex-1 relative border-l border-zinc-100" style={{ height: totalAltura }}>
+
+              {/* Líneas cada 30 min */}
+              {HORAS.map((h) => (
+                <div key={h}>
+                  {/* Línea de hora entera */}
                   <div
-                    className="absolute left-14 right-0 z-20 flex items-center"
-                    style={{ top: (horaActual - 8) * ALTURA_HORA }}
-                  >
-                    <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
-                    <div className="flex-1 border-t-2 border-red-400" />
-                  </div>
-                );
-              }
-            })()}
+                    className="absolute left-0 right-0 border-t border-zinc-200"
+                    style={{ top: (h - HORA_INICIO) * ALTURA_MEDIA_HORA * 2 }}
+                  />
+                  {/* Línea de media hora */}
+                  <div
+                    className="absolute left-0 right-0 border-t border-zinc-100 border-dashed"
+                    style={{ top: (h - HORA_INICIO) * ALTURA_MEDIA_HORA * 2 + ALTURA_MEDIA_HORA }}
+                  />
+                </div>
+              ))}
 
-            {/* Bloques de turnos */}
-            <div className="absolute left-14 right-2 top-0 bottom-0">
-              {turnosActivos.map((t) => {
-                const d = new Date(t.fecha_hora);
-                const horaInicio = d.getHours() + d.getMinutes() / 60;
-                const durHoras = t.duracion_minutos / 60;
+              {/* Línea hora actual */}
+              {isToday && (() => {
+                const now = new Date();
+                const minActual = now.getHours() * 60 + now.getMinutes();
+                if (minActual >= HORA_INICIO * 60 && minActual <= HORA_FIN * 60) {
+                  return (
+                    <div
+                      className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
+                      style={{ top: minutosToTop(minActual) }}
+                    >
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500 -ml-1.5 flex-shrink-0 shadow" />
+                      <div className="flex-1 border-t-2 border-red-400" />
+                    </div>
+                  );
+                }
+              })()}
 
-                if (horaInicio < 8 || horaInicio > 21) return null;
+              {/* Bloques de turnos */}
+              {turnosVisibles.map((t) => {
+                const minInicio = toMinutos(t.fecha_hora);
+                if (minInicio < HORA_INICIO * 60 || minInicio > HORA_FIN * 60) return null;
 
-                const top    = (horaInicio - 8) * ALTURA_HORA;
-                const height = Math.max(durHoras * ALTURA_HORA, 28);
+                const top    = minutosToTop(minInicio);
+                const height = Math.max((t.duracion_minutos / 30) * ALTURA_MEDIA_HORA - 4, 36);
+                const colors = TURNO_COLORS[t.estado];
 
                 return (
                   <div
                     key={t.id}
                     className={cn(
-                      'absolute left-1 right-1 rounded-xl border-l-4 px-2 py-1 overflow-hidden cursor-default',
-                      ESTADO_BLOCK[t.estado]
+                      'absolute left-2 right-2 rounded-xl border-l-4 px-3 py-2 shadow-sm overflow-hidden',
+                      colors.bg, colors.border
                     )}
-                    style={{ top, height }}
+                    style={{ top: top + 2, height }}
                   >
-                    <p className="text-xs font-bold truncate leading-tight">
-                      {formatHora(t.fecha_hora)} · {t.cliente_nombre}
-                    </p>
-                    <p className="text-xs truncate opacity-75">{t.servicio_nombre}</p>
-                    {t.profesional_nombre && (
-                      <p className="text-xs truncate opacity-60">💆 {t.profesional_nombre}</p>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <div className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colors.dot)} />
+                      <p className={cn('text-xs font-bold truncate', colors.text)}>
+                        {formatHora(t.fecha_hora)} — {t.cliente_nombre}
+                      </p>
+                    </div>
+                    {height >= 48 && (
+                      <p className={cn('text-xs truncate pl-3', colors.text, 'opacity-70')}>
+                        {t.servicio_nombre}
+                      </p>
+                    )}
+                    {height >= 64 && t.profesional_nombre && (
+                      <p className={cn('text-xs truncate pl-3 opacity-50', colors.text)}>
+                        {t.profesional_nombre}
+                      </p>
                     )}
                   </div>
                 );
               })}
-            </div>
 
+            </div>
+          </div>
+        </div>
+
+        {/* Leyenda */}
+        <div className="px-4 py-3 border-t border-zinc-100 flex items-center gap-5 flex-wrap">
+          {(Object.entries(TURNO_COLORS) as [Estado, typeof TURNO_COLORS[Estado]][])
+            .filter(([e]) => e !== 'cancelado')
+            .map(([estado, c]) => (
+              <div key={estado} className="flex items-center gap-1.5">
+                <div className={cn('w-2.5 h-2.5 rounded-full', c.dot)} />
+                <span className="text-xs text-zinc-500 capitalize">{estado}</span>
+              </div>
+            ))}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+            <span className="text-xs text-zinc-500">Hora actual</span>
           </div>
         </div>
       </div>
@@ -342,18 +377,6 @@ export default function TurnosPage() {
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
       ) : vista === 'calendario' ? renderCalendario() : renderAgenda()}
-
-      {/* Leyenda */}
-      {vista === 'calendario' && (
-        <div className="flex items-center gap-4 mt-4 px-1 flex-wrap">
-          {(Object.entries(ESTADO_BLOCK) as [Estado, string][]).map(([estado, cls]) => (
-            <div key={estado} className="flex items-center gap-1.5">
-              <div className={cn('w-3 h-3 rounded border-l-2', cls)} />
-              <span className="text-xs text-zinc-500 capitalize">{estado}</span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
