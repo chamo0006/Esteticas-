@@ -202,11 +202,11 @@ export function ReservationCalendar({
           </div>
 
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
+          <div className="grid grid-cols-7 mb-1">
             {weekDays.map((d) => (
               <div
                 key={d}
-                className="text-center text-xs font-sans py-1"
+                className="text-center text-xs font-sans py-1.5"
                 style={{ color: "#8C7B75" }}
               >
                 {d}
@@ -215,9 +215,9 @@ export function ReservationCalendar({
           </div>
 
           {/* Day grid */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-y-1">
             {calendarDays.map((date, i) => {
-              if (!date) return <div key={`e-${i}`} className="w-full aspect-square" />;
+              if (!date) return <div key={`e-${i}`} className="w-9 h-9 mx-auto" />;
               const selected = isSameDay(date, selectedDate);
               const past = isPastDate(date);
               const isToday = isSameDay(date, today);
