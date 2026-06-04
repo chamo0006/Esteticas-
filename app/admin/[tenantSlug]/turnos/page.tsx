@@ -35,7 +35,6 @@ const ESTADO_STYLES: Record<Estado, string> = {
 
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
@@ -50,11 +49,15 @@ function toDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// Horas visibles en el calendario (8 AM a 8 PM)
-const HORA_INICIO = 8;
-const HORA_FIN = 21;
-const HORAS = Array.from({ length: HORA_FIN - HORA_INICIO + 1 }, (_, i) => i + HORA_INICIO);
-const ALTURA_MEDIA_HORA = 40; // px por media hora → 80px por hora
+// Slots de media hora: 9:00, 9:30, 10:00, ...
+const HORA_INICIO = 9;
+const HORA_FIN    = 20;
+const SLOTS_MEDIA_HORA: string[] = [];
+for (let h = HORA_INICIO; h <= HORA_FIN; h++) {
+  SLOTS_MEDIA_HORA.push(`${String(h).padStart(2,'0')}:00`);
+  if (h < HORA_FIN) SLOTS_MEDIA_HORA.push(`${String(h).padStart(2,'0')}:30`);
+}
+const ALTURA_SLOT = 48; // px por cada franja de 30 minutos
 
 const TURNO_COLORS: Record<Estado, { bg: string; border: string; text: string; dot: string }> = {
   pendiente:  { bg: 'bg-amber-50',   border: 'border-l-amber-400',   text: 'text-amber-900',   dot: 'bg-amber-400'   },
@@ -107,112 +110,108 @@ export default function TurnosPage() {
   // ── Vista Calendario ───────────────────────────────────────────────────────
   const renderCalendario = () => {
     const turnosVisibles = turnos.filter(t => t.estado !== 'cancelado');
-    const totalAltura = (HORA_FIN - HORA_INICIO) * ALTURA_MEDIA_HORA * 2;
+    const totalAltura = SLOTS_MEDIA_HORA.length * ALTURA_SLOT;
 
-    const toMinutos = (dt: string) => {
+    const slotIndex = (dt: string) => {
       const d = new Date(dt);
-      return d.getHours() * 60 + d.getMinutes();
+      const h = d.getHours();
+      const m = d.getMinutes();
+      const minDesdeInicio = (h * 60 + m) - HORA_INICIO * 60;
+      return minDesdeInicio / 30;
     };
 
-    const minutosToTop = (min: number) =>
-      ((min - HORA_INICIO * 60) / 30) * ALTURA_MEDIA_HORA;
+    const now = new Date();
+    const minActualDesdeInicio = (now.getHours() * 60 + now.getMinutes()) - HORA_INICIO * 60;
+    const topActual = (minActualDesdeInicio / 30) * ALTURA_SLOT;
 
     return (
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
-
-        {/* Grid principal */}
         <div className="overflow-y-auto max-h-[70vh]">
-          <div className="flex">
+          <div className="flex" style={{ height: totalAltura }}>
 
-            {/* Columna de horas */}
-            <div className="w-16 flex-shrink-0 relative" style={{ height: totalAltura }}>
-              {HORAS.map((h) => (
+            {/* Columna etiquetas */}
+            <div className="w-16 flex-shrink-0 relative border-r border-zinc-100">
+              {SLOTS_MEDIA_HORA.map((label, i) => (
                 <div
-                  key={h}
-                  className="absolute right-0 left-0 flex justify-end pr-3"
-                  style={{ top: (h - HORA_INICIO) * ALTURA_MEDIA_HORA * 2 - 8 }}
+                  key={label}
+                  className="absolute right-0 left-0 flex items-center justify-end pr-2"
+                  style={{ top: i * ALTURA_SLOT, height: ALTURA_SLOT }}
                 >
-                  <span className="text-xs text-zinc-400 font-medium">
-                    {String(h).padStart(2, '0')}:00
+                  <span className={cn(
+                    'text-xs font-medium',
+                    label.endsWith(':00') ? 'text-zinc-500' : 'text-zinc-300'
+                  )}>
+                    {label}
                   </span>
                 </div>
               ))}
             </div>
 
             {/* Área de eventos */}
-            <div className="flex-1 relative border-l border-zinc-100" style={{ height: totalAltura }}>
+            <div className="flex-1 relative">
 
-              {/* Líneas cada 30 min */}
-              {HORAS.map((h) => (
-                <div key={h}>
-                  {/* Línea de hora entera */}
-                  <div
-                    className="absolute left-0 right-0 border-t border-zinc-200"
-                    style={{ top: (h - HORA_INICIO) * ALTURA_MEDIA_HORA * 2 }}
-                  />
-                  {/* Línea de media hora */}
-                  <div
-                    className="absolute left-0 right-0 border-t border-zinc-100 border-dashed"
-                    style={{ top: (h - HORA_INICIO) * ALTURA_MEDIA_HORA * 2 + ALTURA_MEDIA_HORA }}
-                  />
-                </div>
+              {/* Líneas de grid */}
+              {SLOTS_MEDIA_HORA.map((label, i) => (
+                <div
+                  key={label}
+                  className={cn(
+                    'absolute left-0 right-0',
+                    label.endsWith(':00')
+                      ? 'border-t border-zinc-200'
+                      : 'border-t border-zinc-100 border-dashed'
+                  )}
+                  style={{ top: i * ALTURA_SLOT }}
+                />
               ))}
 
               {/* Línea hora actual */}
-              {isToday && (() => {
-                const now = new Date();
-                const minActual = now.getHours() * 60 + now.getMinutes();
-                if (minActual >= HORA_INICIO * 60 && minActual <= HORA_FIN * 60) {
-                  return (
-                    <div
-                      className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
-                      style={{ top: minutosToTop(minActual) }}
-                    >
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500 -ml-1.5 flex-shrink-0 shadow" />
-                      <div className="flex-1 border-t-2 border-red-400" />
-                    </div>
-                  );
-                }
-              })()}
+              {isToday && minActualDesdeInicio >= 0 && minActualDesdeInicio <= (HORA_FIN - HORA_INICIO) * 60 && (
+                <div
+                  className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
+                  style={{ top: topActual }}
+                >
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
+                  <div className="flex-1 border-t-2 border-red-400" />
+                </div>
+              )}
 
               {/* Bloques de turnos */}
               {turnosVisibles.map((t) => {
-                const minInicio = toMinutos(t.fecha_hora);
-                if (minInicio < HORA_INICIO * 60 || minInicio > HORA_FIN * 60) return null;
+                const idx = slotIndex(t.fecha_hora);
+                if (idx < 0 || idx > SLOTS_MEDIA_HORA.length) return null;
 
-                const top    = minutosToTop(minInicio);
-                const height = Math.max((t.duracion_minutos / 30) * ALTURA_MEDIA_HORA - 4, 36);
+                const top    = idx * ALTURA_SLOT + 2;
+                const height = Math.max((t.duracion_minutos / 30) * ALTURA_SLOT - 4, 40);
                 const colors = TURNO_COLORS[t.estado];
 
                 return (
                   <div
                     key={t.id}
                     className={cn(
-                      'absolute left-2 right-2 rounded-xl border-l-4 px-3 py-2 shadow-sm overflow-hidden',
+                      'absolute left-2 right-2 rounded-xl border-l-4 px-3 py-1.5 shadow-sm overflow-hidden',
                       colors.bg, colors.border
                     )}
-                    style={{ top: top + 2, height }}
+                    style={{ top, height }}
                   >
-                    <div className="flex items-center gap-1.5 mb-0.5">
+                    <div className="flex items-center gap-1.5">
                       <div className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colors.dot)} />
                       <p className={cn('text-xs font-bold truncate', colors.text)}>
-                        {formatHora(t.fecha_hora)} — {t.cliente_nombre}
+                        {formatHora(t.fecha_hora)} · {t.cliente_nombre}
                       </p>
                     </div>
-                    {height >= 48 && (
-                      <p className={cn('text-xs truncate pl-3', colors.text, 'opacity-70')}>
+                    {height > 48 && (
+                      <p className={cn('text-xs truncate ml-3 mt-0.5 opacity-70', colors.text)}>
                         {t.servicio_nombre}
                       </p>
                     )}
-                    {height >= 64 && t.profesional_nombre && (
-                      <p className={cn('text-xs truncate pl-3 opacity-50', colors.text)}>
+                    {height > 68 && t.profesional_nombre && (
+                      <p className={cn('text-xs truncate ml-3 opacity-50', colors.text)}>
                         {t.profesional_nombre}
                       </p>
                     )}
                   </div>
                 );
               })}
-
             </div>
           </div>
         </div>
@@ -223,12 +222,12 @@ export default function TurnosPage() {
             .filter(([e]) => e !== 'cancelado')
             .map(([estado, c]) => (
               <div key={estado} className="flex items-center gap-1.5">
-                <div className={cn('w-2.5 h-2.5 rounded-full', c.dot)} />
+                <div className={cn('w-2 h-2 rounded-full', c.dot)} />
                 <span className="text-xs text-zinc-500 capitalize">{estado}</span>
               </div>
             ))}
           <div className="flex items-center gap-1.5 ml-auto">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+            <div className="w-2 h-2 rounded-full bg-red-400" />
             <span className="text-xs text-zinc-500">Hora actual</span>
           </div>
         </div>
