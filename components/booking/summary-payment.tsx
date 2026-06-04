@@ -100,7 +100,13 @@ export function SummaryPayment({
     const y = selectedDate.getFullYear();
     const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
     const d = String(selectedDate.getDate()).padStart(2, "0");
-    const fechaHora = `${y}-${m}-${d}T${selectedTime}:00`;
+
+    // Incluir offset de zona horaria del cliente para que Supabase guarde la hora real
+    const offsetMin = new Date().getTimezoneOffset(); // +180 para Argentina (UTC-3)
+    const sign  = offsetMin <= 0 ? "+" : "-";
+    const tzHH  = String(Math.floor(Math.abs(offsetMin) / 60)).padStart(2, "0");
+    const tzMM  = String(Math.abs(offsetMin) % 60).padStart(2, "0");
+    const fechaHora = `${y}-${m}-${d}T${selectedTime}:00${sign}${tzHH}:${tzMM}`;
 
     try {
       const res = await fetch(`/api/${tenantSlug}/reservar`, {

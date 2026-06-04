@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const reservarSchema = z.object({
   servicioIds: z.array(z.string().uuid()).min(1, 'Seleccioná al menos un servicio'),
-  fechaHora:   z.string().datetime({ message: 'Fecha inválida', local: true }),
+  fechaHora:   z.string().datetime({ message: 'Fecha inválida', local: true, offset: true }),
   cliente: z.object({
     nombre:   z.string().min(1).max(100),
     apellido: z.string().min(1).max(100),

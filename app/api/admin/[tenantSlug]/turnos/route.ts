@@ -13,6 +13,7 @@ async function getAdminPayload(tenantSlug: string) {
 }
 
 // GET /api/admin/[tenantSlug]/turnos?fecha=2026-05-30
+// OR   /api/admin/[tenantSlug]/turnos?fechaInicio=2026-05-30&fechaFin=2026-06-05
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ tenantSlug: string }> }
@@ -23,6 +24,8 @@ export async function GET(
 
   const url = new URL(req.url);
   const fecha = url.searchParams.get('fecha');
+  const fechaInicio = url.searchParams.get('fechaInicio');
+  const fechaFin = url.searchParams.get('fechaFin');
 
   let query = supabase
     .from('turnos')
@@ -31,6 +34,7 @@ export async function GET(
       fecha_hora,
       estado,
       notas,
+      profesional_id,
       clientes!inner(nombre, email, telefono),
       servicios!inner(nombre, duracion_minutos, precio),
       pagos(monto, tipo, metodo, estado),
@@ -39,7 +43,12 @@ export async function GET(
     .eq('tenant_id', payload.tenantId)
     .order('fecha_hora');
 
-  if (fecha) {
+  if (fechaInicio && fechaFin) {
+    // Filter by week range
+    query = query
+      .gte('fecha_hora', `${fechaInicio}T00:00:00Z`)
+      .lte('fecha_hora', `${fechaFin}T23:59:59Z`);
+  } else if (fecha) {
     // Filter by date: fecha_hora on that calendar day
     const dayStart = `${fecha}T00:00:00.000Z`;
     const dayEnd   = `${fecha}T23:59:59.999Z`;
@@ -65,6 +74,7 @@ export async function GET(
       fecha_hora: t.fecha_hora,
       estado: t.estado,
       notas: t.notas,
+      profesional_id: (t as unknown as { profesional_id: string | null }).profesional_id ?? null,
       cliente_nombre: cliente?.nombre,
       cliente_email: cliente?.email,
       cliente_telefono: cliente?.telefono,
