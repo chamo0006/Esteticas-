@@ -1,9 +1,13 @@
 "use client";
 
-import { ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { SchedulingMode, TimeSlot } from "@/lib/booking-types";
-import { cn } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
+
+interface Profesional {
+  id: string;
+  nombre: string;
+}
 
 interface ReservationCalendarProps {
   onBack: () => void;
@@ -13,9 +17,10 @@ interface ReservationCalendarProps {
   onSelectTime: (timeValue: string) => void;
   schedulingMode: SchedulingMode;
   onSchedulingModeChange: (mode: SchedulingMode) => void;
-  // Props para disponibilidad real (opcionales — sin ellos usa slots hardcodeados)
   tenantSlug?: string;
   totalDuracion?: number;
+  selectedProfesional?: string | null;
+  onSelectProfesional?: (id: string | null) => void;
 }
 
 // Slots estáticos usados en la demo (/ sin tenant)
@@ -46,11 +51,23 @@ export function ReservationCalendar({
   onSchedulingModeChange,
   tenantSlug,
   totalDuracion = 60,
+  selectedProfesional,
+  onSelectProfesional,
 }: ReservationCalendarProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [slots, setSlots] = useState<TimeSlot[]>(DEMO_SLOTS);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [profesionales, setProfesionales] = useState<Profesional[]>([]);
+
+  // Cargar profesionales si hay tenantSlug
+  useEffect(() => {
+    if (!tenantSlug) return;
+    fetch(`/api/${tenantSlug}/profesionales`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setProfesionales(data); })
+      .catch(() => {});
+  }, [tenantSlug]);
 
   // Carga disponibilidad real cuando hay tenantSlug y se elige una fecha
   useEffect(() => {
@@ -103,89 +120,138 @@ export function ReservationCalendar({
     return date < todayMidnight;
   };
 
+  const isCurrentMonth =
+    currentMonth.getFullYear() === today.getFullYear() &&
+    currentMonth.getMonth() === today.getMonth();
+
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in min-h-screen" style={{ backgroundColor: "#FCF8F5" }}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm px-4 pt-6 pb-4">
-        <div className="flex items-center gap-4 mb-4">
+      <header
+        className="sticky top-0 z-10 px-5 pt-7 pb-5"
+        style={{
+          backgroundColor: "rgba(252,248,245,0.96)",
+          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid #F0E4E6",
+        }}
+      >
+        <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center hover:bg-secondary transition-colors"
+            className="flex items-center gap-1.5 font-sans text-sm transition-colors"
+            style={{ color: "#8C7B75" }}
             aria-label="Volver"
           >
-            <ArrowLeft className="w-5 h-5 text-foreground" strokeWidth={1.5} />
+            <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
+            Volver
           </button>
-          <h1 className="font-serif text-xl text-foreground">
-            Elegí fecha y horario
+          <h1
+            className="font-serif text-xl"
+            style={{ color: "#2C2C2C" }}
+          >
+            Seleccioná tu fecha
           </h1>
         </div>
-
       </header>
 
-      {/* Calendario */}
-      <div className="px-4 mt-4">
-        <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
-          {/* Navegación de mes */}
-          <div className="flex items-center justify-between mb-4">
+      <div className="px-5 pt-6 pb-6 space-y-6">
+        {/* Calendar card */}
+        <div
+          className="rounded-2xl p-5"
+          style={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #F0E4E6",
+            boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
+          }}
+        >
+          {/* Month navigation */}
+          <div className="flex items-center justify-between mb-5">
             <button
               onClick={() =>
                 setCurrentMonth(
                   new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
                 )
               }
-              disabled={
-                currentMonth.getFullYear() === today.getFullYear() &&
-                currentMonth.getMonth() === today.getMonth()
-              }
-              className="w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              disabled={isCurrentMonth}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+              style={{ color: "#8C7B75" }}
               aria-label="Mes anterior"
             >
-              <ChevronLeft className="w-5 h-5 text-foreground" />
+              <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <h2 className="font-serif text-lg text-foreground">
+
+            <h2
+              className="font-serif text-base"
+              style={{ color: "#2C2C2C" }}
+            >
               {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h2>
+
             <button
               onClick={() =>
                 setCurrentMonth(
                   new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
                 )
               }
-              className="w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+              style={{ color: "#8C7B75" }}
               aria-label="Mes siguiente"
             >
-              <ChevronRight className="w-5 h-5 text-foreground" />
+              <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
             </button>
           </div>
 
-          {/* Cabecera días */}
+          {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {weekDays.map((d) => (
-              <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">
+              <div
+                key={d}
+                className="text-center text-xs font-sans py-1"
+                style={{ color: "#8C7B75" }}
+              >
                 {d}
               </div>
             ))}
           </div>
 
-          {/* Grilla */}
+          {/* Day grid */}
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((date, i) => {
-              if (!date) return <div key={`e-${i}`} className="w-10 h-10" />;
+              if (!date) return <div key={`e-${i}`} className="w-full aspect-square" />;
               const selected = isSameDay(date, selectedDate);
               const past = isPastDate(date);
+              const isToday = isSameDay(date, today);
+
               return (
                 <button
                   key={date.toISOString()}
                   onClick={() => !past && onSelectDate(date)}
                   disabled={past}
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all mx-auto",
+                  className="w-full aspect-square rounded-full flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
+                  style={
                     selected
-                      ? "bg-primary text-primary-foreground shadow-md"
+                      ? {
+                          backgroundColor: "#E8B4BC",
+                          color: "#2C2C2C",
+                          fontWeight: 600,
+                        }
                       : past
-                      ? "text-muted-foreground/40 cursor-not-allowed"
-                      : "text-foreground hover:bg-secondary"
-                  )}
+                      ? {
+                          color: "#C9B2B5",
+                          cursor: "not-allowed",
+                          opacity: 0.4,
+                        }
+                      : isToday
+                      ? {
+                          color: "#D4919B",
+                          fontWeight: 600,
+                          textDecoration: "underline",
+                          textUnderlineOffset: "2px",
+                        }
+                      : {
+                          color: "#2C2C2C",
+                        }
+                  }
                 >
                   {date.getDate()}
                 </button>
@@ -194,22 +260,37 @@ export function ReservationCalendar({
           </div>
         </div>
 
-        {/* Horarios disponibles */}
-        <div className="mt-6">
-          <h3 className="font-serif text-lg text-foreground mb-4">Horarios disponibles</h3>
+        {/* Time slots */}
+        <div>
+          <h3
+            className="font-serif text-lg mb-4"
+            style={{ color: "#2C2C2C" }}
+          >
+            Horarios disponibles
+          </h3>
 
           {slotsLoading ? (
             <div className="grid grid-cols-2 gap-3">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 rounded-2xl bg-muted animate-pulse" />
+                <div
+                  key={i}
+                  className="h-12 rounded-full animate-pulse"
+                  style={{ backgroundColor: "#F0E4E6" }}
+                />
               ))}
             </div>
           ) : !selectedDate ? (
-            <p className="text-center text-muted-foreground text-sm py-6">
+            <p
+              className="text-center text-sm py-8 font-sans italic"
+              style={{ color: "#8C7B75" }}
+            >
               Seleccioná un día para ver los horarios
             </p>
           ) : slots.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-6">
+            <p
+              className="text-center text-sm py-8 font-sans italic"
+              style={{ color: "#8C7B75" }}
+            >
               No hay horarios disponibles para este día
             </p>
           ) : (
@@ -221,25 +302,82 @@ export function ReservationCalendar({
                     key={slot.timeValue}
                     onClick={() => slot.available && onSelectTime(slot.timeValue)}
                     disabled={!slot.available}
-                    className={cn(
-                      "relative py-3 px-4 rounded-2xl border-2 transition-all text-sm font-medium",
+                    className="py-3 px-4 text-sm font-sans transition-all duration-200"
+                    style={
                       isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
+                        ? {
+                            backgroundColor: "#E8B4BC",
+                            color: "#2C2C2C",
+                            fontWeight: 600,
+                            borderRadius: "9999px",
+                            border: "1px solid #E8B4BC",
+                          }
                         : slot.available
-                        ? "border-border bg-card text-foreground hover:border-primary/30"
-                        : "border-border/50 bg-muted/50 text-muted-foreground cursor-not-allowed"
-                    )}
+                        ? {
+                            backgroundColor: "#FFFFFF",
+                            color: "#2C2C2C",
+                            borderRadius: "9999px",
+                            border: "1px solid #F0E4E6",
+                            boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
+                          }
+                        : {
+                            backgroundColor: "#FCF8F5",
+                            color: "#C9B2B5",
+                            borderRadius: "9999px",
+                            border: "1px solid #F0E4E6",
+                            opacity: 0.5,
+                            cursor: "not-allowed",
+                          }
+                    }
                   >
                     {slot.time}
-                    {isSelected && (
-                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4" />
-                    )}
                   </button>
                 );
               })}
             </div>
           )}
         </div>
+
+        {/* Selección de profesional (opcional) */}
+        {profesionales.length > 0 && onSelectProfesional && (
+          <div>
+            <h3 className="font-serif text-lg mb-1" style={{ color: "#2C2C2C" }}>
+              ¿Con quién preferís atenderte?
+            </h3>
+            <p className="text-xs font-sans mb-4" style={{ color: "#8C7B75" }}>
+              Opcional — si no elegís, te asignamos la primera disponible
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {/* Opción "cualquiera" */}
+              <button
+                onClick={() => onSelectProfesional(null)}
+                className="px-4 py-2 text-sm font-sans transition-all duration-200"
+                style={
+                  selectedProfesional === null
+                    ? { backgroundColor: "#E8B4BC", color: "#2C2C2C", borderRadius: "9999px", fontWeight: 600, border: "1px solid #E8B4BC" }
+                    : { backgroundColor: "#FFFFFF", color: "#8C7B75", borderRadius: "9999px", border: "1px solid #F0E4E6" }
+                }
+              >
+                Cualquiera disponible
+              </button>
+
+              {profesionales.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => onSelectProfesional(p.id)}
+                  className="px-4 py-2 text-sm font-sans transition-all duration-200"
+                  style={
+                    selectedProfesional === p.id
+                      ? { backgroundColor: "#E8B4BC", color: "#2C2C2C", borderRadius: "9999px", fontWeight: 600, border: "1px solid #E8B4BC" }
+                      : { backgroundColor: "#FFFFFF", color: "#2C2C2C", borderRadius: "9999px", border: "1px solid #F0E4E6" }
+                  }
+                >
+                  {p.nombre}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

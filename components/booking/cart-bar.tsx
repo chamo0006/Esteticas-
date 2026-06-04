@@ -1,8 +1,5 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
-import { cn } from "@/lib/utils";
-
 interface CartBarProps {
   itemCount: number;
   totalAmount: number;
@@ -10,49 +7,60 @@ interface CartBarProps {
   disabled: boolean;
 }
 
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 0,
+  }).format(price);
+
 export function CartBar({ itemCount, totalAmount, onContinue, disabled }: CartBarProps) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border px-4 py-4 shadow-lg z-50">
-      <div className="max-w-lg mx-auto flex items-center justify-between gap-4">
-        {/* Cart summary */}
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <ShoppingBag className="w-6 h-6 text-accent" strokeWidth={1.5} />
-            {itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-xs font-medium rounded-full flex items-center justify-center">
-                {itemCount}
-              </span>
-            )}
-          </div>
-          <div className="text-sm">
-            <span className="text-muted-foreground">Items: </span>
-            <span className="font-medium text-foreground">{itemCount}</span>
-            <span className="text-muted-foreground mx-2">|</span>
-            <span className="text-muted-foreground">Total: </span>
-            <span className="font-medium text-foreground">{formatPrice(totalAmount)}</span>
-          </div>
-        </div>
+    <div
+      className="fixed bottom-0 left-0 right-0 px-5 py-4 z-50"
+      style={{
+        backgroundColor: "rgba(255,255,255,0.97)",
+        borderTop: "1px solid #F0E4E6",
+        boxShadow: "0 -4px 24px rgba(0,0,0,0.06)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <div className="max-w-lg mx-auto">
+        {/* Summary text */}
+        {itemCount > 0 && (
+          <p
+            className="text-center text-xs mb-3 font-sans"
+            style={{ color: "#8C7B75" }}
+          >
+            {itemCount} {itemCount === 1 ? "servicio seleccionado" : "servicios seleccionados"}&nbsp;·&nbsp;
+            <span style={{ color: "#2C2C2C", fontWeight: 500 }}>
+              {formatPrice(totalAmount)}
+            </span>
+          </p>
+        )}
 
-        {/* Continue button */}
+        {/* CTA button */}
         <button
           onClick={onContinue}
           disabled={disabled}
-          className={cn(
-            "px-6 py-3 rounded-2xl font-medium text-sm transition-all duration-300",
+          className="w-full py-4 font-sans font-medium text-sm transition-all duration-300"
+          style={
             disabled
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 shadow-md"
-          )}
+              ? {
+                  backgroundColor: "#F0E4E6",
+                  color: "#C9B2B5",
+                  borderRadius: "9999px",
+                  cursor: "not-allowed",
+                }
+              : {
+                  backgroundColor: "#E8B4BC",
+                  color: "#2C2C2C",
+                  borderRadius: "9999px",
+                  boxShadow: "0 4px 16px rgba(232,180,188,0.35)",
+                }
+          }
         >
-          Continuar
+          Continuar →
         </button>
       </div>
     </div>

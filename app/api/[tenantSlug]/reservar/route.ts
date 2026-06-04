@@ -43,6 +43,8 @@ export async function POST(
   }
 
   const { servicioIds, fechaHora, cliente, metodoPago } = parsed.data;
+  const raw = body as Record<string, unknown>;
+  const profesionalIdReq = typeof raw.profesionalId === 'string' ? raw.profesionalId : null;
 
   // ── Tenant ────────────────────────────────────────────────────────────────
   const tenant = await getTenantBySlug(tenantSlug);
@@ -125,8 +127,13 @@ export async function POST(
         .gte('fecha_hora', slotStart);
 
       const ocupadosIds = new Set((ocupadosData ?? []).map((t: { profesional_id: string | null }) => t.profesional_id));
-      const libre = profesionales.find((p: { id: string }) => !ocupadosIds.has(p.id));
-      profesionalId = libre?.id ?? null;
+      // Si el cliente eligió un profesional específico, usar ese; si no, auto-asignar
+      if (profesionalIdReq && profesionales.some((p: { id: string }) => p.id === profesionalIdReq)) {
+        profesionalId = profesionalIdReq;
+      } else {
+        const libre = profesionales.find((p: { id: string }) => !ocupadosIds.has(p.id));
+        profesionalId = libre?.id ?? null;
+      }
     }
 
     const { data: turnoData, error: turnoError } = await supabase

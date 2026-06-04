@@ -24,6 +24,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedProfesional, setSelectedProfesional] = useState<string | null>(null);
   const [schedulingMode, setSchedulingMode] = useState<SchedulingMode>('together');
 
   const filteredServices = services.filter((s) =>
@@ -39,10 +40,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
   };
 
   const isInCart = (serviceId: string) => cart.some((item) => item.id === serviceId);
-
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  // Duración total en minutos para consultar disponibilidad real
   const totalDuracion = cart.reduce((sum, item) => {
     const mins = parseInt(item.duration, 10);
     return sum + (isNaN(mins) ? 60 : mins);
@@ -68,7 +66,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
   };
 
   return (
-    <main className="min-h-screen bg-background pb-28">
+    <main className="min-h-screen pb-28" style={{ backgroundColor: '#FCF8F5' }}>
       {currentStep === 'services' && (
         <ServicesCatalog
           services={filteredServices}
@@ -93,6 +91,8 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           onSchedulingModeChange={setSchedulingMode}
           tenantSlug={tenant.slug}
           totalDuracion={totalDuracion}
+          selectedProfesional={selectedProfesional}
+          onSelectProfesional={setSelectedProfesional}
         />
       )}
 
@@ -105,6 +105,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           onBack={handleBack}
           tenantSlug={tenant.slug}
           tenantConfig={tenant}
+          profesionalId={selectedProfesional}
         />
       )}
 
