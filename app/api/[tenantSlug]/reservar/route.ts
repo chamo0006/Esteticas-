@@ -93,11 +93,42 @@ export async function POST(
   }
   const clienteId = clienteData.id;
 
+  // ── Obtener profesionales activos para asignar ────────────────────────────
+  const { data: profesionalesData } = await supabase
+    .from('profesionales')
+    .select('id')
+    .eq('tenant_id', tenant.id)
+    .eq('activo', true)
+    .order('created_at');
+
+  const profesionales = profesionalesData ?? [];
+
   // ── Crea turnos consecutivos ──────────────────────────────────────────────
   const turnoIds: string[] = [];
   let currentTime = new Date(fechaHora);
 
   for (const servicio of servicios) {
+    // Determine profesional_id: find the first free profesional at currentTime
+    let profesionalId: string | null = null;
+
+    if (profesionales.length > 0) {
+      const slotStart = currentTime.toISOString();
+      const slotEnd   = new Date(currentTime.getTime() + servicio.duracion_minutos * 60_000).toISOString();
+
+      const { data: ocupadosData } = await supabase
+        .from('turnos')
+        .select('profesional_id')
+        .eq('tenant_id', tenant.id)
+        .not('profesional_id', 'is', null)
+        .neq('estado', 'cancelado')
+        .lt('fecha_hora', slotEnd)
+        .gte('fecha_hora', slotStart);
+
+      const ocupadosIds = new Set((ocupadosData ?? []).map((t: { profesional_id: string | null }) => t.profesional_id));
+      const libre = profesionales.find((p: { id: string }) => !ocupadosIds.has(p.id));
+      profesionalId = libre?.id ?? null;
+    }
+
     const { data: turnoData, error: turnoError } = await supabase
       .from('turnos')
       .insert({
@@ -106,6 +137,7 @@ export async function POST(
         servicio_id: servicio.id,
         fecha_hora: currentTime.toISOString(),
         estado: 'pendiente',
+        ...(profesionalId ? { profesional_id: profesionalId } : {}),
       })
       .select('id')
       .single();

@@ -33,7 +33,8 @@ export async function GET(
       notas,
       clientes!inner(nombre, email, telefono),
       servicios!inner(nombre, duracion_minutos, precio),
-      pagos(monto, tipo, metodo, estado)
+      pagos(monto, tipo, metodo, estado),
+      profesionales(nombre)
     `)
     .eq('tenant_id', payload.tenantId)
     .order('fecha_hora');
@@ -57,6 +58,7 @@ export async function GET(
     const cliente = t.clientes as unknown as { nombre: string; email: string; telefono: string };
     const servicio = t.servicios as unknown as { nombre: string; duracion_minutos: number; precio: number };
     const pago = Array.isArray(t.pagos) ? t.pagos[0] : t.pagos;
+    const profesional = t.profesionales as unknown as { nombre: string } | null;
 
     return {
       id: t.id,
@@ -73,6 +75,7 @@ export async function GET(
       pago_tipo: pago?.tipo ?? null,
       pago_metodo: pago?.metodo ?? null,
       pago_estado: pago?.estado ?? null,
+      profesional_nombre: profesional?.nombre ?? null,
     };
   });
 

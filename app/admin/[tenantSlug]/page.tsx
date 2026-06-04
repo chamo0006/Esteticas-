@@ -3,15 +3,8 @@ import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { Calendar, Users, DollarSign, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
 
-const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-
-const ESTADO_STYLES: Record<string, string> = {
-  pendiente:  'bg-amber-100 text-amber-700',
-  confirmado: 'bg-blue-100 text-blue-700',
-  completado: 'bg-emerald-100 text-emerald-700',
-  cancelado:  'bg-red-100 text-red-700',
-};
+const MONTHS  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const WEEKDAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', {
@@ -24,29 +17,51 @@ function formatFecha(dt: string | Date) {
   return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} · ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} hs`;
 }
 
+// Fechas en hora Argentina (UTC-3)
+function getArgentinaRanges() {
+  const now = new Date();
+  const offsetMs = 3 * 60 * 60 * 1000; // UTC-3
+
+  const argNow = new Date(now.getTime() - offsetMs);
+  const y = argNow.getUTCFullYear();
+  const m = argNow.getUTCMonth();
+  const d = argNow.getUTCDate();
+
+  const todayStart = new Date(Date.UTC(y, m, d, 3, 0, 0));     // medianoche ARG = 03:00 UTC
+  const todayEnd   = new Date(Date.UTC(y, m, d, 26, 59, 59));   // 23:59 ARG = 02:59 UTC día siguiente
+  const monthStart = new Date(Date.UTC(y, m, 1, 3, 0, 0));
+
+  return { todayStart: todayStart.toISOString(), todayEnd: todayEnd.toISOString(), monthStart: monthStart.toISOString(), nowIso: now.toISOString() };
+}
+
+const ESTADO_STYLES: Record<string, string> = {
+  pendiente:  'bg-amber-100 text-amber-700',
+  confirmado: 'bg-blue-100 text-blue-700',
+  completado: 'bg-emerald-100 text-emerald-700',
+  cancelado:  'bg-red-100 text-red-700',
+};
+
 interface Props {
   params: Promise<{ tenantSlug: string }>;
 }
 
 export default async function AdminDashboard({ params }: Props) {
-  await params; // ensure params resolved
+  await params;
   const cookieStore = await cookies();
   const token = cookieStore.get('admin_token')!.value;
   const payload = (await verifyToken(token))!;
   const tenantId = payload.tenantId;
-  const today = new Date().toISOString().split('T')[0];
-  const todayStart = `${today}T00:00:00.000Z`;
-  const todayEnd   = `${today}T23:59:59.999Z`;
-  const nowIso = new Date().toISOString();
+
+  const { todayStart, todayEnd, monthStart, nowIso } = getArgentinaRanges();
 
   const [
     turnosHoyResult,
     pendientesResult,
     totalClientesResult,
-    ingresosResult,
+    pagosHoyResult,
+    pagosMesResult,
     proximosResult,
   ] = await Promise.all([
-    // Turnos hoy (not cancelled)
     supabase
       .from('turnos')
       .select('*', { count: 'exact', head: true })
@@ -55,38 +70,35 @@ export default async function AdminDashboard({ params }: Props) {
       .gte('fecha_hora', todayStart)
       .lte('fecha_hora', todayEnd),
 
-    // Turnos pendientes
     supabase
       .from('turnos')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('estado', 'pendiente'),
 
-    // Total clientes
     supabase
       .from('clientes')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId),
 
-    // Ingresos acreditados hoy (need to join pagos → turnos)
     supabase
       .from('pagos')
-      .select('monto, turnos!inner(tenant_id)')
-      .eq('turnos.tenant_id', tenantId)
+      .select('monto')
+      .eq('tenant_id', tenantId)
       .eq('estado', 'acreditado')
       .gte('created_at', todayStart)
       .lte('created_at', todayEnd),
 
-    // Próximos 6 turnos (from now, not cancelled/completed)
+    supabase
+      .from('pagos')
+      .select('monto')
+      .eq('tenant_id', tenantId)
+      .eq('estado', 'acreditado')
+      .gte('created_at', monthStart),
+
     supabase
       .from('turnos')
-      .select(`
-        id,
-        fecha_hora,
-        estado,
-        clientes!inner(nombre),
-        servicios!inner(nombre, precio)
-      `)
+      .select('id, fecha_hora, estado, clientes(nombre), servicios(nombre, precio)')
       .eq('tenant_id', tenantId)
       .gte('fecha_hora', nowIso)
       .not('estado', 'in', '("cancelado","completado")')
@@ -94,44 +106,44 @@ export default async function AdminDashboard({ params }: Props) {
       .limit(6),
   ]);
 
-  const ingresosTotal = (ingresosResult.data ?? []).reduce(
-    (sum, p) => sum + Number(p.monto),
-    0
-  );
+  const ingresosHoy = (pagosHoyResult.data ?? []).reduce((s, p) => s + Number(p.monto), 0);
+  const ingresosMes = (pagosMesResult.data ?? []).reduce((s, p) => s + Number(p.monto), 0);
 
   const stats = [
-    { label: 'Turnos hoy',     value: turnosHoyResult.count ?? 0,       icon: Calendar,    color: 'text-violet-500 bg-violet-50' },
-    { label: 'Pendientes',     value: pendientesResult.count ?? 0,      icon: Clock,       color: 'text-amber-500 bg-amber-50'   },
-    { label: 'Ingresos hoy',   value: formatARS(ingresosTotal),         icon: DollarSign,  color: 'text-emerald-500 bg-emerald-50' },
-    { label: 'Total clientes', value: totalClientesResult.count ?? 0,   icon: Users,       color: 'text-blue-500 bg-blue-50'     },
+    { label: 'Turnos hoy',      value: turnosHoyResult.count ?? 0,   icon: Calendar,    color: 'text-violet-500 bg-violet-50'  },
+    { label: 'Pendientes',      value: pendientesResult.count ?? 0,  icon: Clock,       color: 'text-amber-500 bg-amber-50'    },
+    { label: 'Ingresos hoy',    value: formatARS(ingresosHoy),       icon: DollarSign,  color: 'text-emerald-500 bg-emerald-50'},
+    { label: 'Ingresos del mes',value: formatARS(ingresosMes),       icon: TrendingUp,  color: 'text-blue-500 bg-blue-50'      },
+    { label: 'Total clientes',  value: totalClientesResult.count ?? 0, icon: Users,     color: 'text-pink-500 bg-pink-50'      },
   ];
 
   const proximos = (proximosResult.data ?? []).map((t) => {
-    const cliente = t.clientes as unknown as { nombre: string };
-    const servicio = t.servicios as unknown as { nombre: string; precio: number };
+    const cliente = t.clientes as unknown as { nombre: string } | null;
+    const servicio = t.servicios as unknown as { nombre: string; precio: number } | null;
     return {
       id: t.id,
       fecha_hora: t.fecha_hora,
       estado: t.estado,
-      cliente: cliente?.nombre ?? '',
-      servicio: servicio?.nombre ?? '',
+      cliente: cliente?.nombre ?? '—',
+      servicio: servicio?.nombre ?? '—',
       precio: servicio?.precio ?? 0,
     };
+  });
+
+  const fechaHoy = new Date().toLocaleDateString('es-AR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
 
-      {/* Título */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-zinc-900">Dashboard</h1>
-        <p className="text-zinc-400 text-sm mt-1">
-          {new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
+        <p className="text-zinc-400 text-sm mt-1 capitalize">{fechaHoy}</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
         {stats.map((s) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-zinc-100 shadow-sm">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
@@ -147,7 +159,7 @@ export default async function AdminDashboard({ params }: Props) {
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-zinc-400" />
+            <Calendar className="w-4 h-4 text-zinc-400" />
             <h2 className="font-semibold text-zinc-900">Próximos turnos</h2>
           </div>
           <a href={`/admin/${payload.tenantSlug}/turnos`} className="text-xs text-violet-600 hover:underline font-medium">

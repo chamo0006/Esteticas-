@@ -22,6 +22,7 @@ interface Turno {
   pago_tipo: string | null;
   pago_metodo: string | null;
   pago_estado: string | null;
+  profesional_nombre: string | null;
 }
 
 const ESTADO_STYLES: Record<Estado, string> = {
@@ -153,6 +154,9 @@ export default function TurnosPage() {
                     </span>
                   </div>
                   <p className="text-sm text-zinc-500">{t.servicio_nombre}</p>
+                  {t.profesional_nombre && (
+                    <p className="text-xs text-violet-500 mt-0.5">💆 {t.profesional_nombre}</p>
+                  )}
                   {t.cliente_telefono && (
                     <p className="text-xs text-zinc-400 mt-1">📱 {t.cliente_telefono}</p>
                   )}

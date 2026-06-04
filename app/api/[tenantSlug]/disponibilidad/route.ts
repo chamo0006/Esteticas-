@@ -24,8 +24,8 @@ export async function GET(
     const tenant = await getTenantBySlug(tenantSlug);
     if (!tenant) return NextResponse.json({ error: 'Estética no encontrada' }, { status: 404 });
 
-    // 2. Horario del día y turnos del día — en paralelo
-    const [horarioRes, turnosRes] = await Promise.all([
+    // 2. Horario del día, turnos del día y profesionales activos — en paralelo
+    const [horarioRes, turnosRes, profesionalesRes] = await Promise.all([
       supabase
         .from('horarios_tenant')
         .select('hora_apertura, hora_cierre, activo')
@@ -34,11 +34,16 @@ export async function GET(
         .single(),
       supabase
         .from('turnos')
-        .select('fecha_hora, servicios(duracion_minutos)')
+        .select('fecha_hora, profesional_id, servicios(duracion_minutos)')
         .eq('tenant_id', tenant.id)
         .neq('estado', 'cancelado')
         .gte('fecha_hora', `${fecha}T00:00:00`)
         .lte('fecha_hora', `${fecha}T23:59:59`),
+      supabase
+        .from('profesionales')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenant.id)
+        .eq('activo', true),
     ]);
 
     const horario = horarioRes.data;
@@ -50,6 +55,7 @@ export async function GET(
     const cierreTotal   = cierreH   * 60 + cierreM;
 
     const turnosDelDia = turnosRes.data ?? [];
+    const totalProfesionales = profesionalesRes.count ?? 0;
     const ahora = new Date();
     const esHoy =
       ahora.getFullYear() === year &&
@@ -71,13 +77,28 @@ export async function GET(
       const slotStart = minutos;
       const slotEnd   = minutos + duracion;
 
-      const ocupado = turnosDelDia.some((t: Record<string, unknown>) => {
-        const tFecha = new Date(t.fecha_hora as string);
-        const tStart = tFecha.getHours() * 60 + tFecha.getMinutes();
-        const svc    = t.servicios as { duracion_minutos?: number } | null;
-        const tEnd   = tStart + (svc?.duracion_minutos ?? duracion);
-        return tStart < slotEnd && tEnd > slotStart;
-      });
+      let ocupado: boolean;
+
+      if (totalProfesionales === 0) {
+        // Backward compat: sin profesionales → cualquier turno solapado bloquea el slot
+        ocupado = turnosDelDia.some((t: Record<string, unknown>) => {
+          const tFecha = new Date(t.fecha_hora as string);
+          const tStart = tFecha.getHours() * 60 + tFecha.getMinutes();
+          const svc    = t.servicios as { duracion_minutos?: number } | null;
+          const tEnd   = tStart + (svc?.duracion_minutos ?? duracion);
+          return tStart < slotEnd && tEnd > slotStart;
+        });
+      } else {
+        // Con profesionales: el slot está ocupado solo si todos están reservados
+        const turnosSolapados = turnosDelDia.filter((t: Record<string, unknown>) => {
+          const tFecha = new Date(t.fecha_hora as string);
+          const tStart = tFecha.getHours() * 60 + tFecha.getMinutes();
+          const svc    = t.servicios as { duracion_minutos?: number } | null;
+          const tEnd   = tStart + (svc?.duracion_minutos ?? duracion);
+          return tStart < slotEnd && tEnd > slotStart;
+        });
+        ocupado = turnosSolapados.length >= totalProfesionales;
+      }
 
       const hh     = slotH.toString().padStart(2, '0');
       const mm     = slotM.toString().padStart(2, '0');
