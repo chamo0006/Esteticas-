@@ -227,7 +227,7 @@ export function ReservationCalendar({
                   key={date.toISOString()}
                   onClick={() => !past && onSelectDate(date)}
                   disabled={past}
-                  className="w-full aspect-square rounded-full flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
                   style={
                     selected
                       ? {
