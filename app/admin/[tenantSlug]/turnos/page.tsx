@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Check, X, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, X, Clock, Loader2, RefreshCw, CalendarDays, List } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Estado = 'pendiente' | 'confirmado' | 'completado' | 'cancelado';
+type Vista = 'agenda' | 'calendario';
 
 interface Turno {
   id: string;
@@ -32,7 +33,15 @@ const ESTADO_STYLES: Record<Estado, string> = {
   cancelado:  'bg-zinc-100 text-zinc-500 border-zinc-200',
 };
 
+const ESTADO_BLOCK: Record<Estado, string> = {
+  pendiente:  'bg-amber-50 border-amber-300 text-amber-800',
+  confirmado: 'bg-blue-50 border-blue-300 text-blue-800',
+  completado: 'bg-emerald-50 border-emerald-300 text-emerald-800',
+  cancelado:  'bg-zinc-50 border-zinc-200 text-zinc-400',
+};
+
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
@@ -47,6 +56,10 @@ function toDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// Horas visibles en el calendario (8 AM a 8 PM)
+const HORAS = Array.from({ length: 13 }, (_, i) => i + 8);
+const ALTURA_HORA = 64; // px por hora
+
 export default function TurnosPage() {
   const params = useParams();
   const tenantSlug = params.tenantSlug as string;
@@ -55,6 +68,7 @@ export default function TurnosPage() {
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [vista, setVista] = useState<Vista>('calendario');
 
   const fetchTurnos = useCallback(async () => {
     setLoading(true);
@@ -83,8 +97,190 @@ export default function TurnosPage() {
 
   const prevDay = () => { const d = new Date(selectedDate); d.setDate(d.getDate()-1); setSelectedDate(d); };
   const nextDay = () => { const d = new Date(selectedDate); d.setDate(d.getDate()+1); setSelectedDate(d); };
+  const goToday = () => setSelectedDate(new Date());
 
   const isToday = toDateStr(selectedDate) === toDateStr(new Date());
+
+  // ── Vista Calendario ───────────────────────────────────────────────────────
+  const renderCalendario = () => {
+    const turnosActivos = turnos.filter(t => t.estado !== 'cancelado');
+
+    return (
+      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+        {/* Encabezado del día */}
+        <div className="px-4 py-3 border-b border-zinc-100 flex items-center gap-3">
+          <div className="text-center">
+            <p className="text-xs text-zinc-400 font-medium uppercase">
+              {selectedDate.toLocaleDateString('es-AR', { weekday: 'short' })}
+            </p>
+            <p className={cn('text-2xl font-bold', isToday ? 'text-violet-600' : 'text-zinc-900')}>
+              {selectedDate.getDate()}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-zinc-700">
+              {MONTHS[selectedDate.getMonth()]} {selectedDate.getFullYear()}
+            </p>
+            <p className="text-xs text-zinc-400">{turnosActivos.length} turno{turnosActivos.length !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+
+        {/* Grid de horas */}
+        <div className="overflow-y-auto max-h-[600px]">
+          <div className="relative" style={{ height: HORAS.length * ALTURA_HORA }}>
+
+            {/* Líneas de hora */}
+            {HORAS.map((h) => (
+              <div
+                key={h}
+                className="absolute left-0 right-0 flex items-start"
+                style={{ top: (h - 8) * ALTURA_HORA }}
+              >
+                <div className="w-14 text-right pr-3 pt-1 flex-shrink-0">
+                  <span className="text-xs text-zinc-400 font-medium">
+                    {h < 12 ? `${h}:00` : h === 12 ? '12:00' : `${h}:00`}
+                  </span>
+                </div>
+                <div className="flex-1 border-t border-zinc-100 h-full" />
+              </div>
+            ))}
+
+            {/* Línea de hora actual (solo si es hoy) */}
+            {isToday && (() => {
+              const now = new Date();
+              const horaActual = now.getHours() + now.getMinutes() / 60;
+              if (horaActual >= 8 && horaActual <= 21) {
+                return (
+                  <div
+                    className="absolute left-14 right-0 z-20 flex items-center"
+                    style={{ top: (horaActual - 8) * ALTURA_HORA }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
+                    <div className="flex-1 border-t-2 border-red-400" />
+                  </div>
+                );
+              }
+            })()}
+
+            {/* Bloques de turnos */}
+            <div className="absolute left-14 right-2 top-0 bottom-0">
+              {turnosActivos.map((t) => {
+                const d = new Date(t.fecha_hora);
+                const horaInicio = d.getHours() + d.getMinutes() / 60;
+                const durHoras = t.duracion_minutos / 60;
+
+                if (horaInicio < 8 || horaInicio > 21) return null;
+
+                const top    = (horaInicio - 8) * ALTURA_HORA;
+                const height = Math.max(durHoras * ALTURA_HORA, 28);
+
+                return (
+                  <div
+                    key={t.id}
+                    className={cn(
+                      'absolute left-1 right-1 rounded-xl border-l-4 px-2 py-1 overflow-hidden cursor-default',
+                      ESTADO_BLOCK[t.estado]
+                    )}
+                    style={{ top, height }}
+                  >
+                    <p className="text-xs font-bold truncate leading-tight">
+                      {formatHora(t.fecha_hora)} · {t.cliente_nombre}
+                    </p>
+                    <p className="text-xs truncate opacity-75">{t.servicio_nombre}</p>
+                    {t.profesional_nombre && (
+                      <p className="text-xs truncate opacity-60">💆 {t.profesional_nombre}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Vista Agenda (lista) ───────────────────────────────────────────────────
+  const renderAgenda = () => (
+    turnos.length === 0 ? (
+      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
+        <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
+        <p className="text-zinc-400 font-medium">Sin turnos para este día</p>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {turnos.map((t) => (
+          <div key={t.id} className={cn(
+            'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all',
+            t.estado === 'cancelado' ? 'opacity-50' : ''
+          )}>
+            <div className="p-4 flex items-start gap-3 md:gap-4">
+              <div className="text-center min-w-[52px]">
+                <p className="text-lg font-bold text-zinc-900">{formatHora(t.fecha_hora)}</p>
+                <p className="text-xs text-zinc-400">{t.duracion_minutos} min</p>
+              </div>
+              <div className="w-px bg-zinc-100 self-stretch" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-semibold text-zinc-900">{t.cliente_nombre}</p>
+                  <span className={cn('px-2 py-0.5 rounded-lg text-xs font-semibold border', ESTADO_STYLES[t.estado])}>
+                    {t.estado}
+                  </span>
+                </div>
+                <p className="text-sm text-zinc-500">{t.servicio_nombre}</p>
+                {t.profesional_nombre && (
+                  <p className="text-xs text-violet-500 mt-0.5">💆 {t.profesional_nombre}</p>
+                )}
+                {t.cliente_telefono && (
+                  <p className="text-xs text-zinc-400 mt-1">📱 {t.cliente_telefono}</p>
+                )}
+                {t.pago_monto && (
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    💳 {t.pago_metodo} · {t.pago_tipo === 'sena' ? `Seña ${formatARS(Number(t.pago_monto))}` : formatARS(Number(t.pago_monto))} · <span className={t.pago_estado === 'acreditado' ? 'text-emerald-500' : 'text-amber-500'}>{t.pago_estado}</span>
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <p className="font-bold text-zinc-900">{formatARS(Number(t.precio))}</p>
+                {t.estado !== 'completado' && t.estado !== 'cancelado' && (
+                  <div className="flex gap-1.5 flex-wrap justify-end">
+                    {t.estado === 'pendiente' && (
+                      <button
+                        onClick={() => changeEstado(t.id, 'confirmado')}
+                        disabled={!!updating}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold rounded-lg transition-colors"
+                      >
+                        {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                        Confirmar
+                      </button>
+                    )}
+                    {t.estado === 'confirmado' && (
+                      <button
+                        onClick={() => changeEstado(t.id, 'completado')}
+                        disabled={!!updating}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-lg transition-colors"
+                      >
+                        {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                        Completar
+                      </button>
+                    )}
+                    <button
+                      onClick={() => changeEstado(t.id, 'cancelado')}
+                      disabled={!!updating}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      <X className="w-3 h-3" /> Cancelar
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  );
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -93,11 +289,32 @@ export default function TurnosPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">Agenda de Turnos</h1>
-          <p className="text-zinc-400 text-sm mt-1">{turnos.length} turno{turnos.length !== 1 ? 's' : ''} para este día</p>
+          <p className="text-zinc-400 text-sm mt-1">
+            {turnos.filter(t => t.estado !== 'cancelado').length} turno{turnos.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} para este día
+          </p>
         </div>
-        <button onClick={fetchTurnos} className="p-2 rounded-xl hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Toggle vista */}
+          <div className="flex bg-zinc-100 rounded-xl p-1">
+            <button
+              onClick={() => setVista('calendario')}
+              className={cn('p-2 rounded-lg transition-colors', vista === 'calendario' ? 'bg-white shadow-sm text-violet-600' : 'text-zinc-400 hover:text-zinc-600')}
+              title="Vista calendario"
+            >
+              <CalendarDays className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setVista('agenda')}
+              className={cn('p-2 rounded-lg transition-colors', vista === 'agenda' ? 'bg-white shadow-sm text-violet-600' : 'text-zinc-400 hover:text-zinc-600')}
+              title="Vista lista"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+          <button onClick={fetchTurnos} className="p-2 rounded-xl hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Navegador de fecha */}
@@ -109,100 +326,30 @@ export default function TurnosPage() {
           <p className="font-semibold text-zinc-900">
             {selectedDate.getDate()} de {MONTHS[selectedDate.getMonth()]} de {selectedDate.getFullYear()}
           </p>
-          {isToday && (
-            <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">Hoy</span>
-          )}
+          {isToday
+            ? <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">Hoy</span>
+            : <button onClick={goToday} className="text-xs text-violet-500 hover:underline">Ir a hoy</button>
+          }
         </div>
         <button onClick={nextDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
           <ChevronRight className="w-5 h-5 text-zinc-600" />
         </button>
       </div>
 
-      {/* Lista de turnos */}
+      {/* Contenido */}
       {loading ? (
         <div className="flex items-center justify-center py-20 text-zinc-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
-      ) : turnos.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-          <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">Sin turnos para este día</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {turnos.map((t) => (
-            <div key={t.id} className={cn(
-              'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all',
-              t.estado === 'cancelado' ? 'opacity-50' : ''
-            )}>
-              <div className="p-4 flex items-start gap-3 md:gap-4">
-                {/* Hora */}
-                <div className="text-center min-w-[52px]">
-                  <p className="text-lg font-bold text-zinc-900">{formatHora(t.fecha_hora)}</p>
-                  <p className="text-xs text-zinc-400">{t.duracion_minutos} min</p>
-                </div>
+      ) : vista === 'calendario' ? renderCalendario() : renderAgenda()}
 
-                {/* Divider */}
-                <div className="w-px bg-zinc-100 self-stretch" />
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-semibold text-zinc-900">{t.cliente_nombre}</p>
-                    <span className={cn('px-2 py-0.5 rounded-lg text-xs font-semibold border', ESTADO_STYLES[t.estado])}>
-                      {t.estado}
-                    </span>
-                  </div>
-                  <p className="text-sm text-zinc-500">{t.servicio_nombre}</p>
-                  {t.profesional_nombre && (
-                    <p className="text-xs text-violet-500 mt-0.5">💆 {t.profesional_nombre}</p>
-                  )}
-                  {t.cliente_telefono && (
-                    <p className="text-xs text-zinc-400 mt-1">📱 {t.cliente_telefono}</p>
-                  )}
-                  {t.pago_monto && (
-                    <p className="text-xs text-zinc-400 mt-0.5">
-                      💳 {t.pago_metodo} · {t.pago_tipo === 'sena' ? `Seña ${formatARS(Number(t.pago_monto))}` : formatARS(Number(t.pago_monto))} · <span className={t.pago_estado === 'acreditado' ? 'text-emerald-500' : 'text-amber-500'}>{t.pago_estado}</span>
-                    </p>
-                  )}
-                </div>
-
-                {/* Precio + acciones */}
-                <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                  <p className="font-bold text-zinc-900">{formatARS(Number(t.precio))}</p>
-                  {t.estado !== 'completado' && t.estado !== 'cancelado' && (
-                    <div className="flex gap-1.5 flex-wrap justify-end">
-                      {t.estado === 'pendiente' && (
-                        <button
-                          onClick={() => changeEstado(t.id, 'confirmado')}
-                          disabled={!!updating}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold rounded-lg transition-colors"
-                        >
-                          {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                          Confirmar
-                        </button>
-                      )}
-                      {t.estado === 'confirmado' && (
-                        <button
-                          onClick={() => changeEstado(t.id, 'completado')}
-                          disabled={!!updating}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-lg transition-colors"
-                        >
-                          {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                          Completar
-                        </button>
-                      )}
-                      <button
-                        onClick={() => changeEstado(t.id, 'cancelado')}
-                        disabled={!!updating}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-semibold rounded-lg transition-colors"
-                      >
-                        <X className="w-3 h-3" /> Cancelar
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+      {/* Leyenda */}
+      {vista === 'calendario' && (
+        <div className="flex items-center gap-4 mt-4 px-1 flex-wrap">
+          {(Object.entries(ESTADO_BLOCK) as [Estado, string][]).map(([estado, cls]) => (
+            <div key={estado} className="flex items-center gap-1.5">
+              <div className={cn('w-3 h-3 rounded border-l-2', cls)} />
+              <span className="text-xs text-zinc-500 capitalize">{estado}</span>
             </div>
           ))}
         </div>

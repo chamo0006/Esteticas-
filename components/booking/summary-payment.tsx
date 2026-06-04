@@ -185,9 +185,6 @@ export function SummaryPayment({
             <CheckCircle className="w-8 h-8 text-success-foreground" />
           </div>
           <h2 className="font-serif text-2xl text-foreground mb-2">¡Reserva confirmada!</h2>
-          <p className="text-muted-foreground mb-6">
-            Te enviamos los detalles a <strong>{formData.email}</strong>
-          </p>
 
           <div className="bg-background rounded-2xl p-4 text-left space-y-2 mb-6">
             <div className="flex justify-between text-sm">
