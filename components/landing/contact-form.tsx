@@ -28,12 +28,12 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-border text-center">
+      <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center shadow-xl shadow-gray-100">
         <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
           <Check className="w-7 h-7 text-emerald-600" />
         </div>
-        <h3 className="font-serif text-xl font-bold text-foreground mb-2">¡Mensaje recibido!</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">¡Mensaje recibido!</h3>
+        <p className="text-gray-500 text-sm leading-relaxed">
           Te contactamos en menos de 24 horas para agendar tu demo gratuita.
         </p>
       </div>
@@ -48,10 +48,10 @@ export function ContactForm() {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-border space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-200 space-y-4 shadow-xl shadow-gray-100">
       {fields.map(({ field, label, placeholder, type, required }) => (
         <div key={field}>
-          <label className="block text-sm font-medium text-foreground mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             {label}{' '}
             {required && <span className="text-rose-500">*</span>}
           </label>
@@ -61,7 +61,7 @@ export function ContactForm() {
             onChange={(e) => set(field, e.target.value)}
             placeholder={placeholder}
             required={required}
-            className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-mauve-500 transition-shadow"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-300 transition-all"
           />
         </div>
       ))}
@@ -69,7 +69,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3.5 bg-mauve-600 hover:bg-mauve-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+        className="w-full py-3.5 bg-gray-900 hover:bg-gray-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5"
       >
         {loading ? (
           <>

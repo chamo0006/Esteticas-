@@ -1,374 +1,225 @@
-import Link from 'next/link';
 import {
-  Calendar,
-  Bell,
-  Globe,
   ArrowRight,
   Check,
+  MessageCircle,
+  CreditCard,
+  ImageIcon,
+  Calculator,
   Sparkles,
-  TrendingUp,
   Star,
-  Zap,
-  Shield,
-  LayoutDashboard,
-  Mail,
-  Phone,
-  AtSign,
 } from 'lucide-react';
-import { ContactForm } from '@/components/landing/contact-form';
 import { AnimateIn } from '@/components/landing/animate-in';
+import { SystemPreview } from '@/components/landing/system-preview';
+import { ContactForm } from '@/components/landing/contact-form';
 
-// ---------------------------------------------------------------------------
-// Mock UI — decorative admin panel preview (hero right column)
-// ---------------------------------------------------------------------------
-function MockAdminUI() {
-  return (
-    <div className="relative w-full max-w-[480px] mx-auto select-none pointer-events-none">
-      {/* Ambient glow */}
-      <div className="absolute -inset-8 bg-gradient-to-br from-mauve-300/25 via-gold-200/20 to-transparent rounded-[3rem] blur-3xl animate-drift" />
-
-      {/* Browser frame */}
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-espresso/20 border border-white/70 bg-white">
-        {/* URL bar */}
-        <div className="bg-espresso px-4 py-2.5 flex items-center gap-3">
-          <div className="flex gap-1.5 shrink-0">
-            <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-            <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-            <span className="w-3 h-3 rounded-full bg-[#28C840]" />
-          </div>
-          <div className="flex-1 bg-espresso-2 rounded-full px-3 py-1 text-mauve-300 text-xs font-mono truncate">
-            estetica-bella.turnosapp.com
-          </div>
-        </div>
-
-        {/* App shell */}
-        <div className="flex" style={{ height: '300px' }}>
-          {/* Sidebar */}
-          <div className="w-[52px] bg-espresso flex flex-col items-center pt-4 gap-3 shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-mauve-600 flex items-center justify-center mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-            </div>
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className={`w-8 h-8 rounded-xl flex items-center justify-center ${i === 0 ? 'bg-mauve-900/60' : ''}`}
-              >
-                <div className="w-4 h-0.5 bg-espresso-3 rounded" />
-              </div>
-            ))}
-          </div>
-
-          {/* Dashboard content */}
-          <div className="flex-1 bg-zinc-50 p-4 overflow-hidden">
-            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">
-              Resumen del día
-            </p>
-
-            {/* Stat cards */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {[
-                { label: 'Turnos',   value: '12',   textColor: 'text-mauve-600', bg: 'bg-mauve-50'  },
-                { label: 'Clientes', value: '8',    textColor: 'text-rose-600',  bg: 'bg-rose-50'   },
-                { label: 'Ingresos', value: '$52k', textColor: 'text-gold-600',  bg: 'bg-gold-100'  },
-              ].map((s) => (
-                <div key={s.label} className={`${s.bg} rounded-xl p-2.5`}>
-                  <p className="text-[9px] text-zinc-500 mb-0.5">{s.label}</p>
-                  <p className={`text-sm font-bold ${s.textColor}`}>{s.value}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Appointment list */}
-            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-              Próximos turnos
-            </p>
-            <div className="space-y-1.5">
-              {[
-                { time: '10:00', name: 'Ana García',   service: 'Manicura', dot: 'bg-mauve-400'  },
-                { time: '11:30', name: 'Laura Pérez',  service: 'Lifting',  dot: 'bg-rose-400'   },
-                { time: '13:00', name: 'Sofía R.',     service: 'Cejas',    dot: 'bg-gold-400'   },
-                { time: '15:00', name: 'Valentina M.', service: 'Semi',     dot: 'bg-emerald-400'},
-              ].map((a) => (
-                <div key={a.time} className="flex items-center gap-2 bg-white rounded-lg px-2.5 py-1.5 shadow-sm">
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${a.dot}`} />
-                  <span className="text-[10px] font-medium text-zinc-600 w-8 shrink-0">{a.time}</span>
-                  <span className="text-[10px] text-zinc-500 flex-1 truncate">{a.name} · {a.service}</span>
-                  <span className="text-[9px] bg-zinc-100 text-zinc-400 rounded px-1.5 py-0.5 shrink-0">
-                    confirmado
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating: new booking notification */}
-      <div className="absolute -right-3 top-20 bg-white rounded-xl shadow-lg border border-mauve-100 p-3 w-48 animate-float [animation-delay:0.5s]">
-        <div className="flex items-start gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-            <Check className="w-3.5 h-3.5 text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-zinc-800">¡Nueva reserva!</p>
-            <p className="text-[10px] text-zinc-500 leading-snug">Valentina · Mañana 15:00</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating: growth card — gold accent */}
-      <div className="absolute -left-3 bottom-8 bg-white rounded-xl shadow-lg border border-gold-200 p-3 w-36 animate-float-alt">
-        <p className="text-[10px] text-zinc-500 mb-0.5">Este mes</p>
-        <p className="text-2xl font-bold text-zinc-900">+34%</p>
-        <div className="flex items-center gap-1 mt-0.5">
-          <TrendingUp className="w-3 h-3 text-gold-500" />
-          <p className="text-[10px] text-gold-600">reservas online</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Data
-// ---------------------------------------------------------------------------
-const benefits = [
+const features = [
   {
-    icon: Globe,
-    title: 'Tu Marca, Tu Dominio',
-    desc: 'Cada estética recibe su propia web independiente y personalizada para compartir con sus clientes.',
-    iconBg: 'bg-mauve-50',
-    iconColor: 'text-mauve-600',
-  },
-  {
-    icon: Calendar,
-    title: 'Agenda Automatizada',
-    desc: 'Tus clientes reservan solos las 24 horas. Sin mensajes a deshoras, sin errores de agenda.',
-    iconBg: 'bg-rose-50',
-    iconColor: 'text-rose-600',
-  },
-  {
-    icon: LayoutDashboard,
-    title: 'Panel de Administración',
-    desc: 'Control total de turnos, profesionales, servicios y estadísticas desde un solo lugar.',
-    iconBg: 'bg-gold-100',
-    iconColor: 'text-gold-600',
-  },
-  {
-    icon: Bell,
-    title: 'Recordatorios Automáticos',
-    desc: 'El sistema avisa a tus clientes automáticamente. Menos ausencias, más ingresos garantizados.',
+    Icon: MessageCircle,
+    title: 'Recordatorios por WhatsApp',
+    description:
+      'Enviá recordatorios automáticos 24hs antes del turno. Reducí ausentes hasta un 80% sin hacer nada.',
     iconBg: 'bg-emerald-50',
     iconColor: 'text-emerald-600',
   },
-];
-
-const steps = [
   {
-    n: '01',
-    title: 'Registrá tu estética',
-    desc: 'Completá tu perfil en minutos: cargá tus servicios, horarios y profesionales sin saber programación.',
+    Icon: CreditCard,
+    title: 'Señas con Mercado Pago',
+    description:
+      'Tu cliente paga la seña al reservar. Confirmación automática, cero cancelaciones de último momento.',
+    iconBg: 'bg-blue-50',
+    iconColor: 'text-blue-600',
   },
   {
-    n: '02',
-    title: 'Lanzamos tu sitio',
-    desc: 'Recibís tu propio link personalizado, listo para compartir en Instagram, WhatsApp y donde quieras.',
+    Icon: ImageIcon,
+    title: 'Historial con fotos',
+    description:
+      'Cada cliente tiene su carpeta. Subí fotos, anotá preferencias y trackeá el progreso de cada trabajo.',
+    iconBg: 'bg-rose-50',
+    iconColor: 'text-rose-500',
   },
   {
-    n: '03',
-    title: 'Empezá a cobrar',
-    desc: 'Tus clientes reservan y pagan online. Vos gestionás todo desde tu panel de administración.',
-  },
-];
-
-const plans = [
-  {
-    name: 'Emprendedora',
-    tagline: 'Para comenzar',
-    price: '$4.999',
-    features: [
-      '1 profesional',
-      'Hasta 50 turnos/mes',
-      'Web personalizada',
-      'Agenda automática',
-      'Soporte por email',
-    ],
-    cta: 'Empezar gratis',
-    href: '/registrar',
-    popular: false,
-  },
-  {
-    name: 'Premium',
-    tagline: 'El más elegido',
-    price: '$9.999',
-    features: [
-      'Hasta 5 profesionales',
-      'Turnos ilimitados',
-      'Web personalizada',
-      'Agenda automática',
-      'Recordatorios automáticos',
-      'Panel de estadísticas',
-      'Soporte prioritario',
-    ],
-    cta: 'Comenzar ahora',
-    href: '/registrar',
-    popular: true,
-  },
-  {
-    name: 'Pro',
-    tagline: 'Para grandes centros',
-    price: '$17.999',
-    features: [
-      'Profesionales ilimitados',
-      'Turnos ilimitados',
-      'Web personalizada',
-      'Agenda automática',
-      'Recordatorios automáticos',
-      'Estadísticas avanzadas',
-      'Integración Mercado Pago',
-      'Soporte 24/7',
-    ],
-    cta: 'Contactar ventas',
-    href: '#contacto',
-    popular: false,
+    Icon: Calculator,
+    title: 'Calculadora de comisiones',
+    description:
+      'Configurá el % por servicio y profesional. El sistema calcula solo, vos pagás con certeza total.',
+    iconBg: 'bg-amber-50',
+    iconColor: 'text-amber-600',
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
+const pricingFeatures = [
+  'Página de reservas personalizada',
+  'Panel de administración completo',
+  'Recordatorios automáticos por WhatsApp',
+  'Señas online con Mercado Pago',
+  'Gestión de staff y comisiones',
+  'Historial de clientes con fotos',
+  'Estadísticas e ingresos',
+  'Soporte 7 días a la semana',
+];
+
+const navLinks = [
+  ['Funciones', '#funciones'],
+  ['Precios', '#precios'],
+  ['Contacto', '#contacto'],
+] as const;
+
+const avatarColors = [
+  'bg-violet-200',
+  'bg-rose-200',
+  'bg-amber-200',
+  'bg-emerald-200',
+  'bg-sky-200',
+];
+
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-white text-gray-900">
 
-      {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border animate-hero">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-mauve-600 flex items-center justify-center shadow-sm shadow-mauve-200">
+      {/* ── Navbar ──────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gray-900 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="font-serif text-xl font-semibold tracking-wide">TurnosApp</span>
-          </Link>
+            <span className="font-semibold text-gray-900">TurnosApp</span>
+          </div>
 
-          <nav className="hidden md:flex items-center gap-7">
-            {[
-              ['Beneficios',    '#beneficios'],
-              ['Cómo funciona', '#como-funciona'],
-              ['Precios',       '#precios'],
-              ['Contacto',      '#contacto'],
-            ].map(([label, href]) => (
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map(([label, href]) => (
               <a
-                key={href}
+                key={label}
                 href={href}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
               >
                 {label}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <Link
-              href="/admin/login"
-              className="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/registrar"
-              className="px-4 py-2 bg-mauve-600 hover:bg-mauve-500 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-mauve-200"
-            >
-              Empezar gratis
-            </Link>
-          </div>
+          <a
+            href="#contacto"
+            className="text-sm bg-gray-900 text-white px-5 py-2.5 rounded-full font-medium hover:bg-gray-700 hover:-translate-y-0.5 transition-all duration-200"
+          >
+            Registrar mi Estética
+          </a>
         </div>
       </header>
 
-      {/* ── HERO ───────────────────────────────────────────────────────────── */}
-      <section id="inicio" className="relative pt-16 pb-28 px-4 sm:px-6 overflow-hidden">
-        {/* Animated blobs */}
-        <div className="absolute top-0 right-0 w-[560px] h-[560px] bg-mauve-100/50 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none animate-drift" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gold-100/50 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl pointer-events-none animate-drift [animation-delay:4s]" />
-
-        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 lg:gap-10 items-center">
-          {/* Copy */}
-          <div className="text-center lg:text-left">
-            <div className="animate-hero [animation-delay:0ms] inline-flex items-center gap-2 bg-mauve-50 text-mauve-700 rounded-full px-4 py-1.5 text-xs font-medium mb-7 border border-mauve-200">
-              <Zap className="w-3 h-3" />
-              Plataforma SaaS para estéticas
-            </div>
-
-            <h1 className="animate-hero [animation-delay:80ms] font-serif text-5xl sm:text-6xl lg:text-[3.75rem] font-light leading-[1.1] text-foreground mb-6">
-              Llevá tu estética al{' '}
-              <span className="font-semibold text-mauve-600">siguiente nivel</span>{' '}
-              con tu propia plataforma de turnos
-            </h1>
-
-            <p className="animate-hero [animation-delay:180ms] text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              Una web personalizada para tu marca, agenda automatizada las 24 horas y un panel de control para potenciar tus ventas. Sin complicaciones técnicas.
-            </p>
-
-            <div className="animate-hero [animation-delay:280ms] flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Link
-                href="/registrar"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-mauve-600 hover:bg-mauve-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-mauve-200 hover:shadow-mauve-300 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                Registrar mi estética gratis
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <a
-                href="#como-funciona"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white hover:bg-zinc-50 text-foreground font-medium rounded-xl transition-all border border-border shadow-sm hover:-translate-y-0.5"
-              >
-                Ver cómo funciona
-              </a>
-            </div>
-
-            <div className="animate-hero [animation-delay:380ms] mt-8 flex items-center gap-4 justify-center lg:justify-start">
-              <div className="flex -space-x-2">
-                {['bg-mauve-400', 'bg-rose-400', 'bg-gold-400', 'bg-emerald-400'].map((c, i) => (
-                  <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-white`} />
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">+200 estéticas</span> ya confían en nosotros
-              </p>
-            </div>
+      {/* ── Hero ────────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-6 pt-28 pb-24 text-center">
+        <div className="animate-hero">
+          <div className="inline-flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-full px-4 py-2 mb-8">
+            <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+            <span className="text-xs font-medium text-violet-700">
+              Más de 200 estéticas ya están usando TurnosApp
+            </span>
           </div>
+        </div>
 
-          {/* Mock UI */}
-          <div className="animate-hero [animation-delay:150ms] flex justify-center lg:justify-end">
-            <MockAdminUI />
+        <h1
+          className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-6 animate-hero"
+          style={{ animationDelay: '80ms' }}
+        >
+          Tu estética merece
+          <br />
+          <span className="bg-gradient-to-br from-violet-500 via-purple-600 to-violet-700 bg-clip-text text-transparent">
+            su propio sistema
+          </span>
+        </h1>
+
+        <p
+          className="max-w-2xl mx-auto text-lg sm:text-xl text-gray-400 leading-relaxed mb-10 animate-hero"
+          style={{ animationDelay: '160ms' }}
+        >
+          Dales a tus clientes una experiencia de reserva online impecable.
+          Administrá turnos, staff y finanzas desde un solo lugar, sin complicaciones.
+        </p>
+
+        <div
+          className="flex flex-col sm:flex-row gap-3 justify-center animate-hero"
+          style={{ animationDelay: '240ms' }}
+        >
+          <a
+            href="#contacto"
+            className="inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-gray-700 hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-gray-900/10"
+          >
+            Empezar gratis
+            <ArrowRight className="w-4 h-4" />
+          </a>
+          <a
+            href="#preview"
+            className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-2xl font-semibold border border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:-translate-y-0.5 transition-all duration-200"
+          >
+            Ver demo interactiva
+          </a>
+        </div>
+
+        {/* Social proof */}
+        <div
+          className="flex items-center justify-center flex-wrap gap-4 mt-16 animate-hero"
+          style={{ animationDelay: '320ms' }}
+        >
+          <div className="flex -space-x-2">
+            {avatarColors.map((c, i) => (
+              <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-white`} />
+            ))}
           </div>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            ))}
+          </div>
+          <span className="text-sm text-gray-400">Más de 200 estéticas satisfechas</span>
         </div>
       </section>
 
-      {/* ── BENEFITS ───────────────────────────────────────────────────────── */}
-      <section id="beneficios" className="py-24 px-4 sm:px-6 bg-white">
+      {/* ── System Preview (tabs interactivos) ──────────────── */}
+      <section id="preview" className="bg-gray-50 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <AnimateIn className="text-center mb-12">
+            <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
+              Demo interactiva
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+              Explorá el sistema
+            </h2>
+            <p className="text-gray-500 max-w-lg mx-auto">
+              Sin registrarte, sin tarjeta. Tocá las pestañas y mirá cómo funciona cada parte.
+            </p>
+          </AnimateIn>
+
+          <AnimateIn delay={120}>
+            <SystemPreview />
+          </AnimateIn>
+        </div>
+      </section>
+
+      {/* ── Features Bento Grid ──────────────────────────────── */}
+      <section id="funciones" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <AnimateIn className="text-center mb-16">
-            <p className="text-mauve-600 font-medium text-sm uppercase tracking-widest mb-3">
-              Por qué elegirnos
-            </p>
-            <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              Todo lo que tu negocio{' '}
-              <span className="font-semibold text-mauve-600">necesita</span>
+            <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
+              Funcionalidades
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Todo lo que necesitás, nada de lo que no
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Herramientas diseñadas específicamente para el rubro de la belleza y el bienestar.
+            <p className="text-gray-400 max-w-xl mx-auto text-lg">
+              Diseñado específicamente para estéticas y centros de belleza argentinos.
             </p>
           </AnimateIn>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map(({ icon: Icon, title, desc, iconBg, iconColor }, i) => (
-              <AnimateIn key={title} delay={i * 90} direction="up">
-                <div className="bg-background rounded-2xl p-6 border border-border hover:shadow-md hover:-translate-y-1 transition-all duration-300 h-full">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconBg}`}>
-                    <Icon className={`w-6 h-6 ${iconColor}`} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            {features.map((f, i) => (
+              <AnimateIn key={f.title} delay={i * 80}>
+                <div className="group bg-white border border-gray-100 rounded-3xl p-8 hover:shadow-xl hover:shadow-gray-100/80 hover:-translate-y-1 transition-all duration-300 h-full">
+                  <div className={`w-12 h-12 rounded-2xl ${f.iconBg} flex items-center justify-center mb-5`}>
+                    <f.Icon className={`w-6 h-6 ${f.iconColor}`} />
                   </div>
-                  <h3 className="font-serif text-xl font-semibold text-foreground mb-2">{title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{f.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{f.description}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -376,204 +227,110 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ───────────────────────────────────────────────────── */}
-      <section id="como-funciona" className="py-24 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <AnimateIn className="text-center mb-16">
-            <p className="text-mauve-600 font-medium text-sm uppercase tracking-widest mb-3">
-              Simple y rápido
-            </p>
-            <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              Cómo <span className="font-semibold text-mauve-600">funciona</span>
+      {/* ── Pricing ─────────────────────────────────────────── */}
+      <section id="precios" className="bg-gray-50 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <AnimateIn className="text-center mb-12">
+            <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
+              Precios
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Simple. Claro. Sin sorpresas.
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              En tres pasos tenés tu estética online y recibiendo reservas.
+            <p className="text-gray-500 max-w-lg mx-auto">
+              Un solo plan con todo incluido. Sin funciones bloqueadas, sin letras chicas.
             </p>
           </AnimateIn>
 
-          <div className="relative grid md:grid-cols-3 gap-10">
-            {/* Connector: mauve → gold → mauve */}
-            <div className="hidden md:block absolute top-10 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px bg-gradient-to-r from-mauve-200 via-gold-300 to-mauve-200" />
+          <AnimateIn delay={100} className="max-w-sm mx-auto">
+            <div className="relative bg-white rounded-3xl border border-gray-200 p-8 shadow-2xl shadow-gray-100/80 overflow-hidden hover:shadow-violet-100/60 hover:-translate-y-1 transition-all duration-300">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-400 to-purple-600" />
 
-            {steps.map(({ n, title, desc }, i) => (
-              <AnimateIn key={n} delay={i * 140} direction="up" className="relative text-center flex flex-col items-center">
-                <div className="relative mb-6">
-                  <div className="w-20 h-20 rounded-full bg-mauve-600 flex items-center justify-center text-white font-serif font-light text-3xl shadow-lg shadow-mauve-200 relative z-10">
-                    {n}
-                  </div>
-                  <div className="absolute inset-0 rounded-full bg-mauve-300/20 scale-[1.4] blur-sm" />
+              <div className="mb-7">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-3 py-1 mb-4">
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                  Todo incluido
+                </span>
+                <div className="flex items-baseline gap-1.5 mt-3">
+                  <span className="text-5xl font-bold text-gray-900">$9.999</span>
+                  <span className="text-gray-400 font-medium">/mes</span>
                 </div>
-                <h3 className="font-serif text-2xl font-semibold text-foreground mb-3">{title}</h3>
-                <p className="text-muted-foreground leading-relaxed text-sm">{desc}</p>
-              </AnimateIn>
-            ))}
-          </div>
-
-          <AnimateIn className="text-center mt-14" delay={200}>
-            <Link
-              href="/registrar"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-mauve-600 hover:bg-mauve-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-mauve-200 hover:-translate-y-0.5"
-            >
-              Comenzar ahora — es gratis
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* ── PRICING ────────────────────────────────────────────────────────── */}
-      <section id="precios" className="py-24 px-4 sm:px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <AnimateIn className="text-center mb-16">
-            <p className="text-mauve-600 font-medium text-sm uppercase tracking-widest mb-3">
-              Planes y precios
-            </p>
-            <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              Invertí en el{' '}
-              <span className="font-semibold text-mauve-600">crecimiento</span>{' '}
-              de tu negocio
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Sin contratos. Sin sorpresas. Cancelá cuando quieras.
-            </p>
-          </AnimateIn>
-
-          <div className="grid md:grid-cols-3 gap-6 items-center">
-            {plans.map((plan, i) => (
-              <AnimateIn key={plan.name} delay={i * 100} direction="scale">
-                <div
-                  className={`relative rounded-2xl p-7 border transition-all h-full ${
-                    plan.popular
-                      ? 'bg-espresso border-espresso-3 shadow-2xl shadow-espresso/30 md:scale-105'
-                      : 'bg-background border-border hover:shadow-md'
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1.5 bg-gold-500 text-espresso text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-md">
-                        <Star className="w-3 h-3 fill-espresso" />
-                        Más popular
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="mb-6">
-                    <p className={`text-xs font-medium uppercase tracking-widest mb-1 ${plan.popular ? 'text-espresso-4' : 'text-muted-foreground'}`}>
-                      {plan.tagline}
-                    </p>
-                    <h3 className={`font-serif text-2xl font-semibold mb-3 ${plan.popular ? 'text-white' : 'text-foreground'}`}>
-                      {plan.name}
-                    </h3>
-                    <div className="flex items-baseline gap-1">
-                      <span className={`font-serif text-4xl font-light ${plan.popular ? 'text-white' : 'text-foreground'}`}>
-                        {plan.price}
-                      </span>
-                      <span className={`text-sm ${plan.popular ? 'text-espresso-4' : 'text-muted-foreground'}`}>
-                        /mes
-                      </span>
-                    </div>
-                  </div>
-
-                  <ul className="space-y-3 mb-7">
-                    {plan.features.map((feat) => (
-                      <li key={feat} className="flex items-center gap-2.5">
-                        <Check className={`w-4 h-4 shrink-0 ${plan.popular ? 'text-gold-400' : 'text-mauve-600'}`} />
-                        <span className={`text-sm ${plan.popular ? 'text-mauve-200' : 'text-muted-foreground'}`}>
-                          {feat}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href={plan.href}
-                    className={`block w-full text-center py-3 rounded-xl font-medium text-sm transition-all ${
-                      plan.popular
-                        ? 'bg-mauve-600 hover:bg-mauve-500 text-white shadow-md hover:-translate-y-0.5'
-                        : 'bg-background hover:bg-zinc-50 text-foreground border border-border hover:-translate-y-0.5'
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
-                </div>
-              </AnimateIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CONTACT ────────────────────────────────────────────────────────── */}
-      <section id="contacto" className="py-24 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <AnimateIn className="text-center mb-16">
-            <p className="text-mauve-600 font-medium text-sm uppercase tracking-widest mb-3">
-              ¿Tenés preguntas?
-            </p>
-            <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              <span className="font-semibold text-mauve-600">Hablemos</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-              Completá el formulario y te contactamos en menos de 24 horas.
-            </p>
-          </AnimateIn>
-
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <AnimateIn direction="left">
-              <div className="space-y-8">
-                <div className="space-y-5">
-                  {[
-                    { icon: Mail,   label: 'Email',     value: 'contacto@turnosapp.com' },
-                    { icon: Phone,  label: 'WhatsApp',  value: '+54 11 xxxx-xxxx'       },
-                    { icon: AtSign, label: 'Instagram', value: '@turnosapp'             },
-                  ].map(({ icon: Icon, label, value }) => (
-                    <div key={label} className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-xl bg-mauve-50 flex items-center justify-center shrink-0">
-                        <Icon className="w-5 h-5 text-mauve-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">{label}</p>
-                        <p className="text-sm font-medium text-foreground">{value}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-border">
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <Shield className="w-5 h-5 text-mauve-600" />
-                    <p className="font-serif text-lg font-semibold text-foreground">Garantía de 14 días</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Probá la plataforma sin compromiso. Si no estás satisfecha, te devolvemos el dinero sin preguntas.
-                  </p>
-                </div>
+                <p className="text-sm text-gray-400 mt-2">
+                  o $99.990/año — ahorrás 2 meses
+                </p>
               </div>
-            </AnimateIn>
 
-            <AnimateIn direction="right" delay={100}>
-              <ContactForm />
-            </AnimateIn>
-          </div>
+              <ul className="space-y-3 mb-8">
+                {pricingFeatures.map(f => (
+                  <li key={f} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-violet-600" />
+                    </div>
+                    <span className="text-sm text-gray-600">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href="#contacto"
+                className="block w-full text-center bg-gray-900 text-white py-4 rounded-2xl font-semibold hover:bg-gray-700 hover:-translate-y-0.5 transition-all duration-200"
+              >
+                Empezar gratis 14 días
+              </a>
+              <p className="text-center text-xs text-gray-400 mt-3">
+                Sin tarjeta de crédito requerida
+              </p>
+            </div>
+          </AnimateIn>
         </div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-      <footer className="bg-espresso text-espresso-4 py-8 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* ── Contact ─────────────────────────────────────────── */}
+      <section id="contacto" className="py-24 px-6">
+        <div className="max-w-xl mx-auto">
+          <AnimateIn className="text-center mb-10">
+            <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
+              Contacto
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+              Empezá hoy
+            </h2>
+            <p className="text-gray-500">
+              Completá el formulario y te contactamos en menos de 24hs.
+            </p>
+          </AnimateIn>
+
+          <AnimateIn delay={100}>
+            <ContactForm />
+          </AnimateIn>
+        </div>
+      </section>
+
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <footer className="bg-gray-950 py-10 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-mauve-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-violet-600 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-serif text-lg font-semibold text-white">TurnosApp</span>
+            <span className="font-semibold text-white">TurnosApp</span>
           </div>
 
-          <div className="flex items-center gap-6 text-xs">
-            {['Términos de uso', 'Privacidad', 'Contacto'].map((item) => (
-              <a key={item} href="#" className="hover:text-white transition-colors">{item}</a>
+          <div className="flex items-center gap-6">
+            {navLinks.map(([label, href]) => (
+              <a
+                key={label}
+                href={href}
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                {label}
+              </a>
             ))}
           </div>
 
-          <p className="text-xs">© 2025 TurnosApp · Hecho con ♥ en Argentina</p>
+          <p className="text-sm text-gray-500">
+            &copy; 2025 TurnosApp &mdash; Hecho con amor en Argentina
+          </p>
         </div>
       </footer>
 
