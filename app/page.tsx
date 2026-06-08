@@ -25,18 +25,18 @@ function MockAdminUI() {
   return (
     <div className="relative w-full max-w-[480px] mx-auto select-none pointer-events-none">
       {/* Ambient glow — drifting */}
-      <div className="absolute -inset-8 bg-gradient-to-br from-violet-400/30 via-rose-300/20 to-transparent rounded-[3rem] blur-3xl animate-drift" />
+      <div className="absolute -inset-8 bg-gradient-to-br from-pink-400/25 via-rose-300/20 to-amber-200/10 rounded-[3rem] blur-3xl animate-drift" />
 
       {/* Browser frame */}
       <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-zinc-900/15 border border-white/70 bg-white">
         {/* URL bar */}
-        <div className="bg-zinc-900 px-4 py-2.5 flex items-center gap-3">
+        <div className="bg-stone-900 px-4 py-2.5 flex items-center gap-3">
           <div className="flex gap-1.5 shrink-0">
             <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
             <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
             <span className="w-3 h-3 rounded-full bg-[#28C840]" />
           </div>
-          <div className="flex-1 bg-zinc-800 rounded-full px-3 py-1 text-zinc-400 text-xs font-mono truncate">
+          <div className="flex-1 bg-stone-800 rounded-full px-3 py-1 text-stone-400 text-xs font-mono truncate">
             estetica-bella.turnosapp.com
           </div>
         </div>
@@ -44,16 +44,16 @@ function MockAdminUI() {
         {/* App shell */}
         <div className="flex" style={{ height: '300px' }}>
           {/* Sidebar */}
-          <div className="w-[52px] bg-zinc-950 flex flex-col items-center pt-4 gap-3 shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center mb-1">
+          <div className="w-[52px] bg-stone-950 flex flex-col items-center pt-4 gap-3 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-pink-600 flex items-center justify-center mb-1">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
             {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className={`w-8 h-8 rounded-xl flex items-center justify-center ${i === 0 ? 'bg-violet-900/60' : ''}`}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center ${i === 0 ? 'bg-pink-900/50' : ''}`}
               >
-                <div className="w-4 h-0.5 bg-zinc-700 rounded" />
+                <div className="w-4 h-0.5 bg-stone-700 rounded" />
               </div>
             ))}
           </div>
@@ -67,9 +67,9 @@ function MockAdminUI() {
             {/* Stat cards */}
             <div className="grid grid-cols-3 gap-2 mb-4">
               {[
-                { label: 'Turnos',   value: '12',   textColor: 'text-violet-600', bg: 'bg-violet-50' },
-                { label: 'Clientes', value: '8',    textColor: 'text-rose-600',   bg: 'bg-rose-50'   },
-                { label: 'Ingresos', value: '$52k', textColor: 'text-emerald-600',bg: 'bg-emerald-50' },
+                { label: 'Turnos',   value: '12',   textColor: 'text-pink-600',    bg: 'bg-pink-50'    },
+                { label: 'Clientes', value: '8',    textColor: 'text-rose-600',    bg: 'bg-rose-50'    },
+                { label: 'Ingresos', value: '$52k', textColor: 'text-amber-600',   bg: 'bg-amber-50'   },
               ].map((s) => (
                 <div key={s.label} className={`${s.bg} rounded-xl p-2.5`}>
                   <p className="text-[9px] text-zinc-500 mb-0.5">{s.label}</p>
@@ -84,10 +84,10 @@ function MockAdminUI() {
             </p>
             <div className="space-y-1.5">
               {[
-                { time: '10:00', name: 'Ana García',    service: 'Manicura', dot: 'bg-violet-400' },
-                { time: '11:30', name: 'Laura Pérez',   service: 'Lifting',  dot: 'bg-rose-400'   },
-                { time: '13:00', name: 'Sofía R.',      service: 'Cejas',    dot: 'bg-amber-400'  },
-                { time: '15:00', name: 'Valentina M.', service: 'Semi',     dot: 'bg-emerald-400'},
+                { time: '10:00', name: 'Ana García',    service: 'Manicura', dot: 'bg-pink-400'    },
+                { time: '11:30', name: 'Laura Pérez',   service: 'Lifting',  dot: 'bg-rose-400'    },
+                { time: '13:00', name: 'Sofía R.',      service: 'Cejas',    dot: 'bg-amber-400'   },
+                { time: '15:00', name: 'Valentina M.',  service: 'Semi',     dot: 'bg-emerald-400' },
               ].map((a) => (
                 <div key={a.time} className="flex items-center gap-2 bg-white rounded-lg px-2.5 py-1.5 shadow-sm">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${a.dot}`} />
@@ -117,12 +117,12 @@ function MockAdminUI() {
       </div>
 
       {/* Floating: growth card */}
-      <div className="absolute -left-3 bottom-8 bg-white rounded-xl shadow-lg border border-violet-100/80 p-3 w-36 animate-float-alt">
+      <div className="absolute -left-3 bottom-8 bg-white rounded-xl shadow-lg border border-amber-100/80 p-3 w-36 animate-float-alt">
         <p className="text-[10px] text-zinc-500 mb-0.5">Este mes</p>
         <p className="text-2xl font-bold text-zinc-900">+34%</p>
         <div className="flex items-center gap-1 mt-0.5">
-          <TrendingUp className="w-3 h-3 text-emerald-500" />
-          <p className="text-[10px] text-emerald-600">reservas online</p>
+          <TrendingUp className="w-3 h-3 text-amber-500" />
+          <p className="text-[10px] text-amber-600">reservas online</p>
         </div>
       </div>
     </div>
@@ -137,8 +137,8 @@ const benefits = [
     icon: Globe,
     title: 'Tu Marca, Tu Dominio',
     desc: 'Cada estética recibe su propia web independiente y personalizada para compartir con sus clientes.',
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-pink-50',
+    iconColor: 'text-pink-600',
   },
   {
     icon: Calendar,
@@ -245,7 +245,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border animate-hero">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-pink-600 flex items-center justify-center shadow-sm shadow-pink-200">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <span className="font-serif text-xl font-semibold tracking-wide">TurnosApp</span>
@@ -277,7 +277,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/registrar"
-              className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
+              className="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-pink-200"
             >
               Empezar gratis
             </Link>
@@ -288,23 +288,23 @@ export default function LandingPage() {
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
       <section id="inicio" className="relative pt-16 pb-28 px-4 sm:px-6 overflow-hidden">
         {/* Animated blobs */}
-        <div className="absolute top-0 right-0 w-[560px] h-[560px] bg-violet-100/60 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none animate-drift" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-rose-100/50 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl pointer-events-none animate-drift [animation-delay:4s]" />
+        <div className="absolute top-0 right-0 w-[560px] h-[560px] bg-pink-100/50 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none animate-drift" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-100/40 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl pointer-events-none animate-drift [animation-delay:4s]" />
 
         <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 lg:gap-10 items-center">
           {/* Copy */}
           <div className="text-center lg:text-left">
             {/* Badge */}
-            <div className="animate-hero [animation-delay:0ms] inline-flex items-center gap-2 bg-violet-50 text-violet-700 rounded-full px-4 py-1.5 text-xs font-medium mb-7 border border-violet-200">
+            <div className="animate-hero [animation-delay:0ms] inline-flex items-center gap-2 bg-pink-50 text-pink-700 rounded-full px-4 py-1.5 text-xs font-medium mb-7 border border-pink-200">
               <Zap className="w-3 h-3" />
               Plataforma SaaS para estéticas
             </div>
 
             <h1 className="animate-hero [animation-delay:80ms] font-serif text-5xl sm:text-6xl lg:text-[3.75rem] font-light leading-[1.1] text-foreground mb-6">
               Llevá tu estética al{' '}
-              <em className="not-italic font-semibold text-violet-600">siguiente nivel</em>{' '}
+              <em className="not-italic font-semibold text-pink-600">siguiente nivel</em>{' '}
               con tu propia plataforma de{' '}
-              <em className="italic font-light text-foreground/70">turnos</em>
+              <em className="italic font-light text-foreground/60">turnos</em>
             </h1>
 
             <p className="animate-hero [animation-delay:180ms] text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
@@ -314,7 +314,7 @@ export default function LandingPage() {
             <div className="animate-hero [animation-delay:280ms] flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
               <Link
                 href="/registrar"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-violet-200 hover:shadow-violet-300 hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-pink-600 hover:bg-pink-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-pink-200 hover:shadow-pink-300 hover:-translate-y-0.5 active:translate-y-0"
               >
                 Registrar mi estética gratis
                 <ArrowRight className="w-4 h-4" />
@@ -330,7 +330,7 @@ export default function LandingPage() {
             {/* Social proof */}
             <div className="animate-hero [animation-delay:380ms] mt-8 flex items-center gap-4 justify-center lg:justify-start">
               <div className="flex -space-x-2">
-                {['bg-violet-400', 'bg-rose-400', 'bg-amber-400', 'bg-emerald-400'].map((c, i) => (
+                {['bg-pink-400', 'bg-rose-400', 'bg-amber-400', 'bg-emerald-400'].map((c, i) => (
                   <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-white`} />
                 ))}
               </div>
@@ -351,12 +351,12 @@ export default function LandingPage() {
       <section id="beneficios" className="py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <AnimateIn className="text-center mb-16">
-            <p className="text-violet-600 font-medium text-sm uppercase tracking-widest mb-3">
+            <p className="text-pink-600 font-medium text-sm uppercase tracking-widest mb-3">
               Por qué elegirnos
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
               Todo lo que tu negocio{' '}
-              <em className="italic font-light text-violet-600">necesita</em>
+              <em className="italic font-light text-pink-600">necesita</em>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
               Herramientas diseñadas específicamente para el rubro de la belleza y el bienestar.
@@ -383,11 +383,11 @@ export default function LandingPage() {
       <section id="como-funciona" className="py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <AnimateIn className="text-center mb-16">
-            <p className="text-violet-600 font-medium text-sm uppercase tracking-widest mb-3">
+            <p className="text-pink-600 font-medium text-sm uppercase tracking-widest mb-3">
               Simple y rápido
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              Cómo <em className="italic font-light text-violet-600">funciona</em>
+              Cómo <em className="italic font-light text-pink-600">funciona</em>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
               En tres pasos tenés tu estética online y recibiendo reservas.
@@ -395,16 +395,16 @@ export default function LandingPage() {
           </AnimateIn>
 
           <div className="relative grid md:grid-cols-3 gap-10">
-            {/* Connector line */}
-            <div className="hidden md:block absolute top-10 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px bg-gradient-to-r from-violet-200 via-violet-400 to-violet-200" />
+            {/* Connector line — rose to amber (champagne accent) */}
+            <div className="hidden md:block absolute top-10 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px bg-gradient-to-r from-pink-200 via-amber-300 to-pink-200" />
 
             {steps.map(({ n, title, desc }, i) => (
               <AnimateIn key={n} delay={i * 140} direction="up" className="relative text-center flex flex-col items-center">
                 <div className="relative mb-6">
-                  <div className="w-20 h-20 rounded-full bg-violet-600 flex items-center justify-center text-white font-serif font-light text-3xl shadow-lg shadow-violet-200 relative z-10">
+                  <div className="w-20 h-20 rounded-full bg-pink-600 flex items-center justify-center text-white font-serif font-light text-3xl shadow-lg shadow-pink-200 relative z-10">
                     {n}
                   </div>
-                  <div className="absolute inset-0 rounded-full bg-violet-300/25 scale-[1.4] blur-sm" />
+                  <div className="absolute inset-0 rounded-full bg-pink-300/20 scale-[1.4] blur-sm" />
                 </div>
                 <h3 className="font-serif text-2xl font-semibold text-foreground mb-3">{title}</h3>
                 <p className="text-muted-foreground leading-relaxed text-sm">{desc}</p>
@@ -415,7 +415,7 @@ export default function LandingPage() {
           <AnimateIn className="text-center mt-14" delay={200}>
             <Link
               href="/registrar"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-violet-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-pink-600 hover:bg-pink-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-pink-200 hover:-translate-y-0.5"
             >
               Comenzar ahora — es gratis
               <ArrowRight className="w-4 h-4" />
@@ -428,12 +428,12 @@ export default function LandingPage() {
       <section id="precios" className="py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <AnimateIn className="text-center mb-16">
-            <p className="text-violet-600 font-medium text-sm uppercase tracking-widest mb-3">
+            <p className="text-pink-600 font-medium text-sm uppercase tracking-widest mb-3">
               Planes y precios
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
               Invertí en el{' '}
-              <em className="italic font-light text-violet-600">crecimiento</em>{' '}
+              <em className="italic font-light text-pink-600">crecimiento</em>{' '}
               de tu negocio
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
@@ -447,13 +447,13 @@ export default function LandingPage() {
                 <div
                   className={`relative rounded-2xl p-7 border transition-all h-full ${
                     plan.popular
-                      ? 'bg-zinc-900 border-zinc-700 shadow-2xl shadow-zinc-900/25 md:scale-105'
+                      ? 'bg-stone-900 border-stone-700 shadow-2xl shadow-stone-900/30 md:scale-105'
                       : 'bg-background border-border hover:shadow-md'
                   }`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1.5 bg-violet-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-md">
+                      <span className="inline-flex items-center gap-1.5 bg-pink-600 text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-md shadow-pink-900/30">
                         <Star className="w-3 h-3 fill-white" />
                         Más popular
                       </span>
@@ -461,7 +461,7 @@ export default function LandingPage() {
                   )}
 
                   <div className="mb-6">
-                    <p className={`text-xs font-medium uppercase tracking-widest mb-1 ${plan.popular ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                    <p className={`text-xs font-medium uppercase tracking-widest mb-1 ${plan.popular ? 'text-stone-400' : 'text-muted-foreground'}`}>
                       {plan.tagline}
                     </p>
                     <h3 className={`font-serif text-2xl font-semibold mb-3 ${plan.popular ? 'text-white' : 'text-foreground'}`}>
@@ -471,7 +471,7 @@ export default function LandingPage() {
                       <span className={`font-serif text-4xl font-light ${plan.popular ? 'text-white' : 'text-foreground'}`}>
                         {plan.price}
                       </span>
-                      <span className={`text-sm ${plan.popular ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                      <span className={`text-sm ${plan.popular ? 'text-stone-400' : 'text-muted-foreground'}`}>
                         /mes
                       </span>
                     </div>
@@ -480,8 +480,8 @@ export default function LandingPage() {
                   <ul className="space-y-3 mb-7">
                     {plan.features.map((feat) => (
                       <li key={feat} className="flex items-center gap-2.5">
-                        <Check className={`w-4 h-4 shrink-0 ${plan.popular ? 'text-violet-400' : 'text-violet-600'}`} />
-                        <span className={`text-sm ${plan.popular ? 'text-zinc-300' : 'text-muted-foreground'}`}>
+                        <Check className={`w-4 h-4 shrink-0 ${plan.popular ? 'text-pink-400' : 'text-pink-600'}`} />
+                        <span className={`text-sm ${plan.popular ? 'text-stone-300' : 'text-muted-foreground'}`}>
                           {feat}
                         </span>
                       </li>
@@ -492,7 +492,7 @@ export default function LandingPage() {
                     href={plan.href}
                     className={`block w-full text-center py-3 rounded-xl font-medium text-sm transition-all ${
                       plan.popular
-                        ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-md hover:-translate-y-0.5'
+                        ? 'bg-pink-600 hover:bg-pink-500 text-white shadow-md hover:-translate-y-0.5'
                         : 'bg-background hover:bg-zinc-50 text-foreground border border-border hover:-translate-y-0.5'
                     }`}
                   >
@@ -509,11 +509,11 @@ export default function LandingPage() {
       <section id="contacto" className="py-24 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <AnimateIn className="text-center mb-16">
-            <p className="text-violet-600 font-medium text-sm uppercase tracking-widest mb-3">
+            <p className="text-pink-600 font-medium text-sm uppercase tracking-widest mb-3">
               ¿Tenés preguntas?
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              <em className="italic font-light text-violet-600">Hablemos</em>
+              <em className="italic font-light text-pink-600">Hablemos</em>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
               Completá el formulario y te contactamos en menos de 24 horas.
@@ -526,13 +526,13 @@ export default function LandingPage() {
               <div className="space-y-8">
                 <div className="space-y-5">
                   {[
-                    { icon: Mail,    label: 'Email',     value: 'contacto@turnosapp.com' },
-                    { icon: Phone,   label: 'WhatsApp',  value: '+54 11 xxxx-xxxx'       },
-                    { icon: AtSign,  label: 'Instagram', value: '@turnosapp'             },
+                    { icon: Mail,   label: 'Email',     value: 'contacto@turnosapp.com' },
+                    { icon: Phone,  label: 'WhatsApp',  value: '+54 11 xxxx-xxxx'       },
+                    { icon: AtSign, label: 'Instagram', value: '@turnosapp'             },
                   ].map(({ icon: Icon, label, value }) => (
                     <div key={label} className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                        <Icon className="w-5 h-5 text-violet-600" />
+                      <div className="w-11 h-11 rounded-xl bg-pink-50 flex items-center justify-center shrink-0">
+                        <Icon className="w-5 h-5 text-pink-600" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">{label}</p>
@@ -544,7 +544,7 @@ export default function LandingPage() {
 
                 <div className="bg-white rounded-2xl p-6 border border-border">
                   <div className="flex items-center gap-2.5 mb-3">
-                    <Shield className="w-5 h-5 text-violet-600" />
+                    <Shield className="w-5 h-5 text-pink-600" />
                     <p className="font-serif text-lg font-semibold text-foreground">Garantía de 14 días</p>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -563,24 +563,21 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-      <footer className="bg-zinc-900 text-zinc-400 py-8 px-4 sm:px-6">
+      <footer className="bg-stone-900 text-stone-400 py-8 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-pink-600 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="font-serif text-lg font-semibold text-white">TurnosApp</span>
           </div>
 
-          {/* Links */}
           <div className="flex items-center gap-6 text-xs">
             {['Términos de uso', 'Privacidad', 'Contacto'].map((item) => (
               <a key={item} href="#" className="hover:text-white transition-colors">{item}</a>
             ))}
           </div>
 
-          {/* Copyright */}
           <p className="text-xs">© 2025 TurnosApp · Hecho con ♥ en Argentina</p>
         </div>
       </footer>
