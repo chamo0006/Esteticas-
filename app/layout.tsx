@@ -17,8 +17,8 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: 'Reserva tu Experiencia de Belleza',
-  description: 'Portal de reservas para servicios de belleza - Nail art, pestañas y cejas',
+  title: 'TurnosApp — Plataforma de turnos para estéticas',
+  description: 'La plataforma SaaS que permite a los centros de estética tener su propia web con reservas online y panel de administración.',
   generator: 'v0.app',
   icons: {
     icon: [
