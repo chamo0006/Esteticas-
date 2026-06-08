@@ -61,7 +61,7 @@ export function ContactForm() {
             onChange={(e) => set(field, e.target.value)}
             placeholder={placeholder}
             required={required}
-            className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-shadow"
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-mauve-500 transition-shadow"
           />
         </div>
       ))}
@@ -69,7 +69,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3.5 bg-pink-600 hover:bg-pink-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+        className="w-full py-3.5 bg-mauve-600 hover:bg-mauve-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
       >
         {loading ? (
           <>

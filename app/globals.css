@@ -154,6 +154,29 @@
   --color-success-foreground: var(--success-foreground);
   --color-rose-gold: var(--rose-gold);
   --color-burgundy: var(--burgundy);
+
+  /* ── Landing: Mauve & Gold palette ───────────────────── */
+  --color-mauve-50:   oklch(0.97 0.015 350);
+  --color-mauve-100:  oklch(0.93 0.030 350);
+  --color-mauve-200:  oklch(0.86 0.060 350);
+  --color-mauve-300:  oklch(0.76 0.100 350);
+  --color-mauve-400:  oklch(0.64 0.130 350);
+  --color-mauve-500:  oklch(0.55 0.140 350);
+  --color-mauve-600:  oklch(0.47 0.140 350);
+  --color-mauve-700:  oklch(0.39 0.130 350);
+  --color-mauve-800:  oklch(0.31 0.110 350);
+  --color-mauve-900:  oklch(0.22 0.080 350);
+  --color-gold-50:    oklch(0.97 0.020  55);
+  --color-gold-100:   oklch(0.94 0.040  55);
+  --color-gold-200:   oklch(0.87 0.080  55);
+  --color-gold-300:   oklch(0.79 0.110  55);
+  --color-gold-400:   oklch(0.73 0.120  55);
+  --color-gold-500:   oklch(0.68 0.120  55);
+  --color-gold-600:   oklch(0.60 0.110  55);
+  --color-espresso:   oklch(0.14 0.025  20);
+  --color-espresso-2: oklch(0.20 0.022  20);
+  --color-espresso-3: oklch(0.30 0.018  20);
+  --color-espresso-4: oklch(0.55 0.030  20);
 }
 
 @layer base {
