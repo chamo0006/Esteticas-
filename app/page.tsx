@@ -301,9 +301,8 @@ export default function LandingPage() {
 
             <h1 className="animate-hero [animation-delay:80ms] font-serif text-5xl sm:text-6xl lg:text-[3.75rem] font-light leading-[1.1] text-foreground mb-6">
               Llevá tu estética al{' '}
-              <em className="not-italic font-semibold text-mauve-600">siguiente nivel</em>{' '}
-              con tu propia plataforma de{' '}
-              <em className="italic font-light text-foreground/60">turnos</em>
+              <span className="font-semibold text-mauve-600">siguiente nivel</span>{' '}
+              con tu propia plataforma de turnos
             </h1>
 
             <p className="animate-hero [animation-delay:180ms] text-lg text-muted-foreground leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
@@ -354,7 +353,7 @@ export default function LandingPage() {
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
               Todo lo que tu negocio{' '}
-              <em className="italic font-light text-mauve-600">necesita</em>
+              <span className="font-semibold text-mauve-600">necesita</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
               Herramientas diseñadas específicamente para el rubro de la belleza y el bienestar.
@@ -385,7 +384,7 @@ export default function LandingPage() {
               Simple y rápido
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              Cómo <em className="italic font-light text-mauve-600">funciona</em>
+              Cómo <span className="font-semibold text-mauve-600">funciona</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
               En tres pasos tenés tu estética online y recibiendo reservas.
@@ -431,7 +430,7 @@ export default function LandingPage() {
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
               Invertí en el{' '}
-              <em className="italic font-light text-mauve-600">crecimiento</em>{' '}
+              <span className="font-semibold text-mauve-600">crecimiento</span>{' '}
               de tu negocio
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
@@ -511,7 +510,7 @@ export default function LandingPage() {
               ¿Tenés preguntas?
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl font-light text-foreground mb-4">
-              <em className="italic font-light text-mauve-600">Hablemos</em>
+              <span className="font-semibold text-mauve-600">Hablemos</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
               Completá el formulario y te contactamos en menos de 24 horas.
