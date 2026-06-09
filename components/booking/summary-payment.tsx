@@ -73,7 +73,7 @@ export function SummaryPayment({
   tenantSlug, tenantConfig, profesionalId,
 }: SummaryPaymentProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mercadopago");
-  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", confirmEmail: "", phone: "" });
+  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", phone: "" });
   const [bookingStatus, setBookingStatus] = useState<BookingStatus>("idle");
   const [bookingResult, setBookingResult] = useState<BookingConfirmation | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -86,8 +86,7 @@ export function SummaryPayment({
   const handleInput = (field: string, value: string) => setFormData(p => ({ ...p, [field]: value }));
   const isFormValid = () =>
     formData.nombre.trim() !== "" && formData.apellido.trim() !== "" &&
-    formData.email.trim() !== "" && formData.email === formData.confirmEmail &&
-    formData.phone.trim() !== "";
+    formData.email.trim() !== "" && formData.phone.trim() !== "";
 
   const handleConfirmar = async () => {
     if (!tenantSlug || !selectedDate || !selectedTime) return;
@@ -275,7 +274,6 @@ export function SummaryPayment({
               <PremiumInput label="Apellido" id="apellido" value={formData.apellido} onChange={v => handleInput("apellido", v)} placeholder="García" />
             </div>
             <PremiumInput label="Email" id="email" type="email" value={formData.email} onChange={v => handleInput("email", v)} placeholder="ana@email.com" />
-            <PremiumInput label="Confirmar email" id="confirmEmail" type="email" value={formData.confirmEmail} onChange={v => handleInput("confirmEmail", v)} placeholder="ana@email.com" />
             <div>
               <label className="block text-xs font-sans mb-1.5" style={{ color: "#8C7B75" }}>Teléfono</label>
               <div className="flex gap-2">

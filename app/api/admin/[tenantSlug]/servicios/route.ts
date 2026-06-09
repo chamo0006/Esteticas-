@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { revalidatePath } from 'next/cache';
 
 async function getAdminPayload(tenantSlug: string) {
   const cookieStore = await cookies();
@@ -68,6 +69,7 @@ export async function POST(
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
+  revalidatePath(`/${tenantSlug}`);
   return NextResponse.json({ id: data.id });
 }
 
@@ -103,6 +105,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
+  revalidatePath(`/${tenantSlug}`);
   return NextResponse.json({ ok: true });
 }
 
@@ -138,8 +141,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Error interno' }, { status: 500 });
     }
 
+    revalidatePath(`/${tenantSlug}`);
     return NextResponse.json({ ok: true, desactivado: true });
   }
 
+  revalidatePath(`/${tenantSlug}`);
   return NextResponse.json({ ok: true });
 }

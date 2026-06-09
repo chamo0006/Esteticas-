@@ -7,6 +7,27 @@ import { cn } from '@/lib/utils';
 
 const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
+// Opciones de horario de 06:00 a 23:30 cada 30 min
+const TIME_OPTIONS: string[] = [];
+for (let h = 6; h <= 23; h++) {
+  TIME_OPTIONS.push(`${String(h).padStart(2,'0')}:00`);
+  if (h < 23) TIME_OPTIONS.push(`${String(h).padStart(2,'0')}:30`);
+}
+
+function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="px-3 py-1.5 border border-zinc-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 text-zinc-800 cursor-pointer"
+    >
+      {TIME_OPTIONS.map(t => (
+        <option key={t} value={t}>{t}</option>
+      ))}
+    </select>
+  );
+}
+
 interface Horario { dia_semana: number; hora_apertura: string; hora_cierre: string; activo: boolean }
 interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
 interface Profesional { id: string; nombre: string; activo: boolean }
@@ -352,18 +373,14 @@ export default function ConfiguracionPage() {
                     {/* Horario o Cerrado */}
                     {h.activo ? (
                       <div className="flex items-center gap-2 ml-auto">
-                        <input
-                          type="time"
+                        <TimeSelect
                           value={h.hora_apertura}
-                          onChange={(e) => { const n=[...horarios]; n[i]={...n[i],hora_apertura:e.target.value}; setHorarios(n); }}
-                          className="w-28 px-3 py-1.5 border border-zinc-200 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-violet-400 tabular-nums"
+                          onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_apertura:v}; setHorarios(n); }}
                         />
-                        <span className="text-zinc-300 text-sm font-light flex-shrink-0">—</span>
-                        <input
-                          type="time"
+                        <span className="text-zinc-300 text-sm flex-shrink-0">—</span>
+                        <TimeSelect
                           value={h.hora_cierre}
-                          onChange={(e) => { const n=[...horarios]; n[i]={...n[i],hora_cierre:e.target.value}; setHorarios(n); }}
-                          className="w-28 px-3 py-1.5 border border-zinc-200 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-violet-400 tabular-nums"
+                          onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_cierre:v}; setHorarios(n); }}
                         />
                       </div>
                     ) : (

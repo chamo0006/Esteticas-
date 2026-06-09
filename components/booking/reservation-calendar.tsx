@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect } from "react";
 interface Profesional {
   id: string;
   nombre: string;
+  disponible?: boolean;
 }
 
 interface ReservationCalendarProps {
@@ -59,8 +60,9 @@ export function ReservationCalendar({
   const [slots, setSlots] = useState<TimeSlot[]>(DEMO_SLOTS);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [profesionales, setProfesionales] = useState<Profesional[]>([]);
+  const [profLoading, setProfLoading] = useState(false);
 
-  // Cargar profesionales si hay tenantSlug
+  // Cargar lista de profesionales (sin disponibilidad) al montar
   useEffect(() => {
     if (!tenantSlug) return;
     fetch(`/api/${tenantSlug}/profesionales`)
@@ -68,6 +70,22 @@ export function ReservationCalendar({
       .then(data => { if (Array.isArray(data)) setProfesionales(data); })
       .catch(() => {});
   }, [tenantSlug]);
+
+  // Cuando cambia fecha+hora, recargar disponibilidad por profesional
+  useEffect(() => {
+    if (!tenantSlug || !selectedDate || !selectedTime || profesionales.length === 0) return;
+    const year  = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const day   = String(selectedDate.getDate()).padStart(2, "0");
+    const fecha = `${year}-${month}-${day}`;
+    setProfLoading(true);
+    fetch(`/api/${tenantSlug}/profesionales?fecha=${fecha}&hora=${selectedTime}&duracion=${totalDuracion}`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setProfesionales(data); })
+      .catch(() => {})
+      .finally(() => setProfLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantSlug, selectedDate, selectedTime, totalDuracion]);
 
   // Carga disponibilidad real cuando hay tenantSlug y se elige una fecha
   useEffect(() => {
@@ -348,11 +366,13 @@ export function ReservationCalendar({
               ¿Con quién querés atenderte?
             </h3>
             <p className="text-xs font-sans mb-4" style={{ color: "#8C7B75" }}>
-              Si no elegís, te asignamos una profesional disponible automáticamente
+              {selectedTime
+                ? "Verde = disponible en ese horario · Gris = ocupada"
+                : "Elegí un horario primero para ver disponibilidad"}
             </p>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {/* Opción "sin preferencia" */}
+              {/* Opción "sin preferencia" — siempre disponible */}
               <button
                 onClick={() => onSelectProfesional(null)}
                 className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
@@ -368,10 +388,7 @@ export function ReservationCalendar({
                 >
                   ✨
                 </div>
-                <span
-                  className="text-xs font-medium text-center leading-tight"
-                  style={{ color: selectedProfesional === null ? "#2C2C2C" : "#8C7B75" }}
-                >
+                <span className="text-xs font-medium text-center leading-tight" style={{ color: selectedProfesional === null ? "#2C2C2C" : "#8C7B75" }}>
                   Sin preferencia
                 </span>
               </button>
@@ -379,32 +396,50 @@ export function ReservationCalendar({
               {profesionales.map((p) => {
                 const initials = p.nombre.split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0].toUpperCase()).join('');
                 const isSelected = selectedProfesional === p.id;
+                // disponible es undefined cuando aún no se eligió horario → mostrar normal
+                const libre = p.disponible !== false;
+                const isBusy = selectedTime && p.disponible === false;
+
                 return (
                   <button
                     key={p.id}
-                    onClick={() => onSelectProfesional(p.id)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
+                    onClick={() => !isBusy && onSelectProfesional(p.id)}
+                    disabled={!!isBusy || profLoading}
+                    className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200 relative"
                     style={
                       isSelected
                         ? { backgroundColor: "#E8B4BC", border: "2px solid #D4919B" }
+                        : isBusy
+                        ? { backgroundColor: "#F5F5F5", border: "1.5px solid #E0E0E0", opacity: 0.6, cursor: "not-allowed" }
                         : { backgroundColor: "#FCF8F5", border: "1.5px solid #F0E4E6" }
                     }
                   >
+                    {/* Indicador libre/ocupado */}
+                    {selectedTime && !profLoading && (
+                      <div
+                        className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: libre ? "#4CAF50" : "#9E9E9E" }}
+                      />
+                    )}
+
                     <div
                       className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
                       style={{
-                        backgroundColor: isSelected ? "#FFFFFF60" : "#E8B4BC",
-                        color: "#2C2C2C",
+                        backgroundColor: isSelected ? "#FFFFFF60" : isBusy ? "#E0E0E0" : "#E8B4BC",
+                        color: isBusy ? "#9E9E9E" : "#2C2C2C",
                       }}
                     >
                       {initials}
                     </div>
                     <span
                       className="text-xs font-medium text-center leading-tight"
-                      style={{ color: isSelected ? "#2C2C2C" : "#5C4A4E" }}
+                      style={{ color: isSelected ? "#2C2C2C" : isBusy ? "#9E9E9E" : "#5C4A4E" }}
                     >
                       {p.nombre}
                     </span>
+                    {isBusy && (
+                      <span className="text-[10px]" style={{ color: "#9E9E9E" }}>Ocupada</span>
+                    )}
                   </button>
                 );
               })}
