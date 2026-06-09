@@ -110,29 +110,54 @@ export async function POST(
   let currentTime = new Date(fechaHora);
 
   for (const servicio of servicios) {
-    // Determine profesional_id: find the first free profesional at currentTime
     let profesionalId: string | null = null;
 
     if (profesionales.length > 0) {
-      const slotStart = currentTime.toISOString();
-      const slotEnd   = new Date(currentTime.getTime() + servicio.duracion_minutos * 60_000).toISOString();
+      const slotStartMs = currentTime.getTime();
+      const slotEndMs   = slotStartMs + servicio.duracion_minutos * 60_000;
+
+      // Look back up to 4 hours to catch turnos that started before this slot but overlap
+      const lookbackISO = new Date(slotStartMs - 4 * 60 * 60_000).toISOString();
+      const slotEndISO  = new Date(slotEndMs).toISOString();
 
       const { data: ocupadosData } = await supabase
         .from('turnos')
-        .select('profesional_id')
+        .select('profesional_id, fecha_hora, servicios(duracion_minutos)')
         .eq('tenant_id', tenant.id)
         .not('profesional_id', 'is', null)
         .neq('estado', 'cancelado')
-        .lt('fecha_hora', slotEnd)
-        .gte('fecha_hora', slotStart);
+        .lt('fecha_hora', slotEndISO)
+        .gte('fecha_hora', lookbackISO);
 
-      const ocupadosIds = new Set((ocupadosData ?? []).map((t: { profesional_id: string | null }) => t.profesional_id));
-      // Si el cliente eligió un profesional específico, usar ese; si no, auto-asignar
+      // Filter in JS for actual overlap (catches turnos that started before our slot)
+      const ocupadosIds = new Set(
+        (ocupadosData ?? [])
+          .filter((t: { profesional_id: string | null; fecha_hora: string; servicios: { duracion_minutos?: number } | null }) => {
+            const tStartMs = new Date(t.fecha_hora).getTime();
+            const tEndMs   = tStartMs + (t.servicios?.duracion_minutos ?? servicio.duracion_minutos) * 60_000;
+            return tStartMs < slotEndMs && tEndMs > slotStartMs;
+          })
+          .map((t: { profesional_id: string | null }) => t.profesional_id)
+      );
+
       if (profesionalIdReq && profesionales.some((p: { id: string }) => p.id === profesionalIdReq)) {
+        // Client requested a specific professional — reject if they're busy
+        if (ocupadosIds.has(profesionalIdReq)) {
+          return NextResponse.json(
+            { error: 'La profesional elegida ya tiene turno en ese horario' },
+            { status: 409 }
+          );
+        }
         profesionalId = profesionalIdReq;
       } else {
         const libre = profesionales.find((p: { id: string }) => !ocupadosIds.has(p.id));
-        profesionalId = libre?.id ?? null;
+        if (!libre) {
+          return NextResponse.json(
+            { error: 'No hay profesionales disponibles en ese horario' },
+            { status: 409 }
+          );
+        }
+        profesionalId = libre.id;
       }
     }
 

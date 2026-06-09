@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Scissors, Users } from 'lucide-react';
+import { LayoutDashboard, Calendar, Scissors, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileNavProps {
@@ -17,7 +17,7 @@ export function MobileNav({ tenantSlug }: MobileNavProps) {
     { href: base,                label: 'Inicio',    icon: LayoutDashboard },
     { href: `${base}/turnos`,    label: 'Turnos',    icon: Calendar        },
     { href: `${base}/servicios`, label: 'Servicios', icon: Scissors        },
-    { href: `${base}/clientes`,  label: 'Clientes',  icon: Users           },
+    { href: `${base}/leads`,     label: 'Leads',     icon: Inbox           },
   ];
 
   return (

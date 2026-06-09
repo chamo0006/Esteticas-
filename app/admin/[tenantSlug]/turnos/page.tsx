@@ -258,12 +258,22 @@ function DailyCalendar({
   const nowTopPx = ((nowMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT;
   const showNowLine = isToday && nowMinutes >= HORA_INICIO * 60 && nowMinutes <= HORA_FIN * 60;
 
-  const cardStyle = (t: Turno): React.CSSProperties => {
+  const getTurnoTop = (t: Turno): number => {
     const d = new Date(t.fecha_hora);
     const startMinutes = d.getHours() * 60 + d.getMinutes();
-    const top = ((startMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT + 2;
-    const height = Math.max((t.duracion_minutos / 30) * SLOT_HEIGHT - 4, 64);
-    return { position: 'absolute', top, height, left: 3, right: 3 };
+    return ((startMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT + 2;
+  };
+
+  const cardStyle = (t: Turno, nextTurno?: Turno): React.CSSProperties => {
+    const top = getTurnoTop(t);
+    const naturalHeight = (t.duracion_minutos / 30) * SLOT_HEIGHT - 4;
+    let height = Math.max(naturalHeight, 28);
+    if (nextTurno) {
+      // Clip to available space before the next card so they don't overlap
+      const maxHeight = getTurnoTop(nextTurno) - top - 4;
+      height = Math.min(height, maxHeight);
+    }
+    return { position: 'absolute', top, height: Math.max(height, 20), left: 3, right: 3 };
   };
 
   return (
@@ -309,32 +319,43 @@ function DailyCalendar({
           </div>
 
           {/* Columnas por empleada */}
-          {columns.map((col) => (
-            <div key={col.id ?? 'unassigned'} className="flex-1 min-w-0 relative border-r border-zinc-100 last:border-r-0">
+          {columns.map((col) => {
+            const sorted = [...col.turnos].sort(
+              (a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()
+            );
+            return (
+              <div key={col.id ?? 'unassigned'} className="flex-1 min-w-0 relative border-r border-zinc-100 last:border-r-0 overflow-hidden">
 
-              {/* Grid lines */}
-              {TIME_SLOTS.map((label, i) => (
-                <div
-                  key={label}
-                  className={cn('absolute left-0 right-0', label.endsWith(':00') ? 'border-t border-zinc-200' : 'border-t border-zinc-100 border-dashed')}
-                  style={{ top: i * SLOT_HEIGHT }}
-                />
-              ))}
+                {/* Grid lines */}
+                {TIME_SLOTS.map((label, i) => (
+                  <div
+                    key={label}
+                    className={cn('absolute left-0 right-0', label.endsWith(':00') ? 'border-t border-zinc-200' : 'border-t border-zinc-100 border-dashed')}
+                    style={{ top: i * SLOT_HEIGHT }}
+                  />
+                ))}
 
-              {/* Línea hora actual */}
-              {showNowLine && (
-                <div className="absolute left-0 right-0 z-10 flex items-center pointer-events-none" style={{ top: nowTopPx }}>
-                  <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
-                  <div className="flex-1 border-t-2 border-red-400" />
-                </div>
-              )}
+                {/* Línea hora actual */}
+                {showNowLine && (
+                  <div className="absolute left-0 right-0 z-10 flex items-center pointer-events-none" style={{ top: nowTopPx }}>
+                    <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 flex-shrink-0" />
+                    <div className="flex-1 border-t-2 border-red-400" />
+                  </div>
+                )}
 
-              {/* Turnos */}
-              {col.turnos.map((t) => (
-                <TurnoCard key={t.id} turno={t} color={col.color} style={cardStyle(t)} onOpen={() => onOpenModal(t)} />
-              ))}
-            </div>
-          ))}
+                {/* Turnos — sorted so we can clip each card to the next one's start */}
+                {sorted.map((t, idx) => (
+                  <TurnoCard
+                    key={t.id}
+                    turno={t}
+                    color={col.color}
+                    style={cardStyle(t, sorted[idx + 1])}
+                    onOpen={() => onOpenModal(t)}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

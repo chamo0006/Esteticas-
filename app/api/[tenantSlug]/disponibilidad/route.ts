@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getTenantBySlug } from '@/lib/tenant';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
+// Argentina is UTC-3 (no DST)
+const AR_OFFSET_MS = -3 * 60 * 60 * 1000;
+
 // GET /api/[tenantSlug]/disponibilidad?fecha=2026-06-10&duracion=60
 export async function GET(
   req: Request,
@@ -20,11 +25,13 @@ export async function GET(
     const [year, month, day] = fecha.split('-').map(Number);
     const diaSemana = new Date(year, month - 1, day).getDay();
 
-    // 1. Obtener tenant
     const tenant = await getTenantBySlug(tenantSlug);
     if (!tenant) return NextResponse.json({ error: 'Estética no encontrada' }, { status: 404 });
 
-    // 2. Horario del día, turnos del día y profesionales activos — en paralelo
+    // Argentine day boundaries as UTC ISO strings
+    const dayStartISO = new Date(`${fecha}T00:00:00-03:00`).toISOString();
+    const dayEndISO   = new Date(`${fecha}T23:59:59-03:00`).toISOString();
+
     const [horarioRes, turnosRes, profesionalesRes] = await Promise.all([
       supabase
         .from('horarios_tenant')
@@ -37,8 +44,8 @@ export async function GET(
         .select('fecha_hora, profesional_id, servicios(duracion_minutos)')
         .eq('tenant_id', tenant.id)
         .neq('estado', 'cancelado')
-        .gte('fecha_hora', `${fecha}T00:00:00`)
-        .lte('fecha_hora', `${fecha}T23:59:59`),
+        .gte('fecha_hora', dayStartISO)
+        .lte('fecha_hora', dayEndISO),
       supabase
         .from('profesionales')
         .select('id', { count: 'exact', head: true })
@@ -56,54 +63,53 @@ export async function GET(
 
     const turnosDelDia = turnosRes.data ?? [];
     const totalProfesionales = profesionalesRes.count ?? 0;
-    const ahora = new Date();
+
+    // Compute "today" in Argentine timezone to correctly filter past slots
+    const ahoraMs = Date.now();
+    const ahoraLocal = new Date(ahoraMs + AR_OFFSET_MS); // shift to Argentine time
     const esHoy =
-      ahora.getFullYear() === year &&
-      ahora.getMonth() + 1 === month &&
-      ahora.getDate() === day;
+      ahoraLocal.getUTCFullYear() === year &&
+      ahoraLocal.getUTCMonth() + 1 === month &&
+      ahoraLocal.getUTCDate() === day;
 
     const slots = [];
 
     for (let minutos = aperturaTotal; minutos + duracion <= cierreTotal; minutos += 30) {
       const slotH = Math.floor(minutos / 60);
       const slotM = minutos % 60;
+      const hh = slotH.toString().padStart(2, '0');
+      const mm = slotM.toString().padStart(2, '0');
 
-      // Filtrar horarios pasados si es hoy
-      if (esHoy) {
-        const slotFecha = new Date(year, month - 1, day, slotH, slotM);
-        if (slotFecha <= ahora) continue;
-      }
+      // Convert Argentine local slot time to UTC epoch ms for comparison
+      const slotStartMs = new Date(`${fecha}T${hh}:${mm}:00-03:00`).getTime();
+      const slotEndMs   = slotStartMs + duracion * 60_000;
 
-      const slotStart = minutos;
-      const slotEnd   = minutos + duracion;
+      // Skip slots that are already past (compare UTC epochs, timezone-agnostic)
+      if (esHoy && slotStartMs <= ahoraMs) continue;
 
       let ocupado: boolean;
 
       if (totalProfesionales === 0) {
-        // Backward compat: sin profesionales → cualquier turno solapado bloquea el slot
+        // No professional management: any overlap blocks the slot
         ocupado = turnosDelDia.some((t: Record<string, unknown>) => {
-          const tFecha = new Date(t.fecha_hora as string);
-          const tStart = tFecha.getHours() * 60 + tFecha.getMinutes();
-          const svc    = t.servicios as { duracion_minutos?: number } | null;
-          const tEnd   = tStart + (svc?.duracion_minutos ?? duracion);
-          return tStart < slotEnd && tEnd > slotStart;
+          const tStartMs = new Date(t.fecha_hora as string).getTime();
+          const svc      = t.servicios as { duracion_minutos?: number } | null;
+          const tEndMs   = tStartMs + (svc?.duracion_minutos ?? duracion) * 60_000;
+          return tStartMs < slotEndMs && tEndMs > slotStartMs;
         });
       } else {
-        // Con profesionales: el slot está ocupado solo si todos están reservados
-        const turnosSolapados = turnosDelDia.filter((t: Record<string, unknown>) => {
-          const tFecha = new Date(t.fecha_hora as string);
-          const tStart = tFecha.getHours() * 60 + tFecha.getMinutes();
-          const svc    = t.servicios as { duracion_minutos?: number } | null;
-          const tEnd   = tStart + (svc?.duracion_minutos ?? duracion);
-          return tStart < slotEnd && tEnd > slotStart;
+        // With professionals: slot is full only when all are booked
+        const solapados = turnosDelDia.filter((t: Record<string, unknown>) => {
+          const tStartMs = new Date(t.fecha_hora as string).getTime();
+          const svc      = t.servicios as { duracion_minutos?: number } | null;
+          const tEndMs   = tStartMs + (svc?.duracion_minutos ?? duracion) * 60_000;
+          return tStartMs < slotEndMs && tEndMs > slotStartMs;
         });
-        ocupado = turnosSolapados.length >= totalProfesionales;
+        ocupado = solapados.length >= totalProfesionales;
       }
 
-      const hh     = slotH.toString().padStart(2, '0');
-      const mm     = slotM.toString().padStart(2, '0');
-      const hora12 = slotH % 12 || 12;
-      const ampm   = slotH < 12 ? 'AM' : 'PM';
+      const hora12    = slotH % 12 || 12;
+      const ampm      = slotH < 12 ? 'AM' : 'PM';
       const timeLabel = slotM === 0 ? `${hora12}:00 ${ampm}` : `${hora12}:${mm} ${ampm}`;
 
       slots.push({ time: timeLabel, timeValue: `${hh}:${mm}`, available: !ocupado });

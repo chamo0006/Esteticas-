@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getTenantBySlug } from '@/lib/tenant';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/[tenantSlug]/profesionales
 // Opcional: ?fecha=YYYY-MM-DD&hora=HH:MM&duracion=60
 // Con los params opcionales devuelve { id, nombre, disponible: boolean }
@@ -22,7 +24,6 @@ export async function GET(
 
   const profesionales = data ?? [];
 
-  // Si se pasan fecha+hora+duracion, calcular disponibilidad individual
   const url = new URL(req.url);
   const fecha    = url.searchParams.get('fecha');
   const hora     = url.searchParams.get('hora');
@@ -32,30 +33,33 @@ export async function GET(
     return NextResponse.json(profesionales);
   }
 
-  const [hh, mm] = hora.split(':').map(Number);
-  const slotStart = hh * 60 + mm;
-  const slotEnd   = slotStart + duracion;
+  // Convert Argentine local slot time to UTC epoch ms for comparison
+  const slotStartMs = new Date(`${fecha}T${hora}:00-03:00`).getTime();
+  const slotEndMs   = slotStartMs + duracion * 60_000;
 
-  // Traer turnos del día que no estén cancelados
+  // Argentine day boundaries as UTC ISO strings
+  const dayStartISO = new Date(`${fecha}T00:00:00-03:00`).toISOString();
+  const dayEndISO   = new Date(`${fecha}T23:59:59-03:00`).toISOString();
+
+  // Fetch all non-cancelled turnos for the Argentine day
   const { data: turnos } = await supabase
     .from('turnos')
     .select('profesional_id, fecha_hora, servicios(duracion_minutos)')
     .eq('tenant_id', tenant.id)
     .neq('estado', 'cancelado')
-    .gte('fecha_hora', `${fecha}T00:00:00`)
-    .lte('fecha_hora', `${fecha}T23:59:59`);
+    .gte('fecha_hora', dayStartISO)
+    .lte('fecha_hora', dayEndISO);
 
   const turnosDelDia = turnos ?? [];
 
-  // Determinar qué profesionales tienen turno solapado con el slot
+  // Determine which professionals have a turno overlapping the requested slot
   const ocupadosIds = new Set(
     turnosDelDia
       .filter((t: Record<string, unknown>) => {
-        const d = new Date(t.fecha_hora as string);
-        const tStart = d.getHours() * 60 + d.getMinutes();
-        const svc = t.servicios as { duracion_minutos?: number } | null;
-        const tEnd = tStart + (svc?.duracion_minutos ?? 60);
-        return tStart < slotEnd && tEnd > slotStart;
+        const tStartMs = new Date(t.fecha_hora as string).getTime();
+        const svc      = t.servicios as { duracion_minutos?: number } | null;
+        const tEndMs   = tStartMs + (svc?.duracion_minutos ?? 60) * 60_000;
+        return tStartMs < slotEndMs && tEndMs > slotStartMs;
       })
       .map((t: Record<string, unknown>) => t.profesional_id)
   );
