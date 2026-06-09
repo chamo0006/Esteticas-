@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase';
 import { BookingClient } from './booking-client';
 import type { Service } from '@/lib/booking-types';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ tenantSlug: string }>;
 }

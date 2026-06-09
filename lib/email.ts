@@ -144,6 +144,39 @@ export async function enviarRecordatorio(to: string, data: {
   });
 }
 
+// Email de CONTACTO desde la landing — lead nuevo
+export async function enviarContacto(data: {
+  nombre: string;
+  email: string;
+  telefono: string;
+  estetica: string;
+}) {
+  const html = baseTemplate(`
+    <div class="header">
+      <h1>Nuevo lead 🌸</h1>
+      <p>Alguien completó el formulario de contacto</p>
+    </div>
+    <div class="body">
+      <div class="card">
+        <div class="row"><span class="label">Nombre</span><span class="value">${data.nombre}</span></div>
+        <div class="row"><span class="label">Email</span><span class="value">${data.email}</span></div>
+        <div class="row"><span class="label">Teléfono</span><span class="value">${data.telefono || '—'}</span></div>
+        <div class="row"><span class="label">Estética</span><span class="value">${data.estetica || '—'}</span></div>
+      </div>
+    </div>
+    <div class="footer">TurnosApp — Panel de contactos</div>
+  `);
+
+  const to = process.env.CONTACT_EMAIL ?? process.env.EMAIL_FROM ?? 'admin@tudominio.com';
+
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: `🌸 Nuevo lead: ${data.nombre} (${data.estetica || 'sin estética'})`,
+    html,
+  });
+}
+
 // Email de BIENVENIDA al registrar una nueva estética
 export async function enviarBienvenida(to: string, data: {
   adminNombre: string;

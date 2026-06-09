@@ -393,6 +393,7 @@ export default function TurnosPage() {
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [profesionales, setProfesionales] = useState<Profesional[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
   const [vista, setVista] = useState<Vista>('calendario');
 
@@ -410,11 +411,18 @@ export default function TurnosPage() {
 
   const fetchDayTurnos = useCallback(async () => {
     setLoading(true);
+    setFetchError(false);
     try {
       const fecha = toDateStr(selectedDate);
       const res = await fetch(`/api/admin/${tenantSlug}/turnos?fecha=${fecha}`);
       const data = await res.json();
-      if (Array.isArray(data)) setTurnos(data);
+      if (Array.isArray(data)) {
+        setTurnos(data);
+      } else {
+        setFetchError(true);
+      }
+    } catch {
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -422,6 +430,13 @@ export default function TurnosPage() {
 
   useEffect(() => { fetchProfesionales(); }, [fetchProfesionales]);
   useEffect(() => { fetchDayTurnos(); }, [fetchDayTurnos]);
+
+  // Recargar cuando el admin vuelve a la pestaña (por si llegó un turno nuevo)
+  useEffect(() => {
+    const handleVisibility = () => { if (!document.hidden) fetchDayTurnos(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [fetchDayTurnos]);
 
   const refetch = () => fetchDayTurnos();
 
@@ -606,6 +621,11 @@ export default function TurnosPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20 text-zinc-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
+        </div>
+      ) : fetchError ? (
+        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
+          <p className="text-zinc-400 font-medium mb-3">No se pudieron cargar los turnos</p>
+          <button onClick={refetch} className="text-sm text-violet-600 hover:underline">Reintentar</button>
         </div>
       ) : vista === 'calendario' ? (
         <DailyCalendar

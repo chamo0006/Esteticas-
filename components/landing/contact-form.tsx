@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, AlertCircle } from 'lucide-react';
 
 type FormState = {
   nombre: string;
@@ -14,6 +14,7 @@ export function ContactForm() {
   const [form, setForm] = useState<FormState>({ nombre: '', email: '', telefono: '', estetica: '' });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const set = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -21,9 +22,23 @@ export function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setSent(true);
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch('/api/contacto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? 'Error al enviar');
+      }
+      setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al enviar el mensaje. Intentá de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (sent) {
@@ -65,6 +80,13 @@ export function ContactForm() {
           />
         </div>
       ))}
+
+      {error && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-600">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {error}
+        </div>
+      )}
 
       <button
         type="submit"

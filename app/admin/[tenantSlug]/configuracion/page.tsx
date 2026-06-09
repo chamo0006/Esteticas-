@@ -331,7 +331,8 @@ export default function ConfiguracionPage() {
               {/* Días de la semana */}
               <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
                 {horarios.map((h, i) => (
-                  <div key={h.dia_semana} className={cn('px-5 py-4 flex items-center gap-4', i < horarios.length - 1 && 'border-b border-zinc-50')}>
+                  <div key={h.dia_semana} className={cn('px-5 py-3.5 flex items-center gap-3', i < horarios.length - 1 && 'border-b border-zinc-50')}>
+                    {/* Toggle */}
                     <button
                       onClick={() => {
                         const next = [...horarios];
@@ -342,23 +343,33 @@ export default function ConfiguracionPage() {
                     >
                       <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', h.activo ? 'translate-x-4' : 'translate-x-0.5')} />
                     </button>
+
+                    {/* Día */}
                     <span className={cn('text-sm font-medium w-24 flex-shrink-0', h.activo ? 'text-zinc-900' : 'text-zinc-400')}>
                       {DIAS[h.dia_semana]}
                     </span>
+
+                    {/* Horario o Cerrado */}
                     {h.activo ? (
-                      <div className="flex items-center gap-2 flex-1">
-                        <input type="time" value={h.hora_apertura}
+                      <div className="flex items-center gap-2 ml-auto">
+                        <input
+                          type="time"
+                          value={h.hora_apertura}
                           onChange={(e) => { const n=[...horarios]; n[i]={...n[i],hora_apertura:e.target.value}; setHorarios(n); }}
-                          className="flex-1 min-w-0 px-3 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          className="w-28 px-3 py-1.5 border border-zinc-200 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-violet-400 tabular-nums"
                         />
-                        <span className="text-zinc-400 text-xs flex-shrink-0">a</span>
-                        <input type="time" value={h.hora_cierre}
+                        <span className="text-zinc-300 text-sm font-light flex-shrink-0">—</span>
+                        <input
+                          type="time"
+                          value={h.hora_cierre}
                           onChange={(e) => { const n=[...horarios]; n[i]={...n[i],hora_cierre:e.target.value}; setHorarios(n); }}
-                          className="flex-1 min-w-0 px-3 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          className="w-28 px-3 py-1.5 border border-zinc-200 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-violet-400 tabular-nums"
                         />
                       </div>
                     ) : (
-                      <span className="text-zinc-400 text-sm flex-1">Cerrado</span>
+                      <span className="ml-auto text-xs font-medium text-zinc-400 bg-zinc-100 px-3 py-1 rounded-full">
+                        Cerrado
+                      </span>
                     )}
                   </div>
                 ))}

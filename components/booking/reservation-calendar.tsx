@@ -340,41 +340,74 @@ export function ReservationCalendar({
 
         {/* Selección de profesional (opcional) */}
         {profesionales.length > 0 && onSelectProfesional && (
-          <div>
-            <h3 className="font-serif text-lg mb-1" style={{ color: "#2C2C2C" }}>
-              ¿Con quién preferís atenderte?
+          <div
+            className="rounded-2xl p-5"
+            style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+          >
+            <h3 className="font-serif text-lg mb-0.5" style={{ color: "#2C2C2C" }}>
+              ¿Con quién querés atenderte?
             </h3>
             <p className="text-xs font-sans mb-4" style={{ color: "#8C7B75" }}>
-              Opcional — si no elegís, te asignamos la primera disponible
+              Si no elegís, te asignamos una profesional disponible automáticamente
             </p>
-            <div className="flex flex-wrap gap-2">
-              {/* Opción "cualquiera" */}
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {/* Opción "sin preferencia" */}
               <button
                 onClick={() => onSelectProfesional(null)}
-                className="px-4 py-2 text-sm font-sans transition-all duration-200"
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
                 style={
                   selectedProfesional === null
-                    ? { backgroundColor: "#E8B4BC", color: "#2C2C2C", borderRadius: "9999px", fontWeight: 600, border: "1px solid #E8B4BC" }
-                    : { backgroundColor: "#FFFFFF", color: "#8C7B75", borderRadius: "9999px", border: "1px solid #F0E4E6" }
+                    ? { backgroundColor: "#E8B4BC", border: "2px solid #D4919B" }
+                    : { backgroundColor: "#FCF8F5", border: "1.5px solid #F0E4E6" }
                 }
               >
-                Cualquiera disponible
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
+                  style={{ backgroundColor: selectedProfesional === null ? "#FFFFFF50" : "#F0E4E6" }}
+                >
+                  ✨
+                </div>
+                <span
+                  className="text-xs font-medium text-center leading-tight"
+                  style={{ color: selectedProfesional === null ? "#2C2C2C" : "#8C7B75" }}
+                >
+                  Sin preferencia
+                </span>
               </button>
 
-              {profesionales.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => onSelectProfesional(p.id)}
-                  className="px-4 py-2 text-sm font-sans transition-all duration-200"
-                  style={
-                    selectedProfesional === p.id
-                      ? { backgroundColor: "#E8B4BC", color: "#2C2C2C", borderRadius: "9999px", fontWeight: 600, border: "1px solid #E8B4BC" }
-                      : { backgroundColor: "#FFFFFF", color: "#2C2C2C", borderRadius: "9999px", border: "1px solid #F0E4E6" }
-                  }
-                >
-                  {p.nombre}
-                </button>
-              ))}
+              {profesionales.map((p) => {
+                const initials = p.nombre.split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0].toUpperCase()).join('');
+                const isSelected = selectedProfesional === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => onSelectProfesional(p.id)}
+                    className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
+                    style={
+                      isSelected
+                        ? { backgroundColor: "#E8B4BC", border: "2px solid #D4919B" }
+                        : { backgroundColor: "#FCF8F5", border: "1.5px solid #F0E4E6" }
+                    }
+                  >
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
+                      style={{
+                        backgroundColor: isSelected ? "#FFFFFF60" : "#E8B4BC",
+                        color: "#2C2C2C",
+                      }}
+                    >
+                      {initials}
+                    </div>
+                    <span
+                      className="text-xs font-medium text-center leading-tight"
+                      style={{ color: isSelected ? "#2C2C2C" : "#5C4A4E" }}
+                    >
+                      {p.nombre}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
