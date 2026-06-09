@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { revalidatePath } from 'next/cache';
 
 async function getAdminPayload(tenantSlug: string) {
   const cookieStore = await cookies();
@@ -47,6 +48,7 @@ export async function PUT(
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
+  revalidatePath(`/${tenantSlug}`);
   return NextResponse.json({ ok: true });
 }
 

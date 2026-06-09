@@ -70,3 +70,53 @@ export async function GET(
 
   return NextResponse.json(result);
 }
+
+// DELETE /api/admin/[tenantSlug]/clientes?id=xxx
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ tenantSlug: string }> }
+) {
+  const { tenantSlug } = await params;
+  const payload = await getAdminPayload(tenantSlug);
+  if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
+  const id = new URL(req.url).searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+
+  // Verify the client belongs to this tenant
+  const { data: cliente } = await supabase
+    .from('clientes')
+    .select('id')
+    .eq('id', id)
+    .eq('tenant_id', payload.tenantId)
+    .single();
+
+  if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
+
+  // Delete pagos → turnos → cliente (respecting FK order)
+  const { data: turnos } = await supabase
+    .from('turnos')
+    .select('id')
+    .eq('cliente_id', id)
+    .eq('tenant_id', payload.tenantId);
+
+  const turnoIds = (turnos ?? []).map((t: { id: string }) => t.id);
+
+  if (turnoIds.length > 0) {
+    await supabase.from('pagos').delete().in('turno_id', turnoIds);
+    await supabase.from('turnos').delete().in('id', turnoIds).eq('tenant_id', payload.tenantId);
+  }
+
+  const { error } = await supabase
+    .from('clientes')
+    .delete()
+    .eq('id', id)
+    .eq('tenant_id', payload.tenantId);
+
+  if (error) {
+    console.error('[clientes DELETE]', error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

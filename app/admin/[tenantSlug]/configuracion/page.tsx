@@ -54,6 +54,7 @@ export default function ConfiguracionPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -142,26 +143,38 @@ export default function ConfiguracionPage() {
 
   const saveTenant = async () => {
     setSaving(true);
-    await fetch(`/api/admin/${tenantSlug}/configuracion`, {
+    setSaveError(null);
+    const res = await fetch(`/api/admin/${tenantSlug}/configuracion`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tenant),
     });
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if (res.ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setSaveError(data.error ?? 'Error al guardar');
+    }
   };
 
   const saveHorarios = async () => {
     setSaving(true);
-    await fetch(`/api/admin/${tenantSlug}/horarios`, {
+    setSaveError(null);
+    const res = await fetch(`/api/admin/${tenantSlug}/horarios`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ horarios }),
     });
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if (res.ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setSaveError(data.error ?? 'Error al guardar');
+    }
   };
 
   const agregarDiaBloqueado = async () => {
@@ -350,48 +363,53 @@ export default function ConfiguracionPage() {
           {tab === 'horarios' && (
             <div className="space-y-4">
               {/* Días de la semana */}
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm divide-y divide-zinc-50">
                 {horarios.map((h, i) => (
-                  <div key={h.dia_semana} className={cn('px-5 py-3.5 flex items-center gap-3', i < horarios.length - 1 && 'border-b border-zinc-50')}>
-                    {/* Toggle */}
+                  <div key={h.dia_semana} className="px-5 py-4 flex items-center gap-4">
+                    {/* Toggle — mismo estilo que Pagos */}
                     <button
                       onClick={() => {
                         const next = [...horarios];
                         next[i] = { ...next[i], activo: !next[i].activo };
                         setHorarios(next);
                       }}
-                      className={cn('w-10 h-6 rounded-full transition-colors relative flex-shrink-0', h.activo ? 'bg-violet-600' : 'bg-zinc-200')}
+                      className={cn('w-12 h-6 rounded-full transition-colors relative flex-shrink-0', h.activo ? 'bg-violet-600' : 'bg-zinc-200')}
                     >
-                      <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', h.activo ? 'translate-x-4' : 'translate-x-0.5')} />
+                      <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', h.activo ? 'translate-x-6' : 'translate-x-0.5')} />
                     </button>
 
                     {/* Día */}
-                    <span className={cn('text-sm font-medium w-24 flex-shrink-0', h.activo ? 'text-zinc-900' : 'text-zinc-400')}>
+                    <span className={cn('text-sm font-medium w-24 flex-shrink-0 select-none', h.activo ? 'text-zinc-900' : 'text-zinc-400')}>
                       {DIAS[h.dia_semana]}
                     </span>
 
                     {/* Horario o Cerrado */}
-                    {h.activo ? (
-                      <div className="flex items-center gap-2 ml-auto">
-                        <TimeSelect
-                          value={h.hora_apertura}
-                          onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_apertura:v}; setHorarios(n); }}
-                        />
-                        <span className="text-zinc-300 text-sm flex-shrink-0">—</span>
-                        <TimeSelect
-                          value={h.hora_cierre}
-                          onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_cierre:v}; setHorarios(n); }}
-                        />
-                      </div>
-                    ) : (
-                      <span className="ml-auto text-xs font-medium text-zinc-400 bg-zinc-100 px-3 py-1 rounded-full">
-                        Cerrado
-                      </span>
-                    )}
+                    <div className="ml-auto flex items-center gap-2">
+                      {h.activo ? (
+                        <>
+                          <TimeSelect
+                            value={h.hora_apertura}
+                            onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_apertura:v}; setHorarios(n); }}
+                          />
+                          <span className="text-zinc-300 text-sm flex-shrink-0">—</span>
+                          <TimeSelect
+                            value={h.hora_cierre}
+                            onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_cierre:v}; setHorarios(n); }}
+                          />
+                        </>
+                      ) : (
+                        <span className="text-xs font-semibold text-zinc-400 bg-zinc-100 px-3 py-1.5 rounded-full">
+                          Cerrado
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
 
+              {saveError && (
+                <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{saveError}</p>
+              )}
               <button onClick={saveHorarios} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saved ? '¡Guardado!' : 'Guardar horarios'}

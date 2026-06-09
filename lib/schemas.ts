@@ -28,10 +28,10 @@ export const registrarTenantSchema = z.object({
 
 export const configuracionSchema = z.object({
   nombre:           z.string().min(2).max(255).optional(),
-  email_contacto:   z.string().email().optional(),
-  telefono:         z.string().max(30).optional(),
+  email_contacto:   z.string().email().nullish(),
+  telefono:         z.string().max(30).nullish(),
   exige_sena:       z.boolean().optional(),
-  porcentaje_sena:  z.number().min(0).max(100).optional(),
+  porcentaje_sena:  z.number().min(0).max(100).nullish(),
   permite_efectivo: z.boolean().optional(),
 });
 
@@ -40,7 +40,7 @@ export const servicioSchema = z.object({
   descripcion:      z.string().max(500).optional(),
   duracion_minutos: z.number().int().min(5).max(480),
   precio:           z.number().min(0),
-  categoria:        z.enum(['nails', 'lashes', 'brows', 'skin', 'general']).default('general'),
+  categoria:        z.string().min(1).max(50).default('general'),
 });
 
 export const horarioSchema = z.object({

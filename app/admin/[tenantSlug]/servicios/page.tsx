@@ -23,6 +23,8 @@ const CAT_STYLES: Record<string, string> = {
   general: 'bg-zinc-100 text-zinc-600',
 };
 
+const DEFAULT_CATS = ['nails', 'lashes', 'brows', 'skin', 'general'];
+
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
 }
@@ -218,15 +220,20 @@ export default function ServiciosPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Categoría</label>
-                <select
+                <input
+                  list="categorias-list"
                   value={form.categoria}
                   onChange={(e) => setForm(f => ({ ...f, categoria: e.target.value }))}
+                  placeholder="general"
                   className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
-                >
-                  {['nails','lashes','brows','skin','general'].map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                />
+                <datalist id="categorias-list">
+                  {Array.from(new Set([
+                    ...DEFAULT_CATS,
+                    ...servicios.map(s => s.categoria).filter(Boolean),
+                  ])).map(c => <option key={c} value={c} />)}
+                </datalist>
+                <p className="text-xs text-zinc-400 mt-1">Elegí una existente o escribí una nueva</p>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between gap-3">
