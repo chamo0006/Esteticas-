@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Shield, Users, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, Users, CheckCircle, XCircle, Inbox, Mail, Phone } from 'lucide-react';
 
 interface Props {
   searchParams: Promise<{ secret?: string }>;
@@ -30,6 +30,14 @@ export default async function SuperAdminPage({ searchParams }: Props) {
       turnos(id)
     `)
     .order('created_at', { ascending: false });
+
+  // Fetch leads
+  const { data: leadsData } = await supabase
+    .from('leads')
+    .select('id, nombre, email, telefono, estetica, created_at')
+    .order('created_at', { ascending: false });
+
+  const leads = leadsData ?? [];
 
   // Fetch global counts
   const [
@@ -82,18 +90,68 @@ export default async function SuperAdminPage({ searchParams }: Props) {
         </div>
 
         {/* Stats globales */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
           {[
             { label: 'Estéticas', value: stats.total_tenants },
             { label: 'Activas', value: stats.activos },
             { label: 'Turnos totales', value: stats.total_turnos },
             { label: 'Clientes totales', value: stats.total_clientes },
+            { label: 'Leads', value: leads.length },
           ].map((s) => (
             <div key={s.label} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
               <p className="text-2xl font-bold text-white">{s.value}</p>
               <p className="text-xs text-zinc-400 mt-0.5">{s.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* Tabla de leads */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden mb-6">
+          <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Inbox className="w-4 h-4 text-violet-400" />
+              <h2 className="font-semibold text-white text-sm">Leads — Landing principal</h2>
+            </div>
+            <span className="text-xs text-zinc-500">{leads.length} registros</span>
+          </div>
+          {leads.length === 0 ? (
+            <div className="py-12 text-center text-zinc-500 text-sm">
+              Todavía no hay leads registrados
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-zinc-800 text-left">
+                    {['Nombre','Email','Teléfono','Estética','Fecha'].map(h => (
+                      <th key={h} className="px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {leads.map((l) => (
+                    <tr key={l.id} className="hover:bg-zinc-800/50 transition-colors">
+                      <td className="px-5 py-3 font-medium text-white">{l.nombre}</td>
+                      <td className="px-5 py-3">
+                        {l.email
+                          ? <a href={`mailto:${l.email}`} className="flex items-center gap-1.5 text-violet-400 hover:text-violet-300 text-xs"><Mail className="w-3 h-3" />{l.email}</a>
+                          : <span className="text-zinc-600">—</span>
+                        }
+                      </td>
+                      <td className="px-5 py-3">
+                        {l.telefono
+                          ? <span className="flex items-center gap-1.5 text-zinc-300 text-xs"><Phone className="w-3 h-3" />{l.telefono}</span>
+                          : <span className="text-zinc-600">—</span>
+                        }
+                      </td>
+                      <td className="px-5 py-3 text-zinc-400 text-xs">{l.estetica ?? '—'}</td>
+                      <td className="px-5 py-3 text-zinc-500 text-xs">{formatDate(l.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Tabla de tenants */}

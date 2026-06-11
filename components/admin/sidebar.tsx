@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Calendar, Scissors, Users, LogOut, Sparkles, Settings, Inbox,
+  LayoutDashboard, Calendar, Scissors, Users, LogOut, Sparkles, Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +22,6 @@ export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre }: AdminSid
     { href: `${base}/turnos`,        label: 'Turnos',     icon: Calendar        },
     { href: `${base}/servicios`,     label: 'Servicios',  icon: Scissors        },
     { href: `${base}/clientes`,       label: 'Clientes',      icon: Users    },
-    { href: `${base}/leads`,          label: 'Leads',         icon: Inbox    },
     { href: `${base}/configuracion`, label: 'Configuración',  icon: Settings },
   ];
 
