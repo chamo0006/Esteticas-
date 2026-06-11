@@ -7,8 +7,10 @@ export interface BookingTheme {
   text: string;
   muted: string;
   shadow: string;
-  cta: string;         // texto del botón de confirmación
-  decoration: string;  // emoji decorativo del header
+  cardBg: string;       // fondo de tarjetas / cards
+  inputBg: string;      // fondo de inputs
+  cta: string;
+  decoration: string;
 }
 
 const ESTETICA: BookingTheme = {
@@ -18,17 +20,21 @@ const ESTETICA: BookingTheme = {
   text: '#2C2C2C',
   muted: '#8C7B75',
   shadow: 'rgba(0,0,0,0.06)',
+  cardBg: '#FFFFFF',
+  inputBg: '#FFFFFF',
   cta: 'Confirmar Reserva',
   decoration: '🌸',
 };
 
 const BARBERIA: BookingTheme = {
-  bg: '#F3F2F0',
-  bgSticky: 'rgba(243,242,240,0.96)',
-  border: '#E4E1DB',
-  text: '#1A1A1A',
-  muted: '#6B6560',
-  shadow: 'rgba(0,0,0,0.08)',
+  bg: '#111111',
+  bgSticky: 'rgba(17,17,17,0.97)',
+  border: '#2C2C2C',
+  text: '#F0EDE8',
+  muted: '#888880',
+  shadow: 'rgba(0,0,0,0.5)',
+  cardBg: '#1C1C1C',
+  inputBg: '#252525',
   cta: 'Reservar turno',
   decoration: '✂️',
 };

@@ -54,8 +54,8 @@ export function ReservationCalendar({
 
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#4A5240" : "#E8B4BC");
-  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#6B7C62" : "#D4919B");
+  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#C9A96E" : "#E8B4BC");
+  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#B8935A" : "#D4919B");
 
   useEffect(() => {
     if (!tenantSlug) return;
@@ -138,7 +138,7 @@ export function ReservationCalendar({
       <div className="px-5 pt-6 pb-6 space-y-6">
         {/* Calendar card */}
         <div className="rounded-2xl p-5"
-          style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+          style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
 
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-5">
@@ -219,7 +219,7 @@ export function ReservationCalendar({
                       isSelected
                         ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600, borderRadius: "9999px", border: `1px solid ${primaryColor}` }
                         : slot.available
-                        ? { backgroundColor: "#FFFFFF", color: T.text, borderRadius: "9999px", border: `1px solid ${T.border}`, boxShadow: `0 1px 8px ${T.shadow}` }
+                        ? { backgroundColor: T.cardBg, color: T.text, borderRadius: "9999px", border: `1px solid ${T.border}`, boxShadow: `0 1px 8px ${T.shadow}` }
                         : { backgroundColor: T.bg, color: T.border, borderRadius: "9999px", border: `1px solid ${T.border}`, opacity: 0.5, cursor: "not-allowed" }
                     }>
                     {slot.time}
@@ -233,7 +233,7 @@ export function ReservationCalendar({
         {/* Profesionales */}
         {profesionales.length > 0 && onSelectProfesional && (
           <div className="rounded-2xl p-5"
-            style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+            style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
             <h3 className="font-serif text-lg mb-0.5" style={{ color: T.text }}>
               {isBarberia ? "¿Con quién querés atenderte?" : "¿Con quién querés atenderte?"}
             </h3>

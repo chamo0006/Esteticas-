@@ -47,8 +47,8 @@ export function ServicesCatalog({
 }: ServicesCatalogProps) {
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#4A5240" : "#E8B4BC");
-  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#6B7C62" : "#D4919B");
+  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#C9A96E" : "#E8B4BC");
+  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#B8935A" : "#D4919B");
 
   const wppPhone = telefono?.replace(/\D/g, "") ?? "";
   const wppUrl = wppPhone ? `https://wa.me/${wppPhone}` : undefined;
@@ -112,7 +112,7 @@ export function ServicesCatalog({
             type="text" placeholder="Buscar servicio..." value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             className="w-full pl-11 pr-5 py-3.5 text-sm transition-all focus:outline-none"
-            style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, borderRadius: "9999px", color: T.text, boxShadow: `0 2px 20px ${T.shadow}` }}
+            style={{ backgroundColor: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "9999px", color: T.text, boxShadow: `0 2px 20px ${T.shadow}` }}
             onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
             onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = `0 2px 20px ${T.shadow}`; }}
           />
@@ -126,6 +126,7 @@ export function ServicesCatalog({
             key={service.id} service={service} isSelected={isInCart(service.id)}
             onToggle={() => onToggleService(service)} index={index}
             primaryColor={primaryColor} accentColor={accentColor} borderColor={T.border}
+            cardBg={T.cardBg} textColor={T.text} mutedColor={T.muted}
           />
         ))}
         {services.length === 0 && (

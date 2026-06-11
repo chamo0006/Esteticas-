@@ -11,6 +11,9 @@ interface ServiceCardProps {
   primaryColor?: string;
   accentColor?: string;
   borderColor?: string;
+  cardBg?: string;
+  textColor?: string;
+  mutedColor?: string;
 }
 
 const formatPrice = (price: number) =>
@@ -21,15 +24,18 @@ export function ServiceCard({
   primaryColor = "#E8B4BC",
   accentColor = "#D4919B",
   borderColor = "#F0E4E6",
+  cardBg = "#FFFFFF",
+  textColor = "#2C2C2C",
+  mutedColor = "#8C7B75",
 }: ServiceCardProps) {
   return (
     <div
       className="relative rounded-2xl p-4 transition-all duration-300 animate-slide-up"
       style={{
         animationDelay: `${index * 50}ms`,
-        backgroundColor: isSelected ? `${primaryColor}18` : "#FFFFFF",
+        backgroundColor: isSelected ? `${primaryColor}22` : cardBg,
         border: isSelected ? `1px solid ${primaryColor}` : `1px solid ${borderColor}`,
-        boxShadow: isSelected ? `0 2px 20px ${primaryColor}25` : "0 2px 20px rgba(0,0,0,0.04)",
+        boxShadow: isSelected ? `0 2px 20px ${primaryColor}25` : `0 2px 20px rgba(0,0,0,0.04)`,
       }}
     >
       <div className="flex items-center gap-4">
@@ -38,13 +44,13 @@ export function ServiceCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-serif text-base leading-snug" style={{ color: "#2C2C2C" }}>
+          <h3 className="font-serif text-base leading-snug" style={{ color: textColor }}>
             {service.name}
           </h3>
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-xs" style={{ color: "#8C7B75" }}>{service.duration}</span>
-            <span className="text-xs" style={{ color: "#8C7B75" }}>·</span>
-            <span className="text-sm font-medium" style={{ color: "#2C2C2C" }}>{formatPrice(service.price)}</span>
+            <span className="text-xs" style={{ color: mutedColor }}>{service.duration}</span>
+            <span className="text-xs" style={{ color: mutedColor }}>·</span>
+            <span className="text-sm font-medium" style={{ color: accentColor }}>{formatPrice(service.price)}</span>
           </div>
         </div>
 
@@ -52,8 +58,8 @@ export function ServiceCard({
           onClick={onToggle}
           className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
           style={{
-            backgroundColor: isSelected ? primaryColor : `${primaryColor}15`,
-            color: isSelected ? "#FFFFFF" : accentColor,
+            backgroundColor: isSelected ? primaryColor : `${primaryColor}20`,
+            color: isSelected ? "#FFFFFF" : primaryColor,
             border: isSelected ? "none" : `1px solid ${borderColor}`,
           }}
           aria-label={isSelected ? "Quitar del carrito" : "Agregar al carrito"}

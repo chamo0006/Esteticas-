@@ -17,11 +17,11 @@ const formatPrice = (price: number) =>
 export function CartBar({ itemCount, totalAmount, onContinue, disabled, tenantConfig }: CartBarProps) {
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#4A5240" : "#E8B4BC");
+  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#C9A96E" : "#E8B4BC");
 
   return (
     <div className="fixed bottom-0 left-0 right-0 px-5 py-4 z-50"
-      style={{ backgroundColor: "rgba(255,255,255,0.97)", borderTop: `1px solid ${T.border}`, boxShadow: `0 -4px 24px ${T.shadow}`, backdropFilter: "blur(8px)" }}>
+      style={{ backgroundColor: isBarberia ? "rgba(17,17,17,0.97)" : "rgba(255,255,255,0.97)", borderTop: `1px solid ${T.border}`, boxShadow: `0 -4px 24px ${T.shadow}`, backdropFilter: "blur(8px)" }}>
       <div className="max-w-lg mx-auto">
         {itemCount > 0 && (
           <p className="text-center text-xs mb-3 font-sans" style={{ color: T.muted }}>

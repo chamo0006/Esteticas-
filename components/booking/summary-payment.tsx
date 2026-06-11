@@ -49,8 +49,8 @@ export function SummaryPayment({
 
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#4A5240" : "#E8B4BC");
-  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#6B7C62" : "#D4919B");
+  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#C9A96E" : "#E8B4BC");
+  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#B8935A" : "#D4919B");
 
   const exigeSena = tenantConfig?.exige_sena ?? false;
   const porcentajeSena = tenantConfig?.porcentaje_sena ?? 0;
@@ -60,7 +60,7 @@ export function SummaryPayment({
   const inputStyle = {
     width: "100%",
     padding: "12px 16px",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: T.inputBg,
     border: `1px solid ${T.border}`,
     borderRadius: "12px",
     color: T.text,
@@ -159,7 +159,7 @@ export function SummaryPayment({
           </p>
 
           <div className="rounded-2xl p-5 mb-6 text-left space-y-3"
-            style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+            style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
             <div className="flex justify-between text-sm">
               <span style={{ color: T.muted }}>Fecha</span>
               <span className="font-medium" style={{ color: T.text }}>{formatDate(selectedDate)}</span>
@@ -213,7 +213,7 @@ export function SummaryPayment({
       <div className="px-5 pt-6 space-y-5">
 
         {/* Resumen de servicios */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-4 h-4" style={{ color: primaryColor }} strokeWidth={1.5} />
             <div>
@@ -252,7 +252,7 @@ export function SummaryPayment({
         </div>
 
         {/* Datos personales */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
           <h2 className="font-serif text-lg mb-4" style={{ color: T.text }}>Tus datos</h2>
           <div className="space-y-3.5">
             <div className="grid grid-cols-2 gap-3">
@@ -285,7 +285,7 @@ export function SummaryPayment({
             <div>
               <label className="block text-xs font-sans mb-1.5" style={{ color: T.muted }}>Teléfono</label>
               <div className="flex gap-2">
-                <div className="flex items-center gap-1.5 px-3 rounded-xl flex-shrink-0" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}` }}>
+                <div className="flex items-center gap-1.5 px-3 rounded-xl flex-shrink-0" style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}` }}>
                   <span>🇦🇷</span>
                   <span className="text-xs" style={{ color: T.muted }}>+54</span>
                 </div>
@@ -301,7 +301,7 @@ export function SummaryPayment({
         </div>
 
         {/* Método de pago */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
           <h2 className="font-serif text-lg mb-4" style={{ color: T.text }}>Método de Pago</h2>
           <div className="space-y-2.5">
             {paymentMethods.filter(p => p.show).map(p => (
