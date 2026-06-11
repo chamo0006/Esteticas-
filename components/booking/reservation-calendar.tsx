@@ -1,7 +1,8 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { SchedulingMode, TimeSlot } from "@/lib/booking-types";
+import type { SchedulingMode, TimeSlot, TenantConfig } from "@/lib/booking-types";
+import { getBookingTheme } from "@/lib/booking-theme";
 import { useState, useMemo, useEffect } from "react";
 
 interface Profesional {
@@ -22,9 +23,9 @@ interface ReservationCalendarProps {
   totalDuracion?: number;
   selectedProfesional?: string | null;
   onSelectProfesional?: (id: string | null) => void;
+  tenantConfig?: TenantConfig;
 }
 
-// Slots estáticos usados en la demo (/ sin tenant)
 const DEMO_SLOTS: TimeSlot[] = [
   { time: "9:00 AM",  timeValue: "09:00", available: true  },
   { time: "10:00 AM", timeValue: "10:00", available: false },
@@ -37,23 +38,12 @@ const DEMO_SLOTS: TimeSlot[] = [
 ];
 
 const weekDays = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
-const months = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
+const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 export function ReservationCalendar({
-  onBack,
-  selectedDate,
-  onSelectDate,
-  selectedTime,
-  onSelectTime,
-  schedulingMode,
-  onSchedulingModeChange,
-  tenantSlug,
-  totalDuracion = 60,
-  selectedProfesional,
-  onSelectProfesional,
+  onBack, selectedDate, onSelectDate, selectedTime, onSelectTime,
+  schedulingMode, onSchedulingModeChange, tenantSlug, totalDuracion = 60,
+  selectedProfesional, onSelectProfesional, tenantConfig,
 }: ReservationCalendarProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -62,7 +52,11 @@ export function ReservationCalendar({
   const [profesionales, setProfesionales] = useState<Profesional[]>([]);
   const [profLoading, setProfLoading] = useState(false);
 
-  // Cargar lista de profesionales (sin disponibilidad) al montar
+  const T = getBookingTheme(tenantConfig?.tipo_negocio);
+  const isBarberia = tenantConfig?.tipo_negocio === "barberia";
+  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#4A5240" : "#E8B4BC");
+  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#6B7C62" : "#D4919B");
+
   useEffect(() => {
     if (!tenantSlug) return;
     fetch(`/api/${tenantSlug}/profesionales`)
@@ -71,7 +65,6 @@ export function ReservationCalendar({
       .catch(() => {});
   }, [tenantSlug]);
 
-  // Cuando cambia fecha+hora, recargar disponibilidad por profesional
   useEffect(() => {
     if (!tenantSlug || !selectedDate || !selectedTime || profesionales.length === 0) return;
     const year  = selectedDate.getFullYear();
@@ -87,29 +80,21 @@ export function ReservationCalendar({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, selectedDate, selectedTime, totalDuracion]);
 
-  // Carga disponibilidad real cuando hay tenantSlug y se elige una fecha
   useEffect(() => {
     if (!tenantSlug || !selectedDate) return;
-
     const year  = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
     const day   = String(selectedDate.getDate()).padStart(2, "0");
     const fecha = `${year}-${month}-${day}`;
-
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
+    const timeout = setTimeout(() => controller.abort(), 8000);
     setSlotsLoading(true);
     setSlots([]);
-
-    fetch(`/api/${tenantSlug}/disponibilidad?fecha=${fecha}&duracion=${totalDuracion}`, {
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
+    fetch(`/api/${tenantSlug}/disponibilidad?fecha=${fecha}&duracion=${totalDuracion}`, { signal: controller.signal })
+      .then(res => res.json())
       .then((data: TimeSlot[]) => setSlots(Array.isArray(data) ? data : []))
       .catch(() => setSlots([]))
       .finally(() => { clearTimeout(timeout); setSlotsLoading(false); });
-
     return () => { controller.abort(); clearTimeout(timeout); };
   }, [tenantSlug, selectedDate, totalDuracion]);
 
@@ -119,7 +104,6 @@ export function ReservationCalendar({
     const firstDay = new Date(year, month, 1);
     const lastDay  = new Date(year, month + 1, 0);
     const startDay = firstDay.getDay();
-
     const days: (Date | null)[] = [];
     for (let i = 0; i < startDay; i++) days.push(null);
     for (let d = 1; d <= lastDay.getDate(); d++) days.push(new Date(year, month, d));
@@ -127,108 +111,57 @@ export function ReservationCalendar({
   }, [currentMonth]);
 
   const isSameDay = (a: Date | null, b: Date | null) =>
-    !!a && !!b &&
-    a.getDate() === b.getDate() &&
-    a.getMonth() === b.getMonth() &&
-    a.getFullYear() === b.getFullYear();
+    !!a && !!b && a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
 
   const isPastDate = (date: Date) => {
-    const todayMidnight = new Date();
-    todayMidnight.setHours(0, 0, 0, 0);
-    return date < todayMidnight;
+    const m = new Date(); m.setHours(0, 0, 0, 0); return date < m;
   };
 
   const isCurrentMonth =
-    currentMonth.getFullYear() === today.getFullYear() &&
-    currentMonth.getMonth() === today.getMonth();
+    currentMonth.getFullYear() === today.getFullYear() && currentMonth.getMonth() === today.getMonth();
 
   return (
-    <div className="animate-fade-in min-h-screen" style={{ backgroundColor: "#FCF8F5" }}>
+    <div className="animate-fade-in min-h-screen" style={{ backgroundColor: T.bg }}>
       {/* Header */}
-      <header
-        className="sticky top-0 z-10 px-5 pt-7 pb-5"
-        style={{
-          backgroundColor: "rgba(252,248,245,0.96)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid #F0E4E6",
-        }}
-      >
+      <header className="sticky top-0 z-10 px-5 pt-7 pb-5"
+        style={{ backgroundColor: T.bgSticky, backdropFilter: "blur(8px)", borderBottom: `1px solid ${T.border}` }}>
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 font-sans text-sm transition-colors"
-            style={{ color: "#8C7B75" }}
-            aria-label="Volver"
-          >
+          <button onClick={onBack} className="flex items-center gap-1.5 font-sans text-sm transition-colors"
+            style={{ color: T.muted }} aria-label="Volver">
             <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
             Volver
           </button>
-          <h1
-            className="font-serif text-xl"
-            style={{ color: "#2C2C2C" }}
-          >
-            Seleccioná tu fecha
-          </h1>
+          <h1 className="font-serif text-xl" style={{ color: T.text }}>Seleccioná tu fecha</h1>
         </div>
       </header>
 
       <div className="px-5 pt-6 pb-6 space-y-6">
         {/* Calendar card */}
-        <div
-          className="rounded-2xl p-5"
-          style={{
-            backgroundColor: "#FFFFFF",
-            border: "1px solid #F0E4E6",
-            boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
-          }}
-        >
+        <div className="rounded-2xl p-5"
+          style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-5">
-            <button
-              onClick={() =>
-                setCurrentMonth(
-                  new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
-                )
-              }
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}
               disabled={isCurrentMonth}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
-              style={{ color: "#8C7B75" }}
-              aria-label="Mes anterior"
-            >
+              style={{ color: T.muted }} aria-label="Mes anterior">
               <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             </button>
-
-            <h2
-              className="font-serif text-base"
-              style={{ color: "#2C2C2C" }}
-            >
+            <h2 className="font-serif text-base" style={{ color: T.text }}>
               {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h2>
-
-            <button
-              onClick={() =>
-                setCurrentMonth(
-                  new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
-                )
-              }
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-              style={{ color: "#8C7B75" }}
-              aria-label="Mes siguiente"
-            >
+              style={{ color: T.muted }} aria-label="Mes siguiente">
               <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
             </button>
           </div>
 
           {/* Weekday headers */}
           <div className="grid grid-cols-7 mb-1">
-            {weekDays.map((d) => (
-              <div
-                key={d}
-                className="text-center text-xs font-sans py-1.5"
-                style={{ color: "#8C7B75" }}
-              >
-                {d}
-              </div>
+            {weekDays.map(d => (
+              <div key={d} className="text-center text-xs font-sans py-1.5" style={{ color: T.muted }}>{d}</div>
             ))}
           </div>
 
@@ -239,38 +172,16 @@ export function ReservationCalendar({
               const selected = isSameDay(date, selectedDate);
               const past = isPastDate(date);
               const isToday = isSameDay(date, today);
-
               return (
-                <button
-                  key={date.toISOString()}
-                  onClick={() => !past && onSelectDate(date)}
+                <button key={date.toISOString()} onClick={() => !past && onSelectDate(date)}
                   disabled={past}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
                   style={
-                    selected
-                      ? {
-                          backgroundColor: "#E8B4BC",
-                          color: "#2C2C2C",
-                          fontWeight: 600,
-                        }
-                      : past
-                      ? {
-                          color: "#C9B2B5",
-                          cursor: "not-allowed",
-                          opacity: 0.4,
-                        }
-                      : isToday
-                      ? {
-                          color: "#D4919B",
-                          fontWeight: 600,
-                          textDecoration: "underline",
-                          textUnderlineOffset: "2px",
-                        }
-                      : {
-                          color: "#2C2C2C",
-                        }
-                  }
-                >
+                    selected ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600 }
+                    : past   ? { color: T.border, cursor: "not-allowed", opacity: 0.4 }
+                    : isToday? { color: accentColor, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: "2px" }
+                    :          { color: T.text }
+                  }>
                   {date.getDate()}
                 </button>
               );
@@ -280,74 +191,37 @@ export function ReservationCalendar({
 
         {/* Time slots */}
         <div>
-          <h3
-            className="font-serif text-lg mb-4"
-            style={{ color: "#2C2C2C" }}
-          >
-            Horarios disponibles
-          </h3>
+          <h3 className="font-serif text-lg mb-4" style={{ color: T.text }}>Horarios disponibles</h3>
 
           {slotsLoading ? (
             <div className="grid grid-cols-2 gap-3">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-12 rounded-full animate-pulse"
-                  style={{ backgroundColor: "#F0E4E6" }}
-                />
+                <div key={i} className="h-12 rounded-full animate-pulse" style={{ backgroundColor: T.border }} />
               ))}
             </div>
           ) : !selectedDate ? (
-            <p
-              className="text-center text-sm py-8 font-sans italic"
-              style={{ color: "#8C7B75" }}
-            >
+            <p className="text-center text-sm py-8 font-sans italic" style={{ color: T.muted }}>
               Seleccioná un día para ver los horarios
             </p>
           ) : slots.length === 0 ? (
-            <p
-              className="text-center text-sm py-8 font-sans italic"
-              style={{ color: "#8C7B75" }}
-            >
+            <p className="text-center text-sm py-8 font-sans italic" style={{ color: T.muted }}>
               No hay horarios disponibles para este día
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {slots.map((slot) => {
+              {slots.map(slot => {
                 const isSelected = selectedTime === slot.timeValue;
                 return (
-                  <button
-                    key={slot.timeValue}
-                    onClick={() => slot.available && onSelectTime(slot.timeValue)}
+                  <button key={slot.timeValue} onClick={() => slot.available && onSelectTime(slot.timeValue)}
                     disabled={!slot.available}
                     className="py-3 px-4 text-sm font-sans transition-all duration-200"
                     style={
                       isSelected
-                        ? {
-                            backgroundColor: "#E8B4BC",
-                            color: "#2C2C2C",
-                            fontWeight: 600,
-                            borderRadius: "9999px",
-                            border: "1px solid #E8B4BC",
-                          }
+                        ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600, borderRadius: "9999px", border: `1px solid ${primaryColor}` }
                         : slot.available
-                        ? {
-                            backgroundColor: "#FFFFFF",
-                            color: "#2C2C2C",
-                            borderRadius: "9999px",
-                            border: "1px solid #F0E4E6",
-                            boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
-                          }
-                        : {
-                            backgroundColor: "#FCF8F5",
-                            color: "#C9B2B5",
-                            borderRadius: "9999px",
-                            border: "1px solid #F0E4E6",
-                            opacity: 0.5,
-                            cursor: "not-allowed",
-                          }
-                    }
-                  >
+                        ? { backgroundColor: "#FFFFFF", color: T.text, borderRadius: "9999px", border: `1px solid ${T.border}`, boxShadow: `0 1px 8px ${T.shadow}` }
+                        : { backgroundColor: T.bg, color: T.border, borderRadius: "9999px", border: `1px solid ${T.border}`, opacity: 0.5, cursor: "not-allowed" }
+                    }>
                     {slot.time}
                   </button>
                 );
@@ -356,90 +230,66 @@ export function ReservationCalendar({
           )}
         </div>
 
-        {/* Selección de profesional (opcional) */}
+        {/* Profesionales */}
         {profesionales.length > 0 && onSelectProfesional && (
-          <div
-            className="rounded-2xl p-5"
-            style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
-          >
-            <h3 className="font-serif text-lg mb-0.5" style={{ color: "#2C2C2C" }}>
-              ¿Con quién querés atenderte?
+          <div className="rounded-2xl p-5"
+            style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+            <h3 className="font-serif text-lg mb-0.5" style={{ color: T.text }}>
+              {isBarberia ? "¿Con quién querés atenderte?" : "¿Con quién querés atenderte?"}
             </h3>
-            <p className="text-xs font-sans mb-4" style={{ color: "#8C7B75" }}>
+            <p className="text-xs font-sans mb-4" style={{ color: T.muted }}>
               {selectedTime
-                ? "Verde = disponible en ese horario · Gris = ocupada"
+                ? "Verde = disponible en ese horario · Gris = ocupado/a"
                 : "Elegí un horario primero para ver disponibilidad"}
             </p>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {/* Opción "sin preferencia" — siempre disponible */}
-              <button
-                onClick={() => onSelectProfesional(null)}
+              <button onClick={() => onSelectProfesional(null)}
                 className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
                 style={
                   selectedProfesional === null
-                    ? { backgroundColor: "#E8B4BC", border: "2px solid #D4919B" }
-                    : { backgroundColor: "#FCF8F5", border: "1.5px solid #F0E4E6" }
-                }
-              >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
-                  style={{ backgroundColor: selectedProfesional === null ? "#FFFFFF50" : "#F0E4E6" }}
-                >
-                  ✨
+                    ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
+                    : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
+                }>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
+                  style={{ backgroundColor: selectedProfesional === null ? "#FFFFFF50" : T.border }}>
+                  {isBarberia ? "✂️" : "✨"}
                 </div>
-                <span className="text-xs font-medium text-center leading-tight" style={{ color: selectedProfesional === null ? "#2C2C2C" : "#8C7B75" }}>
+                <span className="text-xs font-medium text-center leading-tight"
+                  style={{ color: selectedProfesional === null ? "#FFFFFF" : T.muted }}>
                   Sin preferencia
                 </span>
               </button>
 
-              {profesionales.map((p) => {
-                const initials = p.nombre.split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0].toUpperCase()).join('');
+              {profesionales.map(p => {
+                const initials = p.nombre.split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0].toUpperCase()).join("");
                 const isSelected = selectedProfesional === p.id;
-                // disponible es undefined cuando aún no se eligió horario → mostrar normal
                 const libre = p.disponible !== false;
                 const isBusy = selectedTime && p.disponible === false;
-
                 return (
-                  <button
-                    key={p.id}
-                    onClick={() => !isBusy && onSelectProfesional(p.id)}
+                  <button key={p.id} onClick={() => !isBusy && onSelectProfesional(p.id)}
                     disabled={!!isBusy || profLoading}
                     className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200 relative"
                     style={
                       isSelected
-                        ? { backgroundColor: "#E8B4BC", border: "2px solid #D4919B" }
+                        ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
                         : isBusy
                         ? { backgroundColor: "#F5F5F5", border: "1.5px solid #E0E0E0", opacity: 0.6, cursor: "not-allowed" }
-                        : { backgroundColor: "#FCF8F5", border: "1.5px solid #F0E4E6" }
-                    }
-                  >
-                    {/* Indicador libre/ocupado */}
+                        : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
+                    }>
                     {selectedTime && !profLoading && (
-                      <div
-                        className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: libre ? "#4CAF50" : "#9E9E9E" }}
-                      />
+                      <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: libre ? "#4CAF50" : "#9E9E9E" }} />
                     )}
-
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
-                      style={{
-                        backgroundColor: isSelected ? "#FFFFFF60" : isBusy ? "#E0E0E0" : "#E8B4BC",
-                        color: isBusy ? "#9E9E9E" : "#2C2C2C",
-                      }}
-                    >
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
+                      style={{ backgroundColor: isSelected ? "#FFFFFF60" : isBusy ? "#E0E0E0" : `${primaryColor}40`, color: isBusy ? "#9E9E9E" : T.text }}>
                       {initials}
                     </div>
-                    <span
-                      className="text-xs font-medium text-center leading-tight"
-                      style={{ color: isSelected ? "#2C2C2C" : isBusy ? "#9E9E9E" : "#5C4A4E" }}
-                    >
+                    <span className="text-xs font-medium text-center leading-tight"
+                      style={{ color: isSelected ? "#FFFFFF" : isBusy ? "#9E9E9E" : T.text }}>
                       {p.nombre}
                     </span>
-                    {isBusy && (
-                      <span className="text-[10px]" style={{ color: "#9E9E9E" }}>Ocupada</span>
-                    )}
+                    {isBusy && <span className="text-[10px]" style={{ color: "#9E9E9E" }}>Ocupado/a</span>}
                   </button>
                 );
               })}

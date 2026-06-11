@@ -2,6 +2,7 @@
 
 import { ChevronLeft, Calendar, CheckCircle, Loader2, MessageCircle } from "lucide-react";
 import type { CartItem, TenantConfig, BookingConfirmation } from "@/lib/booking-types";
+import { getBookingTheme } from "@/lib/booking-theme";
 import { useState } from "react";
 
 interface SummaryPaymentProps {
@@ -36,38 +37,6 @@ function formatTime(timeValue: string | null) {
   return `${h % 12 || 12}:${mStr} ${ampm}`;
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "12px 16px",
-  backgroundColor: "#FFFFFF",
-  border: "1px solid #F0E4E6",
-  borderRadius: "12px",
-  color: "#2C2C2C",
-  fontSize: "14px",
-  outline: "none",
-  transition: "border-color 0.2s, box-shadow 0.2s",
-};
-
-function PremiumInput({ label, id, type = "text", value, onChange, placeholder }: {
-  label: string; id: string; type?: string;
-  value: string; onChange: (v: string) => void; placeholder?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-sans mb-1.5" style={{ color: "#8C7B75" }} htmlFor={id}>
-        {label}
-      </label>
-      <input
-        id={id} type={type} value={value} placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        style={inputStyle}
-        onFocus={e => { e.currentTarget.style.borderColor = "#E8B4BC"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,180,188,0.15)"; }}
-        onBlur={e => { e.currentTarget.style.borderColor = "#F0E4E6"; e.currentTarget.style.boxShadow = "none"; }}
-      />
-    </div>
-  );
-}
-
 export function SummaryPayment({
   cart, selectedDate, selectedTime, totalAmount, onBack,
   tenantSlug, tenantConfig, profesionalId,
@@ -78,10 +47,27 @@ export function SummaryPayment({
   const [bookingResult, setBookingResult] = useState<BookingConfirmation | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
+  const T = getBookingTheme(tenantConfig?.tipo_negocio);
+  const isBarberia = tenantConfig?.tipo_negocio === "barberia";
+  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#4A5240" : "#E8B4BC");
+  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#6B7C62" : "#D4919B");
+
   const exigeSena = tenantConfig?.exige_sena ?? false;
   const porcentajeSena = tenantConfig?.porcentaje_sena ?? 0;
   const permiteEfectivo = tenantConfig?.permite_efectivo ?? true;
   const montoAPagar = exigeSena ? Math.round((totalAmount * porcentajeSena) / 100 * 100) / 100 : totalAmount;
+
+  const inputStyle = {
+    width: "100%",
+    padding: "12px 16px",
+    backgroundColor: "#FFFFFF",
+    border: `1px solid ${T.border}`,
+    borderRadius: "12px",
+    color: T.text,
+    fontSize: "14px",
+    outline: "none",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+  };
 
   const handleInput = (field: string, value: string) => setFormData(p => ({ ...p, [field]: value }));
   const isFormValid = () =>
@@ -147,44 +133,46 @@ export function SummaryPayment({
 
   // ── Pantalla de éxito ───────────────────────────────────────────────────────
   if (bookingStatus === "success" && bookingResult) {
-    const wppPhone = (tenantConfig as { telefono?: string } | undefined)?.telefono?.replace(/\D/g, "") ?? "";
+    const wppPhone = tenantConfig?.telefono?.replace(/\D/g, "") ?? "";
     const serviciosTexto = cart.map(i => `• ${i.name}`).join("\n");
+    const wppEmoji = isBarberia ? "✂️" : "💅";
     const wppMsg = encodeURIComponent(
-      `¡Hola! Acabo de reservar un turno 💅\n\n` +
+      `¡Hola! Acabo de reservar un turno ${wppEmoji}\n\n` +
       `👤 *${formData.nombre} ${formData.apellido}*\n` +
       `📅 *Fecha:* ${formatDate(selectedDate)}\n` +
       `🕐 *Horario:* ${formatTime(selectedTime)}\n` +
       `✨ *Servicios:*\n${serviciosTexto}\n` +
-      `💰 *${bookingResult.tipo === "sena" ? "Seña" : "Total"}:* ${formatPrice(bookingResult.monto)}\n` +
-      `🔖 *ID:* ${bookingResult.turnoIds[0].slice(0, 8)}\n\n¡Muchas gracias!`
+      `💰 *${bookingResult.tipo === "sena" ? "Seña" : "Total"}:* ${formatPrice(bookingResult.monto)}\n\n¡Muchas gracias!`
     );
     const wppUrl = wppPhone ? `https://wa.me/${wppPhone}?text=${wppMsg}` : `https://wa.me/?text=${wppMsg}`;
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: "#FCF8F5" }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: T.bg }}>
         <div className="w-full max-w-sm text-center">
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-            style={{ backgroundColor: "#FDF0F1", border: "1px solid #F0E4E6" }}>
-            <CheckCircle className="w-9 h-9" style={{ color: "#E8B4BC" }} strokeWidth={1.5} />
+            style={{ backgroundColor: `${primaryColor}18`, border: `1px solid ${T.border}` }}>
+            <CheckCircle className="w-9 h-9" style={{ color: primaryColor }} strokeWidth={1.5} />
           </div>
-          <h2 className="font-serif text-3xl mb-2" style={{ color: "#2C2C2C" }}>¡Reserva confirmada!</h2>
-          <p className="font-serif italic text-sm mb-8" style={{ color: "#8C7B75" }}>Tu experiencia de belleza está agendada</p>
+          <h2 className="font-serif text-3xl mb-2" style={{ color: T.text }}>¡Reserva confirmada!</h2>
+          <p className="font-serif italic text-sm mb-8" style={{ color: T.muted }}>
+            {isBarberia ? "Tu turno está agendado" : "Tu experiencia de belleza está agendada"}
+          </p>
 
           <div className="rounded-2xl p-5 mb-6 text-left space-y-3"
-            style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}>
+            style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
             <div className="flex justify-between text-sm">
-              <span style={{ color: "#8C7B75" }}>Fecha</span>
-              <span className="font-medium" style={{ color: "#2C2C2C" }}>{formatDate(selectedDate)}</span>
+              <span style={{ color: T.muted }}>Fecha</span>
+              <span className="font-medium" style={{ color: T.text }}>{formatDate(selectedDate)}</span>
             </div>
-            <div className="h-px" style={{ backgroundColor: "#F0E4E6" }} />
+            <div className="h-px" style={{ backgroundColor: T.border }} />
             <div className="flex justify-between text-sm">
-              <span style={{ color: "#8C7B75" }}>Horario</span>
-              <span className="font-medium" style={{ color: "#2C2C2C" }}>{formatTime(selectedTime)}</span>
+              <span style={{ color: T.muted }}>Horario</span>
+              <span className="font-medium" style={{ color: T.text }}>{formatTime(selectedTime)}</span>
             </div>
-            <div className="h-px" style={{ backgroundColor: "#F0E4E6" }} />
+            <div className="h-px" style={{ backgroundColor: T.border }} />
             <div className="flex justify-between text-sm">
-              <span style={{ color: "#8C7B75" }}>{bookingResult.tipo === "sena" ? "Seña abonada" : "Total"}</span>
-              <span className="font-medium" style={{ color: "#D4919B" }}>{formatPrice(bookingResult.monto)}</span>
+              <span style={{ color: T.muted }}>{bookingResult.tipo === "sena" ? "Seña abonada" : "Total"}</span>
+              <span className="font-medium" style={{ color: accentColor }}>{formatPrice(bookingResult.monto)}</span>
             </div>
           </div>
 
@@ -192,12 +180,8 @@ export function SummaryPayment({
             className="flex items-center justify-center gap-2 w-full py-4 font-sans font-medium text-sm mb-4 transition-opacity hover:opacity-90"
             style={{ backgroundColor: "#25D366", color: "#FFFFFF", borderRadius: "9999px", boxShadow: "0 4px 16px rgba(37,211,102,0.3)" }}>
             <MessageCircle className="w-4 h-4" />
-            Finalizar reserva por WhatsApp
+            Finalizar por WhatsApp
           </a>
-
-          <p className="text-xs" style={{ color: "#8C7B75" }}>
-            ID: <code className="font-mono">{bookingResult.turnoIds[0].slice(0, 8)}…</code>
-          </p>
         </div>
       </div>
     );
@@ -205,34 +189,36 @@ export function SummaryPayment({
 
   // ── Formulario ──────────────────────────────────────────────────────────────
   const paymentMethods: { id: PaymentMethod; label: string; icon: string; show: boolean }[] = [
-    { id: "mercadopago", label: "Mercado Pago", icon: "💳", show: true },
-    { id: "efectivo",    label: "Efectivo",     icon: "💵", show: permiteEfectivo },
+    { id: "mercadopago",  label: "Mercado Pago",  icon: "💳", show: true },
+    { id: "efectivo",     label: "Efectivo",       icon: "💵", show: permiteEfectivo },
     { id: "transferencia", label: "Transferencia", icon: "🏦", show: true },
   ];
 
   return (
-    <div className="animate-fade-in pb-10" style={{ backgroundColor: "#FCF8F5" }}>
+    <div className="animate-fade-in pb-10" style={{ backgroundColor: T.bg }}>
       {/* Header */}
       <header className="sticky top-0 z-10 px-5 pt-7 pb-4"
-        style={{ backgroundColor: "rgba(252,248,245,0.96)", backdropFilter: "blur(8px)", borderBottom: "1px solid #F0E4E6" }}>
+        style={{ backgroundColor: T.bgSticky, backdropFilter: "blur(8px)", borderBottom: `1px solid ${T.border}` }}>
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-sans transition-colors" style={{ color: "#8C7B75" }}>
+          <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-sans transition-colors" style={{ color: T.muted }}>
             <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
             Volver
           </button>
-          <h1 className="font-serif text-xl" style={{ color: "#2C2C2C" }}>Confirmar reserva</h1>
+          <h1 className="font-serif text-xl" style={{ color: T.text }}>
+            {isBarberia ? "Confirmar turno" : "Confirmar reserva"}
+          </h1>
         </div>
       </header>
 
       <div className="px-5 pt-6 space-y-5">
 
         {/* Resumen de servicios */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
           <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-4 h-4" style={{ color: "#E8B4BC" }} strokeWidth={1.5} />
+            <Calendar className="w-4 h-4" style={{ color: primaryColor }} strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-medium" style={{ color: "#2C2C2C" }}>{formatDate(selectedDate)}</p>
-              <p className="text-xs" style={{ color: "#8C7B75" }}>{formatTime(selectedTime)}</p>
+              <p className="text-sm font-medium" style={{ color: T.text }}>{formatDate(selectedDate)}</p>
+              <p className="text-xs" style={{ color: T.muted }}>{formatTime(selectedTime)}</p>
             </div>
           </div>
 
@@ -241,51 +227,73 @@ export function SummaryPayment({
               <div key={item.id}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-sans" style={{ color: "#2C2C2C" }}>{item.name}</p>
-                    <p className="text-xs" style={{ color: "#8C7B75" }}>{item.duration}</p>
+                    <p className="text-sm font-sans" style={{ color: T.text }}>{item.name}</p>
+                    <p className="text-xs" style={{ color: T.muted }}>{item.duration}</p>
                   </div>
-                  <p className="text-sm font-medium" style={{ color: "#D4919B" }}>{formatPrice(item.price)}</p>
+                  <p className="text-sm font-medium" style={{ color: accentColor }}>{formatPrice(item.price)}</p>
                 </div>
-                {i < cart.length - 1 && <div className="h-px mt-2.5" style={{ backgroundColor: "#F0E4E6" }} />}
+                {i < cart.length - 1 && <div className="h-px mt-2.5" style={{ backgroundColor: T.border }} />}
               </div>
             ))}
           </div>
 
-          <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: "1px solid #F0E4E6" }}>
-            <span className="font-serif text-base" style={{ color: "#2C2C2C" }}>Total</span>
-            <span className="font-serif text-xl" style={{ color: "#2C2C2C" }}>{formatPrice(totalAmount)}</span>
+          <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: `1px solid ${T.border}` }}>
+            <span className="font-serif text-base" style={{ color: T.text }}>Total</span>
+            <span className="font-serif text-xl" style={{ color: T.text }}>{formatPrice(totalAmount)}</span>
           </div>
 
           {exigeSena && (
             <div className="mt-3 rounded-xl px-4 py-3 flex items-center justify-between"
-              style={{ backgroundColor: "#FDF0F1", border: "1px solid #F0E4E6" }}>
-              <span className="text-sm font-sans" style={{ color: "#8C7B75" }}>Señá el {porcentajeSena}% ahora</span>
-              <span className="font-serif text-lg font-semibold" style={{ color: "#D4919B" }}>{formatPrice(montoAPagar)}</span>
+              style={{ backgroundColor: `${primaryColor}12`, border: `1px solid ${T.border}` }}>
+              <span className="text-sm font-sans" style={{ color: T.muted }}>Señá el {porcentajeSena}% ahora</span>
+              <span className="font-serif text-lg font-semibold" style={{ color: accentColor }}>{formatPrice(montoAPagar)}</span>
             </div>
           )}
         </div>
 
         {/* Datos personales */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}>
-          <h2 className="font-serif text-lg mb-4" style={{ color: "#2C2C2C" }}>Tus datos</h2>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+          <h2 className="font-serif text-lg mb-4" style={{ color: T.text }}>Tus datos</h2>
           <div className="space-y-3.5">
             <div className="grid grid-cols-2 gap-3">
-              <PremiumInput label="Nombre" id="nombre" value={formData.nombre} onChange={v => handleInput("nombre", v)} placeholder="Ana" />
-              <PremiumInput label="Apellido" id="apellido" value={formData.apellido} onChange={v => handleInput("apellido", v)} placeholder="García" />
+              {[
+                { label: "Nombre", id: "nombre", value: formData.nombre, placeholder: isBarberia ? "Juan" : "Ana" },
+                { label: "Apellido", id: "apellido", value: formData.apellido, placeholder: isBarberia ? "García" : "García" },
+              ].map(f => (
+                <div key={f.id}>
+                  <label className="block text-xs font-sans mb-1.5" style={{ color: T.muted }}>{f.label}</label>
+                  <input
+                    id={f.id} type="text" value={f.value} placeholder={f.placeholder}
+                    onChange={e => handleInput(f.id, e.target.value)}
+                    style={inputStyle}
+                    onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
+                  />
+                </div>
+              ))}
             </div>
-            <PremiumInput label="Email" id="email" type="email" value={formData.email} onChange={v => handleInput("email", v)} placeholder="ana@email.com" />
             <div>
-              <label className="block text-xs font-sans mb-1.5" style={{ color: "#8C7B75" }}>Teléfono</label>
+              <label className="block text-xs font-sans mb-1.5" style={{ color: T.muted }}>Email</label>
+              <input
+                id="email" type="email" value={formData.email} placeholder="ana@email.com"
+                onChange={e => handleInput("email", e.target.value)}
+                style={inputStyle}
+                onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
+                onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-sans mb-1.5" style={{ color: T.muted }}>Teléfono</label>
               <div className="flex gap-2">
-                <div className="flex items-center gap-1.5 px-3 rounded-xl flex-shrink-0" style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6" }}>
+                <div className="flex items-center gap-1.5 px-3 rounded-xl flex-shrink-0" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}` }}>
                   <span>🇦🇷</span>
-                  <span className="text-xs" style={{ color: "#8C7B75" }}>+54</span>
+                  <span className="text-xs" style={{ color: T.muted }}>+54</span>
                 </div>
                 <input type="tel" value={formData.phone} placeholder="11 1234 5678"
                   onChange={e => handleInput("phone", e.target.value)}
                   style={{ ...inputStyle, flex: 1 }}
-                  onFocus={e => { e.currentTarget.style.borderColor = "#E8B4BC"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,180,188,0.15)"; }}
-                  onBlur={e => { e.currentTarget.style.borderColor = "#F0E4E6"; e.currentTarget.style.boxShadow = "none"; }}
+                  onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
                 />
               </div>
             </div>
@@ -293,21 +301,21 @@ export function SummaryPayment({
         </div>
 
         {/* Método de pago */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid #F0E4E6", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}>
-          <h2 className="font-serif text-lg mb-4" style={{ color: "#2C2C2C" }}>Método de Pago</h2>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+          <h2 className="font-serif text-lg mb-4" style={{ color: T.text }}>Método de Pago</h2>
           <div className="space-y-2.5">
             {paymentMethods.filter(p => p.show).map(p => (
               <button key={p.id} onClick={() => setPaymentMethod(p.id)}
                 className="w-full flex items-center gap-3 p-4 transition-all duration-200"
                 style={{
                   borderRadius: "14px",
-                  border: paymentMethod === p.id ? "1.5px solid #E8B4BC" : "1px solid #F0E4E6",
-                  backgroundColor: paymentMethod === p.id ? "#FDF0F1" : "#FFFFFF",
+                  border: paymentMethod === p.id ? `1.5px solid ${primaryColor}` : `1px solid ${T.border}`,
+                  backgroundColor: paymentMethod === p.id ? `${primaryColor}12` : "#FFFFFF",
                 }}>
                 <span className="text-xl">{p.icon}</span>
-                <span className="text-sm font-sans font-medium flex-1 text-left" style={{ color: "#2C2C2C" }}>{p.label}</span>
+                <span className="text-sm font-sans font-medium flex-1 text-left" style={{ color: T.text }}>{p.label}</span>
                 <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ border: paymentMethod === p.id ? "none" : "1.5px solid #F0E4E6", backgroundColor: paymentMethod === p.id ? "#E8B4BC" : "transparent" }}>
+                  style={{ border: paymentMethod === p.id ? "none" : `1.5px solid ${T.border}`, backgroundColor: paymentMethod === p.id ? primaryColor : "transparent" }}>
                   {paymentMethod === p.id && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </button>
@@ -329,18 +337,18 @@ export function SummaryPayment({
           className="w-full py-4 font-sans font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2"
           style={
             !isFormValid() || bookingStatus === "loading"
-              ? { backgroundColor: "#F0E4E6", color: "#C9B2B5", borderRadius: "9999px", cursor: "not-allowed" }
-              : { backgroundColor: "#E8B4BC", color: "#2C2C2C", borderRadius: "9999px", boxShadow: "0 4px 20px rgba(232,180,188,0.4)" }
+              ? { backgroundColor: T.border, color: T.muted, borderRadius: "9999px", cursor: "not-allowed" }
+              : { backgroundColor: primaryColor, color: "#FFFFFF", borderRadius: "9999px", boxShadow: `0 4px 20px ${primaryColor}66` }
           }
         >
           {bookingStatus === "loading" ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Confirmando…</>
           ) : (
-            `Confirmar reserva → ${formatPrice(montoAPagar)}`
+            `${T.cta} → ${formatPrice(montoAPagar)}`
           )}
         </button>
 
-        <p className="text-center text-xs pb-4" style={{ color: "#8C7B75" }}>
+        <p className="text-center text-xs pb-4" style={{ color: T.muted }}>
           Al confirmar aceptás los términos del servicio
         </p>
       </div>

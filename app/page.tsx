@@ -39,9 +39,9 @@ const features = [
   },
   {
     Icon: Calculator,
-    title: 'Calculadora de comisiones',
+    title: 'Cobro de seña',
     description:
-      'Configurá el % por servicio y profesional. El sistema calcula solo, vos pagás con certeza total.',
+      'Configurá el monto de seña por servicio. Tu cliente lo paga al reservar y se descuenta del total automáticamente.',
     iconBg: 'bg-amber-50',
     iconColor: 'text-amber-600',
   },
@@ -51,8 +51,8 @@ const pricingPlans = [
   {
     name: 'Básico',
     tagline: 'Para empezar con el pie derecho',
-    price: '4.999',
-    yearlyNote: 'o $49.990/año — ahorrás 2 meses',
+    price: '29.999',
+    yearlyNote: 'o $299.990/año — ahorrás 2 meses',
     badge: null as string | null,
     popular: false,
     dark: false,
@@ -70,8 +70,8 @@ const pricingPlans = [
   {
     name: 'Pro',
     tagline: 'El plan completo para tu estética',
-    price: '9.999',
-    yearlyNote: 'o $99.990/año — ahorrás 2 meses',
+    price: '42.999',
+    yearlyNote: 'o $429.990/año — ahorrás 2 meses',
     badge: 'Más popular',
     popular: true,
     dark: false,
@@ -89,10 +89,10 @@ const pricingPlans = [
     ctaNote: 'Sin tarjeta de crédito',
   },
   {
-    name: 'Studio',
+    name: 'Pro+',
     tagline: 'Para centros con múltiples locales',
-    price: '24.999',
-    yearlyNote: 'o $249.990/año — ahorrás 2 meses',
+    price: '55.000',
+    yearlyNote: 'o $550.000/año — ahorrás 2 meses',
     badge: null as string | null,
     popular: false,
     dark: true,
@@ -110,7 +110,7 @@ const pricingPlans = [
 ];
 
 const navLinks = [
-  ['Funciones', '#funciones'],
+  ['Beneficios', '#funciones'],
   ['Precios', '#precios'],
   ['Contacto', '#contacto'],
 ] as const;

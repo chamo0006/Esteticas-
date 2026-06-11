@@ -70,7 +70,6 @@ export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
         <div class="row"><span class="label">${importeLabel}</span><span class="value">${montoStr}</span></div>
         <div class="row"><span class="label">Método</span><span class="value">${data.metodo}</span></div>
       </div>
-      <p style="color:#6b7280;font-size:13px;">ID de reserva: <code style="font-family:monospace;">${data.turnoId.slice(0, 8)}</code></p>
       <p style="color:#374151;font-size:14px;">Te recordaremos 24 horas antes de tu turno. Si necesitás cancelar o modificar, contactate directamente con la estética.</p>
     </div>
     <div class="footer">Este email fue enviado porque realizaste una reserva en ${data.tenantNombre}.</div>

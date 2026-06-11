@@ -65,8 +65,10 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
     return false;
   };
 
+  const bgColor = tenant.tipo_negocio === 'barberia' ? '#F3F2F0' : '#FCF8F5';
+
   return (
-    <main className="min-h-screen pb-28" style={{ backgroundColor: '#FCF8F5' }}>
+    <main className="min-h-screen pb-28" style={{ backgroundColor: bgColor }}>
       {currentStep === 'services' && (
         <ServicesCatalog
           services={filteredServices}
@@ -76,7 +78,8 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           isInCart={isInCart}
           tenantNombre={tenant.nombre}
           logoUrl={tenant.logo_url}
-          telefono={(tenant as { telefono?: string }).telefono}
+          telefono={tenant.telefono}
+          tenantConfig={tenant}
         />
       )}
 
@@ -93,6 +96,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           totalDuracion={totalDuracion}
           selectedProfesional={selectedProfesional}
           onSelectProfesional={setSelectedProfesional}
+          tenantConfig={tenant}
         />
       )}
 
@@ -115,6 +119,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           totalAmount={totalAmount}
           onContinue={handleContinue}
           disabled={!canContinue()}
+          tenantConfig={tenant}
         />
       )}
     </main>

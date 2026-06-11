@@ -16,6 +16,8 @@ export type BookingStep = 'services' | 'calendar' | 'summary';
 
 export type SchedulingMode = 'together' | 'separate';
 
+export type TipoNegocio = 'estetica' | 'barberia';
+
 export interface TenantConfig {
   id: string;
   slug: string;
@@ -26,6 +28,8 @@ export interface TenantConfig {
   permite_efectivo: boolean;
   color_primario: string | null;   // hex, ej: "#FFD1DC"
   color_acento: string | null;     // hex, ej: "#D4A0A7"
+  telefono: string | null;
+  tipo_negocio: TipoNegocio;
 }
 
 export interface TimeSlot {

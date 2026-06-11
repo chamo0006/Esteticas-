@@ -14,21 +14,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Nombre y email son requeridos' }, { status: 400 });
   }
 
-  // Guardar en Supabase
-  await supabase.from('leads').insert({
-    nombre: nombre.trim(),
-    email: email.trim().toLowerCase(),
-    telefono: telefono?.trim() ?? null,
-    estetica: estetica?.trim() ?? null,
-  }).throwOnError().catch(() => {
-    // Si la tabla no existe todavía, no bloqueamos el flujo
-  });
-
-  // Mandar email de notificación
   try {
-    await enviarContacto({ nombre: nombre.trim(), email: email.trim(), telefono: telefono?.trim() ?? '', estetica: estetica?.trim() ?? '' });
+    await supabase.from('leads').insert({
+      nombre: nombre.trim(),
+      email: email.trim().toLowerCase(),
+      telefono: telefono?.trim() || null,
+      estetica: estetica?.trim() || null,
+    });
   } catch (err) {
-    console.error('[contacto] error enviando email:', err);
+    console.error('[contacto] DB error:', err);
+  }
+
+  try {
+    await enviarContacto({
+      nombre: nombre.trim(),
+      email: email.trim(),
+      telefono: telefono?.trim() ?? '',
+      estetica: estetica?.trim() ?? '',
+    });
+  } catch (err) {
+    console.error('[contacto] email error:', err);
   }
 
   return NextResponse.json({ ok: true });

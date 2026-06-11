@@ -26,7 +26,7 @@ export async function GET(
   const [tenantResult, horariosResult, diasResult] = await Promise.all([
     supabase
       .from('tenants')
-      .select('nombre, email_contacto, telefono, logo_url, exige_sena, porcentaje_sena, permite_efectivo, color_primario, color_acento')
+      .select('nombre, email_contacto, telefono, logo_url, exige_sena, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio')
       .eq('id', payload.tenantId)
       .single(),
     supabase
@@ -73,6 +73,7 @@ export async function PATCH(
   const logo_url       = 'logo_url'       in raw ? (raw.logo_url       as string | null) : undefined;
   const color_primario = 'color_primario' in raw ? (raw.color_primario as string | null) : undefined;
   const color_acento   = 'color_acento'   in raw ? (raw.color_acento   as string | null) : undefined;
+  const tipo_negocio   = 'tipo_negocio'   in raw ? (raw.tipo_negocio   as string)        : undefined;
 
   // Build update object with only the fields that are defined
   const updateData: Record<string, unknown> = {};
@@ -85,6 +86,8 @@ export async function PATCH(
   if (logo_url         !== undefined) updateData.logo_url          = logo_url;
   if (color_primario   !== undefined) updateData.color_primario    = color_primario;
   if (color_acento     !== undefined) updateData.color_acento      = color_acento;
+  if (tipo_negocio     !== undefined && ['estetica', 'barberia'].includes(tipo_negocio))
+                                      updateData.tipo_negocio      = tipo_negocio;
 
   const { error } = await supabase
     .from('tenants')
