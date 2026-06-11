@@ -41,7 +41,9 @@ export default function ServiciosPage() {
   const [editing, setEditing] = useState<Servicio | null>(null);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const fetch_ = useCallback(async () => {
@@ -53,41 +55,58 @@ export default function ServiciosPage() {
 
   useEffect(() => { fetch_(); }, [fetch_]);
 
-  const openNew = () => { setEditing(null); setForm(EMPTY); setConfirmDelete(false); setShowModal(true); };
+  const openNew = () => { setEditing(null); setForm(EMPTY); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setShowModal(true); };
   const openEdit = (s: Servicio) => {
     setEditing(s);
     setForm({ nombre: s.nombre, descripcion: s.descripcion ?? '', duracion_minutos: s.duracion_minutos, precio: Number(s.precio), categoria: s.categoria });
     setConfirmDelete(false);
+    setSaveError(null);
+    setDeleteError(null);
     setShowModal(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    if (editing) {
-      await fetch(`/api/admin/${tenantSlug}/servicios`, {
-        method: 'PATCH',
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/admin/${tenantSlug}/servicios`, {
+        method: editing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editing.id, ...form }),
+        body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
       });
-    } else {
-      await fetch(`/api/admin/${tenantSlug}/servicios`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setSaveError(data.error ?? 'Error al guardar');
+        return;
+      }
+      await fetch_();
+      setShowModal(false);
+    } catch {
+      setSaveError('Error de red. Intentá de nuevo.');
+    } finally {
+      setSaving(false);
     }
-    await fetch_();
-    setSaving(false);
-    setShowModal(false);
   };
 
   const handleDelete = async () => {
     if (!editing) return;
     setDeleting(true);
-    await fetch(`/api/admin/${tenantSlug}/servicios?id=${editing.id}`, { method: 'DELETE' });
-    await fetch_();
-    setDeleting(false);
-    setShowModal(false);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/${tenantSlug}/servicios?id=${editing.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setDeleteError(data.error ?? 'No se pudo eliminar');
+        setConfirmDelete(false);
+        return;
+      }
+      await fetch_();
+      setShowModal(false);
+    } catch {
+      setDeleteError('Error de red. Intentá de nuevo.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const toggleActivo = async (s: Servicio) => {
@@ -236,12 +255,19 @@ export default function ServiciosPage() {
                 <p className="text-xs text-zinc-400 mt-1">Elegí una existente o escribí una nueva</p>
               </div>
             </div>
+            {(saveError || deleteError) && (
+              <div className="px-6 pt-4">
+                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                  {saveError ?? deleteError}
+                </p>
+              </div>
+            )}
             <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between gap-3">
               {/* Botón eliminar — solo al editar */}
               <div>
                 {editing && !confirmDelete && (
                   <button
-                    onClick={() => setConfirmDelete(true)}
+                    onClick={() => { setConfirmDelete(true); setDeleteError(null); }}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" /> Eliminar

@@ -77,23 +77,38 @@ export async function POST(
       : totalMonto;
   const tipoPago = tenant.exige_sena ? 'sena' : 'total';
 
-  // ── Crea cliente ──────────────────────────────────────────────────────────
-  const { data: clienteData, error: clienteError } = await supabase
-    .from('clientes')
-    .insert({
-      tenant_id: tenant.id,
-      nombre: `${cliente.nombre} ${cliente.apellido}`.trim(),
-      email: cliente.email,
-      telefono: cliente.telefono,
-    })
-    .select('id')
-    .single();
+  // ── Crea o recupera cliente (evita duplicados por email) ─────────────────
+  let clienteId: string;
+  let isNewCliente = false;
 
-  if (clienteError || !clienteData) {
-    console.error('[reservar] error creando cliente:', clienteError);
-    return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
+  const { data: clienteExistente } = await supabase
+    .from('clientes')
+    .select('id')
+    .eq('tenant_id', tenant.id)
+    .eq('email', cliente.email)
+    .maybeSingle();
+
+  if (clienteExistente) {
+    clienteId = clienteExistente.id;
+  } else {
+    isNewCliente = true;
+    const { data: clienteData, error: clienteError } = await supabase
+      .from('clientes')
+      .insert({
+        tenant_id: tenant.id,
+        nombre: `${cliente.nombre} ${cliente.apellido}`.trim(),
+        email: cliente.email,
+        telefono: cliente.telefono,
+      })
+      .select('id')
+      .single();
+
+    if (clienteError || !clienteData) {
+      console.error('[reservar] error creando cliente:', clienteError);
+      return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
+    }
+    clienteId = clienteData.id;
   }
-  const clienteId = clienteData.id;
 
   // ── Obtener profesionales activos para asignar ────────────────────────────
   const { data: profesionalesData } = await supabase
@@ -108,6 +123,12 @@ export async function POST(
   // ── Crea turnos consecutivos ──────────────────────────────────────────────
   const turnoIds: string[] = [];
   let currentTime = new Date(fechaHora);
+
+  // Limpia los registros creados en esta request si ocurre un error a mitad
+  const cleanup = async () => {
+    if (turnoIds.length > 0) await supabase.from('turnos').delete().in('id', turnoIds);
+    if (isNewCliente) await supabase.from('clientes').delete().eq('id', clienteId);
+  };
 
   for (const servicio of servicios) {
     let profesionalId: string | null = null;
@@ -143,6 +164,7 @@ export async function POST(
       if (profesionalIdReq && profesionales.some((p: { id: string }) => p.id === profesionalIdReq)) {
         // Client requested a specific professional — reject if they're busy
         if (ocupadosIds.has(profesionalIdReq)) {
+          await cleanup();
           return NextResponse.json(
             { error: 'La profesional elegida ya tiene turno en ese horario' },
             { status: 409 }
@@ -152,6 +174,7 @@ export async function POST(
       } else {
         const libre = profesionales.find((p: { id: string }) => !ocupadosIds.has(p.id));
         if (!libre) {
+          await cleanup();
           return NextResponse.json(
             { error: 'No hay profesionales disponibles en ese horario' },
             { status: 409 }
@@ -176,11 +199,7 @@ export async function POST(
 
     if (turnoError || !turnoData) {
       console.error('[reservar] error creando turno:', turnoError);
-      // Best-effort cleanup: delete previously created turnos and the cliente
-      if (turnoIds.length > 0) {
-        await supabase.from('turnos').delete().in('id', turnoIds);
-      }
-      await supabase.from('clientes').delete().eq('id', clienteId);
+      await cleanup();
       return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
     }
 
@@ -204,8 +223,7 @@ export async function POST(
 
   if (pagoError || !pagoData) {
     console.error('[reservar] error creando pago:', pagoError);
-    await supabase.from('turnos').delete().in('id', turnoIds);
-    await supabase.from('clientes').delete().eq('id', clienteId);
+    await cleanup();
     return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
   }
 

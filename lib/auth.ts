@@ -2,6 +2,14 @@ import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { supabase } from './supabase';
 
+if (!process.env.ADMIN_JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[auth] ADMIN_JWT_SECRET no está configurado. Definí la variable de entorno antes de deployar.');
+  } else {
+    console.warn('[auth] ADMIN_JWT_SECRET no configurado — usando secreto de desarrollo. NO usar en producción.');
+  }
+}
+
 const SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET ?? 'dev-secret-change-in-production'
 );

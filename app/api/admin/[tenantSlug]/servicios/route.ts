@@ -129,20 +129,15 @@ export async function DELETE(
     .eq('tenant_id', payload.tenantId);
 
   if (error) {
-    // If it has associated turnos, just deactivate it instead
-    const { error: updateError } = await supabase
-      .from('servicios')
-      .update({ activo: false })
-      .eq('id', id)
-      .eq('tenant_id', payload.tenantId);
-
-    if (updateError) {
-      console.error('[servicios DELETE]', updateError);
-      return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+    // FK violation: el servicio tiene turnos asociados → no se puede eliminar
+    if (error.code === '23503') {
+      return NextResponse.json(
+        { error: 'No se puede eliminar: el servicio tiene turnos asociados. Desactivalo desde el listado en su lugar.' },
+        { status: 409 }
+      );
     }
-
-    revalidatePath(`/${tenantSlug}`);
-    return NextResponse.json({ ok: true, desactivado: true });
+    console.error('[servicios DELETE]', error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
   revalidatePath(`/${tenantSlug}`);

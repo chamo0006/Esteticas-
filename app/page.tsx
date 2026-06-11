@@ -47,15 +47,66 @@ const features = [
   },
 ];
 
-const pricingFeatures = [
-  'Página de reservas personalizada',
-  'Panel de administración completo',
-  'Recordatorios automáticos por WhatsApp',
-  'Señas online con Mercado Pago',
-  'Gestión de staff y comisiones',
-  'Historial de clientes con fotos',
-  'Estadísticas e ingresos',
-  'Soporte 7 días a la semana',
+const pricingPlans = [
+  {
+    name: 'Básico',
+    tagline: 'Para empezar con el pie derecho',
+    price: '4.999',
+    yearlyNote: 'o $49.990/año — ahorrás 2 meses',
+    badge: null as string | null,
+    popular: false,
+    dark: false,
+    features: [
+      'Página de reservas personalizada',
+      'Panel de administración completo',
+      'Hasta 2 profesionales',
+      'Gestión de servicios y categorías',
+      'Estadísticas básicas',
+      'Soporte por email',
+    ],
+    cta: 'Empezar gratis',
+    ctaNote: 'Sin tarjeta de crédito',
+  },
+  {
+    name: 'Pro',
+    tagline: 'El plan completo para tu estética',
+    price: '9.999',
+    yearlyNote: 'o $99.990/año — ahorrás 2 meses',
+    badge: 'Más popular',
+    popular: true,
+    dark: false,
+    features: [
+      'Todo lo del plan Básico',
+      'Profesionales ilimitados',
+      'Recordatorios automáticos por WhatsApp',
+      'Señas online con Mercado Pago',
+      'Gestión de staff y comisiones',
+      'Historial de clientes con fotos',
+      'Estadísticas e ingresos detallados',
+      'Soporte 7 días a la semana',
+    ],
+    cta: 'Empezar gratis 14 días',
+    ctaNote: 'Sin tarjeta de crédito',
+  },
+  {
+    name: 'Studio',
+    tagline: 'Para centros con múltiples locales',
+    price: '24.999',
+    yearlyNote: 'o $249.990/año — ahorrás 2 meses',
+    badge: null as string | null,
+    popular: false,
+    dark: true,
+    features: [
+      'Todo lo del plan Pro',
+      'Múltiples locales y sucursales',
+      'Reportes avanzados exportables',
+      'Manager de cuenta dedicado',
+      'Integraciones y API prioritarias',
+      'Configuración guiada incluida',
+    ],
+    cta: 'Hablar con ventas',
+    ctaNote: 'Te contactamos en menos de 24hs',
+  },
 ];
 
 const navLinks = [
@@ -230,7 +281,7 @@ export default function LandingPage() {
       {/* ── Pricing ─────────────────────────────────────────── */}
       <section id="precios" className="bg-gray-50 py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <AnimateIn className="text-center mb-12">
+          <AnimateIn className="text-center mb-14">
             <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
               Precios
             </span>
@@ -238,50 +289,98 @@ export default function LandingPage() {
               Simple. Claro. Sin sorpresas.
             </h2>
             <p className="text-gray-500 max-w-lg mx-auto">
-              Un solo plan con todo incluido. Sin funciones bloqueadas, sin letras chicas.
+              Elegí el plan que mejor se adapta a tu negocio. Todos incluyen 14 días de prueba gratis, sin tarjeta de crédito.
             </p>
           </AnimateIn>
 
-          <AnimateIn delay={100} className="max-w-sm mx-auto">
-            <div className="relative bg-white rounded-3xl border border-gray-200 p-8 shadow-2xl shadow-gray-100/80 overflow-hidden hover:shadow-violet-100/60 hover:-translate-y-1 transition-all duration-300">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-400 to-purple-600" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+            {pricingPlans.map((plan, i) => (
+              <AnimateIn key={plan.name} delay={i * 80} className="h-full">
+                <div
+                  className={
+                    'relative flex flex-col rounded-3xl p-8 h-full transition-all duration-300 ' +
+                    (plan.popular
+                      ? 'bg-white border border-violet-200 shadow-2xl shadow-violet-100/60 hover:-translate-y-1 overflow-hidden'
+                      : plan.dark
+                      ? 'bg-gray-900 border border-gray-800 hover:shadow-xl hover:shadow-gray-900/20 hover:-translate-y-1'
+                      : 'bg-white border border-gray-200 hover:shadow-xl hover:shadow-gray-100/80 hover:-translate-y-1')
+                  }
+                >
+                  {plan.popular && (
+                    <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-400 to-purple-600" />
+                  )}
 
-              <div className="mb-7">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-3 py-1 mb-4">
-                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                  Todo incluido
-                </span>
-                <div className="flex items-baseline gap-1.5 mt-3">
-                  <span className="text-5xl font-bold text-gray-900">$9.999</span>
-                  <span className="text-gray-400 font-medium">/mes</span>
+                  {plan.badge && (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-3 py-1 mb-4 self-start">
+                      <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                      {plan.badge}
+                    </span>
+                  )}
+
+                  <h3 className={'text-lg font-semibold mb-1 ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
+                    {plan.name}
+                  </h3>
+                  <p className={'text-sm mb-5 ' + (plan.dark ? 'text-gray-400' : 'text-gray-500')}>
+                    {plan.tagline}
+                  </p>
+
+                  <div className="flex items-baseline gap-1.5 mb-2">
+                    <span className={'text-4xl font-bold ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
+                      ${plan.price}
+                    </span>
+                    <span className={'font-medium text-gray-400'}>/mes</span>
+                  </div>
+                  <p className={'text-xs mb-7 ' + (plan.dark ? 'text-gray-500' : 'text-gray-400')}>
+                    {plan.yearlyNote}
+                  </p>
+
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map(f => (
+                      <li key={f} className="flex items-start gap-3">
+                        <div
+                          className={
+                            'w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ' +
+                            (plan.popular
+                              ? 'bg-violet-50 border border-violet-100'
+                              : plan.dark
+                              ? 'bg-white/10'
+                              : 'bg-gray-100')
+                          }
+                        >
+                          <Check
+                            className={
+                              'w-3 h-3 ' +
+                              (plan.popular ? 'text-violet-600' : plan.dark ? 'text-white' : 'text-gray-500')
+                            }
+                          />
+                        </div>
+                        <span className={'text-sm ' + (plan.dark ? 'text-gray-300' : 'text-gray-600')}>
+                          {f}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <a
+                    href="#contacto"
+                    className={
+                      'block w-full text-center py-4 rounded-2xl font-semibold transition-all duration-200 hover:-translate-y-0.5 ' +
+                      (plan.popular
+                        ? 'bg-gray-900 text-white hover:bg-gray-700'
+                        : plan.dark
+                        ? 'bg-white text-gray-900 hover:bg-gray-100'
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200')
+                    }
+                  >
+                    {plan.cta}
+                  </a>
+                  <p className={'text-center text-xs mt-3 ' + (plan.dark ? 'text-gray-500' : 'text-gray-400')}>
+                    {plan.ctaNote}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-400 mt-2">
-                  o $99.990/año — ahorrás 2 meses
-                </p>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                {pricingFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <Check className="w-3 h-3 text-violet-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href="#contacto"
-                className="block w-full text-center bg-gray-900 text-white py-4 rounded-2xl font-semibold hover:bg-gray-700 hover:-translate-y-0.5 transition-all duration-200"
-              >
-                Empezar gratis 14 días
-              </a>
-              <p className="text-center text-xs text-gray-400 mt-3">
-                Sin tarjeta de crédito requerida
-              </p>
-            </div>
-          </AnimateIn>
+              </AnimateIn>
+            ))}
+          </div>
         </div>
       </section>
 

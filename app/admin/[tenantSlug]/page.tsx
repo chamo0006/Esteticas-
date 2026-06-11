@@ -13,8 +13,11 @@ function formatARS(n: number) {
 }
 
 function formatFecha(dt: string | Date) {
-  const d = new Date(dt);
-  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} · ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} hs`;
+  const utc = new Date(dt);
+  // Shift to Argentina time (UTC-3) and use UTC accessors so the result is
+  // timezone-agnostic regardless of where the server is running.
+  const ar = new Date(utc.getTime() - 3 * 60 * 60 * 1000);
+  return `${WEEKDAYS[ar.getUTCDay()]} ${ar.getUTCDate()} ${MONTHS[ar.getUTCMonth()]} · ${ar.getUTCHours().toString().padStart(2,'0')}:${ar.getUTCMinutes().toString().padStart(2,'0')} hs`;
 }
 
 // Fechas en hora Argentina (UTC-3)
@@ -132,6 +135,7 @@ export default async function AdminDashboard({ params }: Props) {
 
   const fechaHoy = new Date().toLocaleDateString('es-AR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'America/Argentina/Buenos_Aires',
   });
 
   return (

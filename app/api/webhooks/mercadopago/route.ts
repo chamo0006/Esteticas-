@@ -46,9 +46,10 @@ export async function POST(req: Request) {
       .update({ estado: nuevoEstado, referencia_externa: String(data.id) })
       .eq('id', externalRef);
 
-    // Si el pago fue aprobado, también confirma los turnos asociados
+    // Si el pago fue aprobado, confirma TODOS los turnos pendientes del cliente
+    // (una reserva puede incluir múltiples servicios consecutivos → múltiples turnos,
+    //  pero el pago solo guarda el turno_id del primero).
     if (nuevoEstado === 'acreditado') {
-      // Fetch the turno_id from the pago
       const { data: pagoData } = await supabase
         .from('pagos')
         .select('turno_id')
@@ -56,11 +57,27 @@ export async function POST(req: Request) {
         .single();
 
       if (pagoData?.turno_id) {
-        await supabase
+        // Obtener el cliente_id desde el primer turno para confirmar todos los suyos
+        const { data: turnoData } = await supabase
           .from('turnos')
-          .update({ estado: 'confirmado' })
+          .select('cliente_id')
           .eq('id', pagoData.turno_id)
-          .eq('estado', 'pendiente');
+          .single();
+
+        if (turnoData?.cliente_id) {
+          await supabase
+            .from('turnos')
+            .update({ estado: 'confirmado' })
+            .eq('cliente_id', turnoData.cliente_id)
+            .eq('estado', 'pendiente');
+        } else {
+          // Fallback: confirmar solo el turno referenciado
+          await supabase
+            .from('turnos')
+            .update({ estado: 'confirmado' })
+            .eq('id', pagoData.turno_id)
+            .eq('estado', 'pendiente');
+        }
       }
     }
 

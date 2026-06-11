@@ -32,7 +32,7 @@ export async function GET(
     const dayStartISO = new Date(`${fecha}T00:00:00-03:00`).toISOString();
     const dayEndISO   = new Date(`${fecha}T23:59:59-03:00`).toISOString();
 
-    const [horarioRes, turnosRes, profesionalesRes] = await Promise.all([
+    const [horarioRes, turnosRes, profesionalesRes, bloqueadoRes] = await Promise.all([
       supabase
         .from('horarios_tenant')
         .select('hora_apertura, hora_cierre, activo')
@@ -51,7 +51,16 @@ export async function GET(
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenant.id)
         .eq('activo', true),
+      supabase
+        .from('dias_bloqueados')
+        .select('id')
+        .eq('tenant_id', tenant.id)
+        .eq('fecha', fecha)
+        .limit(1),
     ]);
+
+    // Día marcado como bloqueado (vacaciones / feriado) → sin turnos disponibles
+    if ((bloqueadoRes.data ?? []).length > 0) return NextResponse.json([]);
 
     const horario = horarioRes.data;
     if (!horario || !horario.activo) return NextResponse.json([]);

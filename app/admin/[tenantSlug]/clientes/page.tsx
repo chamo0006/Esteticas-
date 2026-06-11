@@ -10,7 +10,7 @@ interface Cliente {
   email: string | null;
   telefono: string | null;
   created_at: string;
-  total_turnos: string;
+  total_turnos: number;
   ultimo_turno: string | null;
 }
 
@@ -176,7 +176,7 @@ export default function ClientesPage() {
               <p className="font-medium text-zinc-900 text-sm">{confirmDelete.nombre}</p>
               {confirmDelete.email && <p className="text-xs text-zinc-400 mt-0.5">{confirmDelete.email}</p>}
               <p className="text-xs text-zinc-400 mt-0.5">
-                {confirmDelete.total_turnos} turno{Number(confirmDelete.total_turnos) !== 1 ? 's' : ''} en el historial
+                {confirmDelete.total_turnos} turno{confirmDelete.total_turnos !== 1 ? 's' : ''} en el historial
               </p>
             </div>
 

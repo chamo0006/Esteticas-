@@ -30,8 +30,9 @@ export function ContactForm() {
         body: JSON.stringify(form),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? 'Error al enviar');
+        let msg = 'Error al enviar el mensaje. Intentá de nuevo.';
+        try { const d = await res.json(); msg = d.error ?? msg; } catch { /* empty body */ }
+        throw new Error(msg);
       }
       setSent(true);
     } catch (err) {

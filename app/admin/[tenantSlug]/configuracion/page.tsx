@@ -144,36 +144,46 @@ export default function ConfiguracionPage() {
   const saveTenant = async () => {
     setSaving(true);
     setSaveError(null);
-    const res = await fetch(`/api/admin/${tenantSlug}/configuracion`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tenant),
-    });
-    setSaving(false);
-    if (res.ok) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setSaveError(data.error ?? 'Error al guardar');
+    try {
+      const res = await fetch(`/api/admin/${tenantSlug}/configuracion`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tenant),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSaveError(data.error ?? 'Error al guardar');
+      }
+    } catch {
+      setSaveError('Error de red. Intentá de nuevo.');
+    } finally {
+      setSaving(false);
     }
   };
 
   const saveHorarios = async () => {
     setSaving(true);
     setSaveError(null);
-    const res = await fetch(`/api/admin/${tenantSlug}/horarios`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ horarios }),
-    });
-    setSaving(false);
-    if (res.ok) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setSaveError(data.error ?? 'Error al guardar');
+    try {
+      const res = await fetch(`/api/admin/${tenantSlug}/horarios`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ horarios }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSaveError(data.error ?? 'Error al guardar');
+      }
+    } catch {
+      setSaveError('Error de red. Intentá de nuevo.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -303,13 +313,13 @@ export default function ConfiguracionPage() {
                 <button
                   onClick={() => setTenant(t => t ? { ...t, permite_efectivo: !t.permite_efectivo } : t)}
                   className={cn(
-                    'w-12 h-6 rounded-full transition-colors relative',
+                    'w-12 h-6 rounded-full transition-colors relative overflow-hidden',
                     tenant.permite_efectivo ? 'bg-violet-600' : 'bg-zinc-200'
                   )}
                 >
                   <span className={cn(
-                    'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
-                    tenant.permite_efectivo ? 'translate-x-6' : 'translate-x-0.5'
+                    'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
+                    tenant.permite_efectivo ? 'translate-x-6' : 'translate-x-0'
                   )} />
                 </button>
               </div>
@@ -323,13 +333,13 @@ export default function ConfiguracionPage() {
                 <button
                   onClick={() => setTenant(t => t ? { ...t, exige_sena: !t.exige_sena } : t)}
                   className={cn(
-                    'w-12 h-6 rounded-full transition-colors relative',
+                    'w-12 h-6 rounded-full transition-colors relative overflow-hidden',
                     tenant.exige_sena ? 'bg-violet-600' : 'bg-zinc-200'
                   )}
                 >
                   <span className={cn(
-                    'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
-                    tenant.exige_sena ? 'translate-x-6' : 'translate-x-0.5'
+                    'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
+                    tenant.exige_sena ? 'translate-x-6' : 'translate-x-0'
                   )} />
                 </button>
               </div>
@@ -373,9 +383,9 @@ export default function ConfiguracionPage() {
                         next[i] = { ...next[i], activo: !next[i].activo };
                         setHorarios(next);
                       }}
-                      className={cn('w-12 h-6 rounded-full transition-colors relative flex-shrink-0', h.activo ? 'bg-violet-600' : 'bg-zinc-200')}
+                      className={cn('w-12 h-6 rounded-full transition-colors relative flex-shrink-0 overflow-hidden', h.activo ? 'bg-violet-600' : 'bg-zinc-200')}
                     >
-                      <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', h.activo ? 'translate-x-6' : 'translate-x-0.5')} />
+                      <span className={cn('absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', h.activo ? 'translate-x-6' : 'translate-x-0')} />
                     </button>
 
                     {/* Día */}

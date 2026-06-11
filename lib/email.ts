@@ -1,6 +1,8 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 const FROM = process.env.EMAIL_FROM ?? 'Reservas <noreply@tudominio.com>';
 
@@ -50,6 +52,7 @@ interface ReservaData {
 
 // Email al CLIENTE al confirmar su reserva
 export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
+  if (!resend) return;
   const importeLabel = data.tipo === 'sena' ? 'Seña pagada' : 'Total pagado';
   const montoStr = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(data.monto);
 
@@ -83,6 +86,7 @@ export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
 
 // Email al ADMIN de la estética cuando entra una reserva nueva
 export async function enviarNotificacionAdmin(to: string, data: ReservaData) {
+  if (!resend) return;
   const montoStr = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(data.monto);
 
   const html = baseTemplate(`
@@ -119,6 +123,7 @@ export async function enviarRecordatorio(to: string, data: {
   fecha: string;
   hora: string;
 }) {
+  if (!resend) return;
   const html = baseTemplate(`
     <div class="header">
       <h1>Recordatorio de turno ⏰</h1>
@@ -151,6 +156,7 @@ export async function enviarContacto(data: {
   telefono: string;
   estetica: string;
 }) {
+  if (!resend) return;
   const html = baseTemplate(`
     <div class="header">
       <h1>Nuevo lead 🌸</h1>
@@ -184,6 +190,7 @@ export async function enviarBienvenida(to: string, data: {
   tenantSlug: string;
   password: string;
 }) {
+  if (!resend) return;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
 
   const html = baseTemplate(`

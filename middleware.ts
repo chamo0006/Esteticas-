@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
+if (!process.env.ADMIN_JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('[middleware] ADMIN_JWT_SECRET no está configurado.');
+}
+
 const SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET ?? 'dev-secret-change-in-production'
 );
@@ -11,8 +15,10 @@ export async function middleware(req: NextRequest) {
   // Rutas públicas del admin
   if (
     pathname === '/admin/login' ||
+    pathname === '/admin/leads/login' ||
     pathname.startsWith('/api/admin/login') ||
-    pathname.startsWith('/api/admin/logout')
+    pathname.startsWith('/api/admin/logout') ||
+    pathname.startsWith('/api/admin/leads/login')
   ) {
     return NextResponse.next();
   }
