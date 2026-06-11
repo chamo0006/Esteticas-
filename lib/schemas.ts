@@ -19,11 +19,12 @@ export const loginAdminSchema = z.object({
 });
 
 export const registrarTenantSchema = z.object({
-  nombre:     z.string().min(2).max(255),
-  email:      z.string().email(),
-  telefono:   z.string().optional(),
+  nombre:      z.string().min(2).max(255),
+  email:       z.string().email(),
+  telefono:    z.string().optional(),
   adminNombre: z.string().min(2).max(255),
-  password:   z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  password:    z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  tipo_negocio: z.enum(['estetica', 'barberia']).default('estetica'),
 });
 
 export const configuracionSchema = z.object({

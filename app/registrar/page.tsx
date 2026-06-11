@@ -8,6 +8,7 @@ export default function RegistrarPage() {
   const [form, setForm] = useState({
     nombre: '', email: '', telefono: '',
     adminNombre: '', password: '', confirmPassword: '',
+    tipo_negocio: '' as 'estetica' | 'barberia' | '',
   });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,10 @@ export default function RegistrarPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.tipo_negocio) {
+      setError('Seleccioná el tipo de negocio');
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -37,6 +42,7 @@ export default function RegistrarPage() {
           telefono: form.telefono,
           adminNombre: form.adminNombre,
           password: form.password,
+          tipo_negocio: form.tipo_negocio,
         }),
       });
 
@@ -60,7 +66,7 @@ export default function RegistrarPage() {
         <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-5">
           <Check className="w-8 h-8 text-emerald-400" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">¡Tu estética está lista!</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">¡Tu negocio está listo!</h2>
         <p className="text-zinc-400 text-sm mb-6">
           Tu URL pública es <strong className="text-violet-400">/{success.slug}</strong>.
           Te enviamos los datos de acceso por email.
@@ -83,14 +89,51 @@ export default function RegistrarPage() {
           <div className="w-14 h-14 rounded-2xl bg-violet-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-900/50">
             <Sparkles className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Registrá tu estética</h1>
+          <h1 className="text-2xl font-bold text-white">Registrá tu negocio</h1>
           <p className="text-zinc-500 text-sm mt-2">Empezá a recibir reservas en minutos</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Tipo de negocio */}
+          <div className="bg-zinc-900 rounded-2xl p-5 space-y-3 border border-zinc-800">
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">¿Qué tipo de negocio tenés?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { value: 'estetica', emoji: '💅', label: 'Estética', desc: 'Uñas, pestañas, tratamientos...' },
+                { value: 'barberia', emoji: '✂️', label: 'Barbería', desc: 'Cortes, barba, afeitado...' },
+              ] as const).map(({ value, emoji, label, desc }) => {
+                const selected = form.tipo_negocio === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => set('tipo_negocio', value)}
+                    className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                      selected
+                        ? 'border-violet-500 bg-violet-500/10'
+                        : 'border-zinc-700 hover:border-zinc-500 bg-zinc-800'
+                    }`}
+                  >
+                    {selected && (
+                      <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </span>
+                    )}
+                    <span className="text-2xl">{emoji}</span>
+                    <div>
+                      <p className={`text-sm font-semibold ${selected ? 'text-violet-300' : 'text-zinc-300'}`}>{label}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">{desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Datos del negocio */}
           <div className="bg-zinc-900 rounded-2xl p-5 space-y-4 border border-zinc-800">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Tu estética</p>
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Tu negocio</p>
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nombre del negocio *</label>
               <input
@@ -176,7 +219,7 @@ export default function RegistrarPage() {
             disabled={loading}
             className="w-full py-3.5 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-violet-900/30"
           >
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creando tu cuenta...</> : 'Crear mi estética gratis'}
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creando tu cuenta...</> : 'Crear mi negocio gratis'}
           </button>
 
           <p className="text-center text-zinc-600 text-xs">

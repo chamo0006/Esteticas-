@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Datos inválidos', detalles: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { nombre, email, telefono, adminNombre, password } = parsed.data;
+  const { nombre, email, telefono, adminNombre, password, tipo_negocio } = parsed.data;
 
   // Verificar que el email no esté en uso
   const { data: existingUser } = await supabase
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   // Create tenant
   const { data: tenantData, error: tenantError } = await supabase
     .from('tenants')
-    .insert({ slug, nombre, email_contacto: email, telefono: telefono ?? null })
+    .insert({ slug, nombre, email_contacto: email, telefono: telefono ?? null, tipo_negocio })
     .select('id')
     .single();
 
