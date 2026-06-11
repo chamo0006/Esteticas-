@@ -592,45 +592,6 @@ export default function ConfiguracionPage() {
           {tab === 'apariencia' && (
             <div className="space-y-4">
 
-              {/* Tipo de negocio */}
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-zinc-900">Tipo de negocio</h3>
-                  <p className="text-xs text-zinc-400 mt-0.5">Define el diseño que verán tus clientes al reservar</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {([
-                    { value: 'estetica', emoji: '💅', label: 'Estética', desc: 'Diseño femenino y cálido' },
-                    { value: 'barberia', emoji: '✂️', label: 'Barbería', desc: 'Diseño moderno y urbano' },
-                  ] as const).map(({ value, emoji, label, desc }) => {
-                    const selected = (tenant.tipo_negocio ?? 'estetica') === value;
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => setTenant(t => t ? { ...t, tipo_negocio: value } : t)}
-                        className={cn(
-                          'relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center',
-                          selected
-                            ? 'border-violet-500 bg-violet-50 shadow-sm'
-                            : 'border-zinc-200 hover:border-zinc-300 bg-white'
-                        )}
-                      >
-                        {selected && (
-                          <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </span>
-                        )}
-                        <span className="text-2xl">{emoji}</span>
-                        <div>
-                          <p className={cn('text-sm font-semibold', selected ? 'text-violet-700' : 'text-zinc-700')}>{label}</p>
-                          <p className="text-xs text-zinc-400 mt-0.5">{desc}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Logo */}
               <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
                 <h3 className="font-semibold text-zinc-900">Logo</h3>
