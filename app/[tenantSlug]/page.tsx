@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTenantBySlug } from '@/lib/tenant';
 import { supabase } from '@/lib/supabase';
-import { BookingClient } from './booking-client';
+import { BookingClient }  from './booking-client';
+import { BarberiaClient } from './barberia-client';
 import type { Service } from '@/lib/booking-types';
 
 export const dynamic = 'force-dynamic';
@@ -32,5 +33,6 @@ export default async function TenantBookingPage({ params }: Props) {
     category: s.categoria ?? 'general',
   }));
 
+  if (tenant.tipo_negocio === 'barberia') return <BarberiaClient tenant={tenant} services={services} />;
   return <BookingClient tenant={tenant} services={services} />;
 }
