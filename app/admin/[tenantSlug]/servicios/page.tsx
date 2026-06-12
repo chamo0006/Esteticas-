@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Plus, Edit2, ToggleLeft, ToggleRight, Loader2, X, Check, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, ToggleLeft, ToggleRight, Loader2, X, Check, Trash2, AlertTriangle, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface Categoria { id: string; nombre: string }
 
 interface Servicio {
   id: string;
@@ -44,6 +46,14 @@ export default function ServiciosPage() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [tipoNegocio, setTipoNegocio] = useState<'estetica' | 'barberia'>('estetica');
   const [loading, setLoading] = useState(true);
+
+  // Categorías
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [newCat, setNewCat] = useState('');
+  const [addingCat, setAddingCat] = useState(false);
+  const [showCatInput, setShowCatInput] = useState(false);
+  const [catError, setCatError] = useState<string | null>(null);
+  const [deletingCatId, setDeletingCatId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Servicio | null>(null);
   const [form, setForm] = useState(EMPTY);
@@ -60,7 +70,12 @@ export default function ServiciosPage() {
     setLoading(false);
   }, [tenantSlug]);
 
-  useEffect(() => { fetch_(); }, [fetch_]);
+  const fetchCategorias = useCallback(async () => {
+    const res = await fetch(`/api/admin/${tenantSlug}/categorias`);
+    if (res.ok) setCategorias(await res.json());
+  }, [tenantSlug]);
+
+  useEffect(() => { fetch_(); fetchCategorias(); }, [fetch_, fetchCategorias]);
 
   useEffect(() => {
     fetch(`/api/admin/${tenantSlug}/configuracion`)
@@ -68,6 +83,31 @@ export default function ServiciosPage() {
       .then(d => { if (d.tenant?.tipo_negocio) setTipoNegocio(d.tenant.tipo_negocio); })
       .catch(() => {});
   }, [tenantSlug]);
+
+  const handleAddCat = async () => {
+    if (!newCat.trim()) return;
+    setAddingCat(true); setCatError(null);
+    const res = await fetch(`/api/admin/${tenantSlug}/categorias`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: newCat.trim() }),
+    });
+    if (res.ok) {
+      setNewCat(''); setShowCatInput(false);
+      await fetchCategorias();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      setCatError(d.error ?? 'Error al crear');
+    }
+    setAddingCat(false);
+  };
+
+  const handleDeleteCat = async (id: string) => {
+    setDeletingCatId(id);
+    await fetch(`/api/admin/${tenantSlug}/categorias?id=${id}`, { method: 'DELETE' });
+    await fetchCategorias();
+    setDeletingCatId(null);
+  };
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setShowModal(true); };
   const openEdit = (s: Servicio) => {
@@ -146,6 +186,70 @@ export default function ServiciosPage() {
         >
           <Plus className="w-4 h-4" /> Nuevo servicio
         </button>
+      </div>
+
+      {/* ── Categorías ─────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-zinc-400" />
+            <h2 className="font-semibold text-zinc-900 text-sm">Categorías</h2>
+            <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">{categorias.length}</span>
+          </div>
+          {!showCatInput && (
+            <button onClick={() => { setShowCatInput(true); setCatError(null); setNewCat(''); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold rounded-lg transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Nueva categoría
+            </button>
+          )}
+        </div>
+
+        {/* Inline add form */}
+        {showCatInput && (
+          <div className="flex items-center gap-2 mb-4">
+            <input
+              autoFocus
+              value={newCat}
+              onChange={e => setNewCat(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleAddCat(); if (e.key === 'Escape') setShowCatInput(false); }}
+              placeholder={tipoNegocio === 'barberia' ? 'ej: corte, barba, combo...' : 'ej: nails, lashes, skin...'}
+              className="flex-1 px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+            />
+            <button onClick={handleAddCat} disabled={addingCat || !newCat.trim()}
+              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white text-sm font-semibold rounded-xl transition-colors">
+              {addingCat ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            </button>
+            <button onClick={() => setShowCatInput(false)} className="text-zinc-400 hover:text-zinc-600 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+        {catError && <p className="text-xs text-red-500 mb-3">{catError}</p>}
+
+        {/* Lista de categorías */}
+        {categorias.length === 0 ? (
+          <p className="text-sm text-zinc-400 text-center py-4">
+            Sin categorías todavía. Creá la primera para organizar tus servicios.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {categorias.map(cat => (
+              <div key={cat.id}
+                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium', CAT_STYLES[cat.nombre] ?? CAT_STYLES.general)}>
+                <span>{cat.nombre}</span>
+                <button
+                  onClick={() => handleDeleteCat(cat.id)}
+                  disabled={deletingCatId === cat.id}
+                  className="ml-0.5 opacity-50 hover:opacity-100 transition-opacity"
+                  title="Eliminar categoría">
+                  {deletingCatId === cat.id
+                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                    : <X className="w-3 h-3" />}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -262,6 +366,7 @@ export default function ServiciosPage() {
                 />
                 <datalist id="categorias-list">
                   {Array.from(new Set([
+                    ...categorias.map(c => c.nombre),
                     ...(tipoNegocio === 'barberia' ? CATS_BARBERIA : CATS_ESTETICA),
                     ...servicios.map(s => s.categoria).filter(Boolean),
                   ])).map(c => <option key={c} value={c} />)}
