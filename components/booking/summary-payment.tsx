@@ -70,9 +70,16 @@ export function SummaryPayment({
   };
 
   const handleInput = (field: string, value: string) => setFormData(p => ({ ...p, [field]: value }));
+
+  const phoneDigits = formData.phone.replace(/\D/g, "");
+  const phoneValid  = phoneDigits.startsWith("11") && phoneDigits.length === 10;
+  const phoneError  = formData.phone.trim() !== "" && !phoneValid
+    ? "El teléfono debe empezar con 11 y tener 10 dígitos (ej: 1123456789)"
+    : null;
+
   const isFormValid = () =>
     formData.nombre.trim() !== "" && formData.apellido.trim() !== "" &&
-    formData.email.trim() !== "" && formData.phone.trim() !== "";
+    formData.email.trim() !== "" && phoneValid;
 
   const handleConfirmar = async () => {
     if (!tenantSlug || !selectedDate || !selectedTime) return;
@@ -289,13 +296,16 @@ export function SummaryPayment({
                   <span>🇦🇷</span>
                   <span className="text-xs" style={{ color: T.muted }}>+54</span>
                 </div>
-                <input type="tel" value={formData.phone} placeholder="11 1234 5678"
+                <input type="tel" value={formData.phone} placeholder="1123456789"
                   onChange={e => handleInput("phone", e.target.value)}
-                  style={{ ...inputStyle, flex: 1 }}
-                  onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
-                  onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
+                  style={{ ...inputStyle, flex: 1, borderColor: phoneError ? "#F87171" : T.border }}
+                  onFocus={e => { e.currentTarget.style.borderColor = phoneError ? "#F87171" : primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = phoneError ? "#F87171" : T.border; e.currentTarget.style.boxShadow = "none"; }}
                 />
               </div>
+              {phoneError && (
+                <p className="text-xs mt-1.5" style={{ color: "#F87171" }}>{phoneError}</p>
+              )}
             </div>
           </div>
         </div>

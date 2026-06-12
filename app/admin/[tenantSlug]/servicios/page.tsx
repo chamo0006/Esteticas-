@@ -16,14 +16,20 @@ interface Servicio {
 }
 
 const CAT_STYLES: Record<string, string> = {
+  // Estética
   nails:   'bg-pink-100 text-pink-700',
   lashes:  'bg-purple-100 text-purple-700',
   brows:   'bg-amber-100 text-amber-700',
   skin:    'bg-green-100 text-green-700',
+  // Barbería
+  corte:   'bg-blue-100 text-blue-700',
+  barba:   'bg-slate-100 text-slate-700',
+  combo:   'bg-indigo-100 text-indigo-700',
   general: 'bg-zinc-100 text-zinc-600',
 };
 
-const DEFAULT_CATS = ['nails', 'lashes', 'brows', 'skin', 'general'];
+const CATS_ESTETICA = ['nails', 'lashes', 'brows', 'skin', 'general'];
+const CATS_BARBERIA = ['corte', 'barba', 'combo', 'general'];
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
@@ -36,6 +42,7 @@ export default function ServiciosPage() {
   const tenantSlug = params.tenantSlug as string;
 
   const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [tipoNegocio, setTipoNegocio] = useState<'estetica' | 'barberia'>('estetica');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Servicio | null>(null);
@@ -54,6 +61,13 @@ export default function ServiciosPage() {
   }, [tenantSlug]);
 
   useEffect(() => { fetch_(); }, [fetch_]);
+
+  useEffect(() => {
+    fetch(`/api/admin/${tenantSlug}/configuracion`)
+      .then(r => r.json())
+      .then(d => { if (d.tenant?.tipo_negocio) setTipoNegocio(d.tenant.tipo_negocio); })
+      .catch(() => {});
+  }, [tenantSlug]);
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setShowModal(true); };
   const openEdit = (s: Servicio) => {
@@ -204,7 +218,7 @@ export default function ServiciosPage() {
                   value={form.nombre}
                   onChange={(e) => setForm(f => ({ ...f, nombre: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
-                  placeholder="Lifting de pestañas"
+                  placeholder={tipoNegocio === 'barberia' ? 'Corte clásico' : 'Lifting de pestañas'}
                 />
               </div>
               <div>
@@ -248,7 +262,7 @@ export default function ServiciosPage() {
                 />
                 <datalist id="categorias-list">
                   {Array.from(new Set([
-                    ...DEFAULT_CATS,
+                    ...(tipoNegocio === 'barberia' ? CATS_BARBERIA : CATS_ESTETICA),
                     ...servicios.map(s => s.categoria).filter(Boolean),
                   ])).map(c => <option key={c} value={c} />)}
                 </datalist>

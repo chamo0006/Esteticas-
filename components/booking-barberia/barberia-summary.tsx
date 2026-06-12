@@ -51,7 +51,14 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
   };
 
   const setF = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
-  const valid = form.nombre.trim() && form.apellido.trim() && form.email.trim() && form.phone.trim();
+
+  const phoneDigits = form.phone.replace(/\D/g, "");
+  const phoneValid  = phoneDigits.startsWith("11") && phoneDigits.length === 10;
+  const phoneError  = form.phone.trim() !== "" && !phoneValid
+    ? "Debe empezar con 11 y tener 10 dígitos (ej: 1123456789)"
+    : null;
+
+  const valid = form.nombre.trim() && form.apellido.trim() && form.email.trim() && phoneValid;
 
   const confirm = async () => {
     if (!tenantSlug || !selectedDate || !selectedTime || status === "loading") return;
@@ -234,13 +241,16 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
                   <span>🇦🇷</span>
                   <span className="text-xs" style={{ color: B.muted }}>+54</span>
                 </div>
-                <input type="tel" value={form.phone} placeholder="11 1234 5678"
+                <input type="tel" value={form.phone} placeholder="1123456789"
                   onChange={e => setF("phone", e.target.value)}
-                  style={{ ...inputStyle, flex: 1 }}
-                  onFocus={e => { e.currentTarget.style.borderColor = primaryColor; }}
-                  onBlur={e => { e.currentTarget.style.borderColor = B.border; }}
+                  style={{ ...inputStyle, flex: 1, borderColor: phoneError ? "#F87171" : B.border }}
+                  onFocus={e => { e.currentTarget.style.borderColor = phoneError ? "#F87171" : primaryColor; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = phoneError ? "#F87171" : B.border; }}
                 />
               </div>
+              {phoneError && (
+                <p className="text-xs mt-1.5" style={{ color: "#F87171" }}>{phoneError}</p>
+              )}
             </div>
           </div>
         </div>
