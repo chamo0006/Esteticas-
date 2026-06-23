@@ -151,14 +151,20 @@ export async function POST(
         .gte('fecha_hora', lookbackISO);
 
       // Filter in JS for actual overlap (catches turnos that started before our slot)
+      type Ocupado = {
+        profesional_id: string | null;
+        fecha_hora: string;
+        servicios: { duracion_minutos?: number } | { duracion_minutos?: number }[] | null;
+      };
       const ocupadosIds = new Set(
-        (ocupadosData ?? [])
-          .filter((t: { profesional_id: string | null; fecha_hora: string; servicios: { duracion_minutos?: number } | null }) => {
+        ((ocupadosData ?? []) as unknown as Ocupado[])
+          .filter((t) => {
+            const serv = Array.isArray(t.servicios) ? t.servicios[0] : t.servicios;
             const tStartMs = new Date(t.fecha_hora).getTime();
-            const tEndMs   = tStartMs + (t.servicios?.duracion_minutos ?? servicio.duracion_minutos) * 60_000;
+            const tEndMs   = tStartMs + (serv?.duracion_minutos ?? servicio.duracion_minutos) * 60_000;
             return tStartMs < slotEndMs && tEndMs > slotStartMs;
           })
-          .map((t: { profesional_id: string | null }) => t.profesional_id)
+          .map((t) => t.profesional_id)
       );
 
       if (profesionalIdReq && profesionales.some((p: { id: string }) => p.id === profesionalIdReq)) {

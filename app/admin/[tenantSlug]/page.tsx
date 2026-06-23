@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { Calendar, Users, DollarSign, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
@@ -51,8 +52,10 @@ interface Props {
 export default async function AdminDashboard({ params }: Props) {
   await params;
   const cookieStore = await cookies();
-  const token = cookieStore.get('admin_token')!.value;
-  const payload = (await verifyToken(token))!;
+  const token = cookieStore.get('admin_token')?.value;
+  if (!token) redirect('/admin/login');
+  const payload = await verifyToken(token);
+  if (!payload) redirect('/admin/login');
   const tenantId = payload.tenantId;
 
   const { todayStart, todayEnd, monthStart, nowIso } = getArgentinaRanges();

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Lock } from 'lucide-react';
 
-export default function LeadsLoginPage() {
+function LeadsLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') ?? '/admin/leads';
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,7 @@ export default function LeadsLoginPage() {
         setError(data.error ?? 'Error al iniciar sesión');
         return;
       }
-      router.push('/admin/leads');
+      router.push(next);
     } catch {
       setError('Error de red. Intentá de nuevo.');
     } finally {
@@ -73,5 +75,13 @@ export default function LeadsLoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LeadsLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LeadsLoginForm />
+    </Suspense>
   );
 }

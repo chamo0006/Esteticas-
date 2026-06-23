@@ -3,22 +3,22 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
-async function getAdminPayload(tenantSlug: string) {
+// Los leads de la landing son globales (sin tenant_id): solo superadmin puede verlos.
+async function getSuperadminPayload() {
   const cookieStore = await cookies();
   const token = cookieStore.get('admin_token')?.value;
   if (!token) return null;
   const payload = await verifyToken(token);
-  if (!payload || payload.tenantSlug !== tenantSlug) return null;
+  if (!payload || payload.rol !== 'superadmin') return null;
   return payload;
 }
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ tenantSlug: string }> }
+  _ctx: { params: Promise<{ tenantSlug: string }> }
 ) {
-  const { tenantSlug } = await params;
-  const payload = await getAdminPayload(tenantSlug);
-  if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  const payload = await getSuperadminPayload();
+  if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
   const { data, error } = await supabase
     .from('leads')

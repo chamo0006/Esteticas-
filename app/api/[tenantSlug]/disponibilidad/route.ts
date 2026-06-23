@@ -15,7 +15,7 @@ export async function GET(
   const { tenantSlug } = await params;
   const url = new URL(req.url);
   const fecha = url.searchParams.get('fecha');
-  const duracion = parseInt(url.searchParams.get('duracion') ?? '60', 10);
+  const duracion = Math.max(15, Math.min(480, parseInt(url.searchParams.get('duracion') ?? '60', 10)));
 
   if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
     return NextResponse.json({ error: 'Parámetro fecha requerido (YYYY-MM-DD)' }, { status: 400 });

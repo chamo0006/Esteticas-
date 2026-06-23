@@ -136,7 +136,7 @@ function AdminView() {
               <div className="w-6 h-6 rounded-lg bg-violet-600 flex items-center justify-center">
                 <Star className="w-3 h-3 text-white fill-white" />
               </div>
-              <span className="text-white text-xs font-semibold">TurnosApp</span>
+              <span className="text-white text-xs font-semibold">Caracruz</span>
             </div>
             {[
               { label: 'Inicio', active: true },

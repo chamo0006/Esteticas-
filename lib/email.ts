@@ -169,7 +169,7 @@ export async function enviarContacto(data: {
         <div class="row"><span class="label">Estética</span><span class="value">${data.estetica || '—'}</span></div>
       </div>
     </div>
-    <div class="footer">TurnosApp — Panel de contactos</div>
+    <div class="footer">Caracruz — Panel de contactos</div>
   `);
 
   const to = process.env.CONTACT_EMAIL ?? process.env.EMAIL_FROM ?? 'admin@tudominio.com';

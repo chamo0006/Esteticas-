@@ -15,6 +15,10 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.includes('@')) {
+      setError('El email debe contener @');
+      return;
+    }
     setLoading(true);
     setError(null);
 

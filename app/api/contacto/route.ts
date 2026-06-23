@@ -14,15 +14,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Nombre y email son requeridos' }, { status: 400 });
   }
 
-  try {
-    await supabase.from('leads').insert({
-      nombre: nombre.trim(),
-      email: email.trim().toLowerCase(),
-      telefono: telefono?.trim() || null,
-      estetica: estetica?.trim() || null,
-    });
-  } catch (err) {
-    console.error('[contacto] DB error:', err);
+  const { error: dbError } = await supabase.from('leads').insert({
+    nombre: nombre.trim(),
+    email: email.trim().toLowerCase(),
+    telefono: telefono?.trim() || null,
+    estetica: estetica?.trim() || null,
+  });
+
+  if (dbError) {
+    console.error('[contacto] DB error:', dbError);
+    return NextResponse.json({ error: 'Error al guardar el contacto' }, { status: 500 });
   }
 
   try {

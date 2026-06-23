@@ -55,12 +55,12 @@ export default async function TenantLayout({ children, params }: Props) {
   // Construye el override de CSS si el tenant tiene colores personalizados
   let cssOverride = '';
   if (tenant?.color_primario) {
-    const oklchPrimario = hexToComponents(tenant.color_primario) ?? tenant.color_primario;
-    cssOverride += `--primary:${oklchPrimario};--ring:${oklchPrimario};`;
+    const oklchPrimario = hexToComponents(tenant.color_primario);
+    if (oklchPrimario) cssOverride += `--primary:${oklchPrimario};--ring:${oklchPrimario};`;
   }
   if (tenant?.color_acento) {
-    const oklchAcento = hexToComponents(tenant.color_acento) ?? tenant.color_acento;
-    cssOverride += `--accent:${oklchAcento};`;
+    const oklchAcento = hexToComponents(tenant.color_acento);
+    if (oklchAcento) cssOverride += `--accent:${oklchAcento};`;
   }
 
   return (

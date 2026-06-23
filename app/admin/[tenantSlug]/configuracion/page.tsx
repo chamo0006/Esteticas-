@@ -79,7 +79,15 @@ export default function ConfiguracionPage() {
     const res = await fetch(`/api/admin/${tenantSlug}/configuracion`);
     const data = await res.json();
     setTenant(data.tenant);
-    if (data.horarios.length > 0) setHorarios(data.horarios);
+    if (data.horarios.length > 0) {
+      // Postgres TIME llega como "HH:MM:SS"; los <option> son "HH:MM".
+      // Recortamos a 5 chars para que el <select> matchee el valor guardado.
+      setHorarios(data.horarios.map((h: Horario) => ({
+        ...h,
+        hora_apertura: h.hora_apertura.slice(0, 5),
+        hora_cierre: h.hora_cierre.slice(0, 5),
+      })));
+    }
     setDiasBloqueados(data.dias_bloqueados ?? []);
     setLoading(false);
   }, [tenantSlug]);

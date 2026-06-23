@@ -25,6 +25,15 @@ export default function RegistrarPage() {
       setError('Seleccioná el tipo de negocio');
       return;
     }
+    if (!form.email.includes('@')) {
+      setError('El email debe contener @');
+      return;
+    }
+    const telLimpio = form.telefono.replace(/\D/g, '');
+    if (!/^11\d{8}$/.test(telLimpio)) {
+      setError('El teléfono debe empezar con 11 y tener 10 dígitos (ej: 1123456789)');
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -39,7 +48,7 @@ export default function RegistrarPage() {
         body: JSON.stringify({
           nombre: form.nombre,
           email: form.email,
-          telefono: form.telefono,
+          telefono: telLimpio,
           adminNombre: form.adminNombre,
           password: form.password,
           tipo_negocio: form.tipo_negocio,
@@ -145,13 +154,16 @@ export default function RegistrarPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Teléfono (opcional)</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Teléfono *</label>
               <input
                 value={form.telefono}
                 onChange={(e) => set('telefono', e.target.value)}
-                placeholder="+54 11 xxxx-xxxx"
+                placeholder="1123456789"
+                required
+                inputMode="numeric"
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
+              <p className="text-xs text-zinc-500 mt-1">Debe empezar con 11 y tener 10 dígitos.</p>
             </div>
           </div>
 

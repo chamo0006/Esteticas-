@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { createToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
   const { password } = await req.json();
 
   const expected = process.env.SUPERADMIN_PASSWORD;
-  if (!expected || password !== expected) {
+  if (!expected || !password) {
+    return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
+  }
+
+  // Si SUPERADMIN_PASSWORD es un hash bcrypt ($2b$...) lo comparamos con bcrypt,
+  // de lo contrario hacemos comparación directa (modo legacy).
+  const valid = expected.startsWith('$2')
+    ? await bcrypt.compare(password, expected)
+    : password === expected;
+
+  if (!valid) {
     return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
   }
 

@@ -27,7 +27,10 @@ export async function GET(
     .eq('tenant_id', payload.tenantId)
     .order('nombre');
 
-  if (error) return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  if (error) {
+    console.error('[categorias GET]', error);
+    return NextResponse.json({ error: 'Error interno', detalle: error.message }, { status: 500 });
+  }
   return NextResponse.json(data ?? []);
 }
 
@@ -51,7 +54,8 @@ export async function POST(
 
   if (error) {
     if (error.code === '23505') return NextResponse.json({ error: 'Esa categoría ya existe' }, { status: 409 });
-    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+    console.error('[categorias POST]', error);
+    return NextResponse.json({ error: 'Error interno', detalle: error.message }, { status: 500 });
   }
   return NextResponse.json(data, { status: 201 });
 }

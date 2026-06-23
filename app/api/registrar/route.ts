@@ -84,9 +84,26 @@ export async function POST(req: Request) {
     .upsert(defaultHorarios, { onConflict: 'tenant_id,dia_semana', ignoreDuplicates: true });
 
   if (horariosError) {
-    // Non-fatal: tenant is already created
     console.error('[registrar] error creando horarios default:', horariosError);
+    await supabase.from('usuarios_admin').delete().eq('tenant_id', tenantId);
+    await supabase.from('tenants').delete().eq('id', tenantId);
+    return NextResponse.json({ error: 'Error al registrar la estética' }, { status: 500 });
   }
+
+  // Suscripción trial de 14 días con plan Básico (no bloquea el alta si falla)
+  const { data: planBasico } = await supabase
+    .from('planes')
+    .select('id')
+    .eq('slug', 'basico')
+    .maybeSingle();
+  const fechaFin = new Date(Date.now() + 14 * 24 * 60 * 60_000).toISOString().split('T')[0];
+  const { error: suscError } = await supabase.from('suscripciones').insert({
+    tenant_id: tenantId,
+    plan_id: planBasico?.id ?? null,
+    estado: 'trial',
+    fecha_fin: fechaFin,
+  });
+  if (suscError) console.error('[registrar] error creando suscripción trial:', suscError);
 
   // Email de bienvenida (no bloquea la respuesta)
   enviarBienvenida(email, { adminNombre, tenantNombre: nombre, tenantSlug: slug, password }).catch(console.error);

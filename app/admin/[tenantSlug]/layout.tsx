@@ -5,6 +5,9 @@ import { getTenantBySlug } from '@/lib/tenant';
 import { AdminSidebar } from '@/components/admin/sidebar';
 import { MobileNav } from '@/components/admin/mobile-nav';
 import { MobileHeader } from '@/components/admin/mobile-header';
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
+import { SubscriptionBanner } from '@/components/admin/subscription-banner';
+import { getAvisoSuscripcion } from '@/lib/suscripcion';
 
 interface Props {
   children: React.ReactNode;
@@ -24,6 +27,8 @@ export default async function AdminLayout({ children, params }: Props) {
   const tenant = await getTenantBySlug(tenantSlug);
   if (!tenant) redirect('/admin/login');
 
+  const aviso = await getAvisoSuscripcion(tenant.id);
+
   return (
     <div className="flex h-screen bg-zinc-50 overflow-hidden">
       {/* Sidebar — solo desktop */}
@@ -37,6 +42,8 @@ export default async function AdminLayout({ children, params }: Props) {
 
       {/* Contenido principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {payload.impersonatedBy && <ImpersonationBanner tenantNombre={tenant.nombre} />}
+
         {/* Header móvil con drawer */}
         <MobileHeader
           tenantSlug={tenantSlug}
@@ -46,6 +53,7 @@ export default async function AdminLayout({ children, params }: Props) {
 
         {/* Scroll area — padding-bottom para dejar espacio al nav inferior en mobile */}
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
+          {aviso && <SubscriptionBanner aviso={aviso} />}
           {children}
         </main>
       </div>

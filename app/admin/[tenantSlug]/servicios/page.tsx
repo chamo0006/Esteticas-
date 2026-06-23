@@ -30,9 +30,6 @@ const CAT_STYLES: Record<string, string> = {
   general: 'bg-zinc-100 text-zinc-600',
 };
 
-const CATS_ESTETICA = ['nails', 'lashes', 'brows', 'skin', 'general'];
-const CATS_BARBERIA = ['corte', 'barba', 'combo', 'general'];
-
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
 }
@@ -109,7 +106,7 @@ export default function ServiciosPage() {
     setDeletingCatId(null);
   };
 
-  const openNew = () => { setEditing(null); setForm(EMPTY); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setShowModal(true); };
+  const openNew = () => { setEditing(null); setForm({ ...EMPTY, categoria: categorias[0]?.nombre ?? '' }); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setShowModal(true); };
   const openEdit = (s: Servicio) => {
     setEditing(s);
     setForm({ nombre: s.nombre, descripcion: s.descripcion ?? '', duracion_minutos: s.duracion_minutos, precio: Number(s.precio), categoria: s.categoria });
@@ -357,21 +354,24 @@ export default function ServiciosPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Categoría</label>
-                <input
-                  list="categorias-list"
-                  value={form.categoria}
-                  onChange={(e) => setForm(f => ({ ...f, categoria: e.target.value }))}
-                  placeholder="general"
-                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
-                />
-                <datalist id="categorias-list">
-                  {Array.from(new Set([
-                    ...categorias.map(c => c.nombre),
-                    ...(tipoNegocio === 'barberia' ? CATS_BARBERIA : CATS_ESTETICA),
-                    ...servicios.map(s => s.categoria).filter(Boolean),
-                  ])).map(c => <option key={c} value={c} />)}
-                </datalist>
-                <p className="text-xs text-zinc-400 mt-1">Elegí una existente o escribí una nueva</p>
+                {categorias.length === 0 ? (
+                  <p className="text-sm text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
+                    Primero creá una categoría con &quot;Nueva categoría&quot; arriba.
+                  </p>
+                ) : (
+                  <select
+                    value={form.categoria}
+                    onChange={(e) => setForm(f => ({ ...f, categoria: e.target.value }))}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                  >
+                    {/* Categoría actual del servicio si ya no existe en la lista (servicios viejos) */}
+                    {form.categoria && !categorias.some(c => c.nombre === form.categoria) && (
+                      <option value={form.categoria}>{form.categoria} (actual)</option>
+                    )}
+                    {categorias.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                  </select>
+                )}
+                <p className="text-xs text-zinc-400 mt-1">Solo aparecen tus categorías. Para crear una nueva, usá &quot;Nueva categoría&quot; arriba.</p>
               </div>
             </div>
             {(saveError || deleteError) && (

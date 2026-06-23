@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/recordatorios",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/cortar-morosos",
+      "schedule": "0 6 * * *"
     }
   ]
 }
