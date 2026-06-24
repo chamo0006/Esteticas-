@@ -4,16 +4,17 @@ import { useState } from 'react';
 import { Menu, X, Sparkles, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Scissors, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Calendar, Scissors, Users, UserCog, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileHeaderProps {
   tenantSlug: string;
   tenantNombre: string;
   adminNombre: string;
+  tipoNegocio?: 'estetica' | 'barberia';
 }
 
-export function MobileHeader({ tenantSlug, tenantNombre, adminNombre }: MobileHeaderProps) {
+export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegocio }: MobileHeaderProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const base = `/admin/${tenantSlug}`;
@@ -22,6 +23,7 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre }: MobileHe
     { href: base,                label: 'Dashboard',  icon: LayoutDashboard },
     { href: `${base}/turnos`,    label: 'Turnos',     icon: Calendar        },
     { href: `${base}/servicios`, label: 'Servicios',  icon: Scissors        },
+    { href: `${base}/profesionales`, label: tipoNegocio === 'barberia' ? 'Barberos' : 'Empleados', icon: UserCog },
     { href: `${base}/clientes`,       label: 'Clientes',      icon: Users     },
     { href: `${base}/configuracion`, label: 'Configuración', icon: Settings  },
   ];

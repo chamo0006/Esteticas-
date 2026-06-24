@@ -169,6 +169,14 @@ export default function ServiciosPage() {
     await fetch_();
   };
 
+  // El servicio es válido solo si están completos todos los campos requeridos
+  const formValid =
+    form.nombre.trim() !== '' &&
+    String(form.categoria).trim() !== '' &&
+    Number(form.duracion_minutos) >= 5 &&
+    !Number.isNaN(Number(form.precio)) &&
+    Number(form.precio) >= 0;
+
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
 
@@ -417,7 +425,7 @@ export default function ServiciosPage() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={saving || !form.nombre}
+                  disabled={saving || !formValid}
                   className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}

@@ -50,6 +50,7 @@ export default async function AdminLayout({ children, params }: Props) {
           tenantSlug={tenantSlug}
           tenantNombre={tenant.nombre}
           adminNombre={payload.nombre}
+          tipoNegocio={tenant.tipo_negocio}
         />
 
         {/* Scroll area — padding-bottom para dejar espacio al nav inferior en mobile */}
