@@ -192,7 +192,7 @@ export default function ProfesionalesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 md:p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-[60] md:p-4">
           <div className="bg-white rounded-t-3xl md:rounded-2xl shadow-xl w-full md:max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
               <h2 className="font-semibold text-zinc-900">{editing ? `Editar ${singular}` : `Nuevo ${singular}`}</h2>
