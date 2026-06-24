@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { Save, Loader2, Plus, X, Settings, Clock, CreditCard, Palette, Upload, ImageIcon, Users, Edit2, Trash2, Check, AlertTriangle, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, Loader2, Plus, X, Settings, Clock, CreditCard, Palette, Upload, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -30,7 +30,6 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
 
 interface Horario { dia_semana: number; hora_apertura: string; hora_cierre: string; activo: boolean }
 interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
-interface Profesional { id: string; nombre: string; activo: boolean }
 interface TenantConfig {
   nombre: string; email_contacto: string; telefono: string;
   exige_sena: boolean; porcentaje_sena: number | null; permite_efectivo: boolean;
@@ -42,7 +41,7 @@ const DEFAULT_HORARIOS: Horario[] = Array.from({ length: 7 }, (_, i) => ({
   dia_semana: i, hora_apertura: '09:00', hora_cierre: '18:00', activo: i !== 0,
 }));
 
-type Tab = 'general' | 'pagos' | 'horarios' | 'apariencia' | 'equipo';
+type Tab = 'general' | 'pagos' | 'horarios' | 'apariencia';
 
 export default function ConfiguracionPage() {
   const params = useParams();
@@ -63,17 +62,6 @@ export default function ConfiguracionPage() {
   const [nuevaFecha, setNuevaFecha] = useState('');
   const [nuevoMotivo, setNuevoMotivo] = useState('');
 
-  // Profesionales
-  const [profesionales, setProfesionales] = useState<Profesional[]>([]);
-  const [loadingProf, setLoadingProf] = useState(false);
-  const [showAddProf, setShowAddProf] = useState(false);
-  const [nuevoNombreProf, setNuevoNombreProf] = useState('');
-  const [savingProf, setSavingProf] = useState(false);
-  const [editingProfId, setEditingProfId] = useState<string | null>(null);
-  const [editingProfNombre, setEditingProfNombre] = useState('');
-  const [confirmDeleteProfId, setConfirmDeleteProfId] = useState<string | null>(null);
-  const [deletingProfId, setDeletingProfId] = useState<string | null>(null);
-
   const fetch_ = useCallback(async () => {
     setLoading(true);
     const res = await fetch(`/api/admin/${tenantSlug}/configuracion`);
@@ -92,63 +80,7 @@ export default function ConfiguracionPage() {
     setLoading(false);
   }, [tenantSlug]);
 
-  const fetchProfesionales = useCallback(async () => {
-    setLoadingProf(true);
-    const res = await fetch(`/api/admin/${tenantSlug}/profesionales`);
-    const data = await res.json();
-    setProfesionales(Array.isArray(data) ? data : []);
-    setLoadingProf(false);
-  }, [tenantSlug]);
-
-  const agregarProfesional = async () => {
-    if (!nuevoNombreProf.trim()) return;
-    setSavingProf(true);
-    await fetch(`/api/admin/${tenantSlug}/profesionales`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: nuevoNombreProf.trim() }),
-    });
-    setNuevoNombreProf('');
-    setShowAddProf(false);
-    await fetchProfesionales();
-    setSavingProf(false);
-  };
-
-  const toggleActivoProfesional = async (p: Profesional) => {
-    await fetch(`/api/admin/${tenantSlug}/profesionales`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: p.id, activo: !p.activo }),
-    });
-    await fetchProfesionales();
-  };
-
-  const saveEditProfesional = async (id: string) => {
-    if (!editingProfNombre.trim()) return;
-    await fetch(`/api/admin/${tenantSlug}/profesionales`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, nombre: editingProfNombre.trim() }),
-    });
-    setEditingProfId(null);
-    setEditingProfNombre('');
-    await fetchProfesionales();
-  };
-
-  const eliminarProfesional = async (id: string) => {
-    setDeletingProfId(id);
-    const res = await fetch(`/api/admin/${tenantSlug}/profesionales?id=${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? 'No se pudo eliminar');
-    }
-    setConfirmDeleteProfId(null);
-    setDeletingProfId(null);
-    await fetchProfesionales();
-  };
-
   useEffect(() => { fetch_(); }, [fetch_]);
-  useEffect(() => { if (tab === 'equipo') fetchProfesionales(); }, [tab, fetchProfesionales]);
 
   const saveTenant = async () => {
     setSaving(true);
@@ -239,7 +171,6 @@ export default function ConfiguracionPage() {
     { id: 'pagos',      label: 'Pagos',      icon: CreditCard },
     { id: 'horarios',   label: 'Horarios',   icon: Clock      },
     { id: 'apariencia', label: 'Apariencia', icon: Palette    },
-    { id: 'equipo',     label: 'Equipo',     icon: Users      },
   ];
 
   return (
@@ -469,133 +400,6 @@ export default function ConfiguracionPage() {
             </div>
           )}
 
-          {/* ── EQUIPO ─────────────────────────────────────── */}
-          {tab === 'equipo' && (
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
-                  <div>
-                    <p className="font-semibold text-zinc-900">Profesionales</p>
-                    <p className="text-xs text-zinc-400 mt-0.5">{profesionales.length} profesional{profesionales.length !== 1 ? 'es' : ''} en el equipo</p>
-                  </div>
-                  <button
-                    onClick={() => { setShowAddProf(true); setNuevoNombreProf(''); }}
-                    className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl transition-colors"
-                  >
-                    <Plus className="w-4 h-4" /> Agregar
-                  </button>
-                </div>
-
-                {/* Inline add form */}
-                {showAddProf && (
-                  <div className="px-5 py-4 border-b border-zinc-100 bg-violet-50 flex items-center gap-3">
-                    <input
-                      autoFocus
-                      value={nuevoNombreProf}
-                      onChange={(e) => setNuevoNombreProf(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') agregarProfesional(); if (e.key === 'Escape') setShowAddProf(false); }}
-                      placeholder="Nombre del profesional"
-                      className="flex-1 px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
-                    />
-                    <button
-                      onClick={agregarProfesional}
-                      disabled={savingProf || !nuevoNombreProf.trim()}
-                      className="flex items-center gap-1.5 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white text-sm font-semibold rounded-xl transition-colors"
-                    >
-                      {savingProf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                      Guardar
-                    </button>
-                    <button onClick={() => setShowAddProf(false)} className="text-zinc-400 hover:text-zinc-600 transition-colors">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                )}
-
-                {loadingProf ? (
-                  <div className="flex items-center justify-center py-10 text-zinc-400">
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" /> Cargando...
-                  </div>
-                ) : profesionales.length === 0 && !showAddProf ? (
-                  <div className="py-10 text-center text-zinc-400 text-sm">
-                    Sin profesionales todavía
-                  </div>
-                ) : (
-                  <div className="divide-y divide-zinc-50">
-                    {profesionales.map((p) => (
-                      <div key={p.id} className={cn('px-5 py-4 flex items-center gap-3', !p.activo && 'opacity-50')}>
-                        {/* Toggle activo */}
-                        <button onClick={() => toggleActivoProfesional(p)} className="transition-colors flex-shrink-0">
-                          {p.activo
-                            ? <ToggleRight className="w-6 h-6 text-emerald-500" />
-                            : <ToggleLeft className="w-6 h-6 text-zinc-300" />
-                          }
-                        </button>
-
-                        {/* Nombre o input edición */}
-                        {editingProfId === p.id ? (
-                          <div className="flex-1 flex items-center gap-2">
-                            <input
-                              autoFocus
-                              value={editingProfNombre}
-                              onChange={(e) => setEditingProfNombre(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') saveEditProfesional(p.id); if (e.key === 'Escape') setEditingProfId(null); }}
-                              className="flex-1 px-3 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
-                            />
-                            <button onClick={() => saveEditProfesional(p.id)} className="text-emerald-500 hover:text-emerald-600 transition-colors">
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => setEditingProfId(null)} className="text-zinc-400 hover:text-zinc-600 transition-colors">
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="flex-1 text-sm font-medium text-zinc-900">{p.nombre}</span>
-                        )}
-
-                        {editingProfId !== p.id && (
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            {/* Edit */}
-                            <button
-                              onClick={() => { setEditingProfId(p.id); setEditingProfNombre(p.nombre); setConfirmDeleteProfId(null); }}
-                              className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-
-                            {/* Delete */}
-                            {confirmDeleteProfId === p.id ? (
-                              <div className="flex items-center gap-1.5">
-                                <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                                <button
-                                  onClick={() => eliminarProfesional(p.id)}
-                                  disabled={deletingProfId === p.id}
-                                  className="px-2.5 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1"
-                                >
-                                  {deletingProfId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                                  Sí
-                                </button>
-                                <button onClick={() => setConfirmDeleteProfId(null)} className="text-xs text-zinc-500 hover:text-zinc-700">
-                                  No
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => { setConfirmDeleteProfId(p.id); setEditingProfId(null); }}
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* ── APARIENCIA ─────────────────────────────────── */}
           {tab === 'apariencia' && (
             <div className="space-y-4">
@@ -647,106 +451,9 @@ export default function ConfiguracionPage() {
                 </div>
               </div>
 
-              {/* Colores */}
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-5">
-                <h3 className="font-semibold text-zinc-900">Colores</h3>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Color primario */}
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                      Color principal
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <label className="cursor-pointer w-12 h-12 rounded-xl border-2 border-zinc-200 overflow-hidden flex-shrink-0 shadow-sm hover:scale-105 transition-transform"
-                        style={{ backgroundColor: tenant.color_primario ?? '#FFD1DC' }}>
-                        <input
-                          type="color"
-                          value={tenant.color_primario ?? '#FFD1DC'}
-                          onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value } : t)}
-                          className="opacity-0 w-0 h-0"
-                        />
-                      </label>
-                      <div>
-                        <p className="text-sm font-mono text-zinc-700">{tenant.color_primario ?? '#FFD1DC'}</p>
-                        <p className="text-xs text-zinc-400">Botones, selección</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Color acento */}
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                      Color acento
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <label className="cursor-pointer w-12 h-12 rounded-xl border-2 border-zinc-200 overflow-hidden flex-shrink-0 shadow-sm hover:scale-105 transition-transform"
-                        style={{ backgroundColor: tenant.color_acento ?? '#D4A0A7' }}>
-                        <input
-                          type="color"
-                          value={tenant.color_acento ?? '#D4A0A7'}
-                          onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value } : t)}
-                          className="opacity-0 w-0 h-0"
-                        />
-                      </label>
-                      <div>
-                        <p className="text-sm font-mono text-zinc-700">{tenant.color_acento ?? '#D4A0A7'}</p>
-                        <p className="text-xs text-zinc-400">Precios, detalles</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Preview en vivo */}
-                <div>
-                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Preview</p>
-                  <div className="rounded-2xl border border-zinc-100 p-4 bg-zinc-50">
-                    {(() => {
-                      const isBarberia = tenant.tipo_negocio === 'barberia';
-                      const defaultEmoji = isBarberia ? '✂️' : '🌸';
-                      const servicioEj = isBarberia ? 'Corte + Barba' : 'Lifting de Pestañas';
-                      const ctaLabel = isBarberia ? 'Reservar turno' : 'Confirmar Reserva';
-                      return (
-                        <>
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-zinc-200">
-                              {tenant.logo_url
-                                // eslint-disable-next-line @next/next/no-img-element
-                                ? <img src={tenant.logo_url} alt="" className="w-full h-full object-cover" />
-                                : <div className="w-full h-full flex items-center justify-center text-xl bg-white">{defaultEmoji}</div>
-                              }
-                            </div>
-                            <div>
-                              <p className="font-semibold text-zinc-900 text-sm">{tenant.nombre || (isBarberia ? 'Tu barbería' : 'Tu estética')}</p>
-                              <p className="text-xs text-zinc-400">Vista previa del cliente</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between bg-white rounded-xl p-3 border border-zinc-100">
-                            <div>
-                              <p className="text-sm font-medium text-zinc-900">{servicioEj}</p>
-                              <p className="text-xs" style={{ color: tenant.color_acento ?? '#D4A0A7' }}>$9.500</p>
-                            </div>
-                            <button
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                              style={{ backgroundColor: tenant.color_primario ?? '#FFD1DC' }}
-                            >+</button>
-                          </div>
-                          <button
-                            className="w-full mt-3 py-2.5 rounded-xl text-sm font-semibold text-white"
-                            style={{ backgroundColor: tenant.color_primario ?? '#FFD1DC' }}
-                          >
-                            {ctaLabel}
-                          </button>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saved ? '¡Guardado!' : 'Guardar apariencia'}
+                {saved ? '¡Guardado!' : 'Guardar logo'}
               </button>
             </div>
           )}

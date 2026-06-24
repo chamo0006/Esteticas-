@@ -37,6 +37,7 @@ export default async function AdminLayout({ children, params }: Props) {
           tenantSlug={tenantSlug}
           tenantNombre={tenant.nombre}
           adminNombre={payload.nombre}
+          tipoNegocio={tenant.tipo_negocio}
         />
       </div>
 
@@ -59,7 +60,7 @@ export default async function AdminLayout({ children, params }: Props) {
       </div>
 
       {/* Nav inferior — solo mobile */}
-      <MobileNav tenantSlug={tenantSlug} />
+      <MobileNav tenantSlug={tenantSlug} tipoNegocio={tenant.tipo_negocio} />
     </div>
   );
 }

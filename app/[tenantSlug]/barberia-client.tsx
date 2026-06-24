@@ -240,9 +240,9 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
   const calDayStyle = (past: boolean, isToday: boolean, sel: boolean): React.CSSProperties => ({
     fontSize: 12, textAlign: 'center', padding: '7px 2px', borderRadius: 7,
     cursor: past ? 'default' : 'pointer', opacity: past ? 0.25 : 1,
-    background: isToday ? accent : sel ? surface2 : 'transparent',
-    color: isToday ? bg : sel ? accent : textPrimary,
-    border: sel && !isToday ? `0.5px solid ${border2}` : 'none',
+    background: sel ? accent : isToday ? surface2 : 'transparent',
+    color: sel ? bg : isToday ? accent : textPrimary,
+    border: isToday && !sel ? `0.5px solid ${border2}` : 'none',
   });
   const timeSlotStyle = (taken: boolean, sel: boolean): React.CSSProperties => ({
     fontSize: 12, textAlign: 'center', padding: '9px 4px', borderRadius: 8,

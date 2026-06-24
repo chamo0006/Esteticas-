@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Calendar, Scissors, Users, LogOut, Sparkles, Settings,
+  LayoutDashboard, Calendar, Scissors, Users, UserCog, LogOut, Sparkles, Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -11,9 +11,10 @@ interface AdminSidebarProps {
   tenantSlug: string;
   tenantNombre: string;
   adminNombre: string;
+  tipoNegocio?: 'estetica' | 'barberia';
 }
 
-export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre }: AdminSidebarProps) {
+export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre, tipoNegocio }: AdminSidebarProps) {
   const pathname = usePathname();
   const base = `/admin/${tenantSlug}`;
 
@@ -21,6 +22,7 @@ export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre }: AdminSid
     { href: base,                    label: 'Dashboard',  icon: LayoutDashboard },
     { href: `${base}/turnos`,        label: 'Turnos',     icon: Calendar        },
     { href: `${base}/servicios`,     label: 'Servicios',  icon: Scissors        },
+    { href: `${base}/profesionales`, label: tipoNegocio === 'barberia' ? 'Barberos' : 'Empleados', icon: UserCog },
     { href: `${base}/clientes`,       label: 'Clientes',      icon: Users    },
     { href: `${base}/configuracion`, label: 'Configuración',  icon: Settings },
   ];

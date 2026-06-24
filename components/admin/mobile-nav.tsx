@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Scissors, Users } from 'lucide-react';
+import { LayoutDashboard, Calendar, Scissors, Users, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileNavProps {
   tenantSlug: string;
+  tipoNegocio?: 'estetica' | 'barberia';
 }
 
-export function MobileNav({ tenantSlug }: MobileNavProps) {
+export function MobileNav({ tenantSlug, tipoNegocio }: MobileNavProps) {
   const pathname = usePathname();
   const base = `/admin/${tenantSlug}`;
 
@@ -17,6 +18,7 @@ export function MobileNav({ tenantSlug }: MobileNavProps) {
     { href: base,                label: 'Inicio',    icon: LayoutDashboard },
     { href: `${base}/turnos`,    label: 'Turnos',    icon: Calendar        },
     { href: `${base}/servicios`, label: 'Servicios', icon: Scissors        },
+    { href: `${base}/profesionales`, label: tipoNegocio === 'barberia' ? 'Barberos' : 'Empleados', icon: UserCog },
     { href: `${base}/clientes`,  label: 'Clientes',  icon: Users           },
   ];
 

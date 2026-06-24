@@ -21,11 +21,25 @@ export async function GET(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { data, error } = await supabase
+  // Intenta traer rol/rating; si la migración no corrió, cae a los básicos.
+  const withExtras = await supabase
     .from('profesionales')
-    .select('id, nombre, activo, created_at')
+    .select('id, nombre, rol, rating, activo, created_at')
     .eq('tenant_id', payload.tenantId)
     .order('nombre');
+
+  let data: unknown[] | null = withExtras.data;
+  let error = withExtras.error;
+
+  if (error) {
+    const basic = await supabase
+      .from('profesionales')
+      .select('id, nombre, activo, created_at')
+      .eq('tenant_id', payload.tenantId)
+      .order('nombre');
+    data = basic.data;
+    error = basic.error;
+  }
 
   if (error) {
     console.error('[profesionales GET]', error);
@@ -44,14 +58,20 @@ export async function POST(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { nombre } = await req.json();
+  const body = await req.json();
+  const { nombre, rol, rating } = body;
   if (!nombre || typeof nombre !== 'string' || !nombre.trim()) {
     return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 });
   }
 
+  const insertData: Record<string, unknown> = { tenant_id: payload.tenantId, nombre: nombre.trim() };
+  if (typeof rol === 'string' && rol.trim()) insertData.rol = rol.trim();
+  const ratingNum = rating === '' || rating == null ? null : Number(rating);
+  if (ratingNum != null && !isNaN(ratingNum)) insertData.rating = Math.max(0, Math.min(5, ratingNum));
+
   const { data, error } = await supabase
     .from('profesionales')
-    .insert({ tenant_id: payload.tenantId, nombre: nombre.trim() })
+    .insert(insertData)
     .select('id')
     .single();
 
@@ -72,12 +92,17 @@ export async function PATCH(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { id, nombre, activo } = await req.json();
+  const { id, nombre, activo, rol, rating } = await req.json();
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
   const updateData: Record<string, unknown> = {};
   if (nombre !== undefined) updateData.nombre = nombre.trim();
   if (activo !== undefined) updateData.activo = activo;
+  if (rol !== undefined) updateData.rol = typeof rol === 'string' && rol.trim() ? rol.trim() : null;
+  if (rating !== undefined) {
+    const r = rating === '' || rating == null ? null : Number(rating);
+    updateData.rating = r != null && !isNaN(r) ? Math.max(0, Math.min(5, r)) : null;
+  }
 
   if (Object.keys(updateData).length === 0) {
     return NextResponse.json({ error: 'Sin campos para actualizar' }, { status: 400 });
