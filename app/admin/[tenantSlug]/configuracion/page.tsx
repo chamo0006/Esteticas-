@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { Save, Loader2, Plus, X, Settings, Clock, CreditCard, Palette, Upload, ImageIcon } from 'lucide-react';
+import { Save, Loader2, Plus, X, Settings, Clock, CreditCard, Palette, Upload, ImageIcon, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -35,13 +35,14 @@ interface TenantConfig {
   exige_sena: boolean; porcentaje_sena: number | null; permite_efectivo: boolean;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
+  stat_rating: number | null; stat_barberos: number | null; stat_clientes: number | null;
 }
 
 const DEFAULT_HORARIOS: Horario[] = Array.from({ length: 7 }, (_, i) => ({
   dia_semana: i, hora_apertura: '09:00', hora_cierre: '18:00', activo: i !== 0,
 }));
 
-type Tab = 'general' | 'pagos' | 'horarios' | 'apariencia';
+type Tab = 'general' | 'pagos' | 'horarios' | 'apariencia' | 'barberia';
 
 export default function ConfiguracionPage() {
   const params = useParams();
@@ -171,6 +172,9 @@ export default function ConfiguracionPage() {
     { id: 'pagos',      label: 'Pagos',      icon: CreditCard },
     { id: 'horarios',   label: 'Horarios',   icon: Clock      },
     { id: 'apariencia', label: 'Apariencia', icon: Palette    },
+    ...(tenant?.tipo_negocio === 'barberia'
+      ? [{ id: 'barberia' as Tab, label: 'Barbería', icon: BarChart3 }]
+      : []),
   ];
 
   return (
@@ -454,6 +458,64 @@ export default function ConfiguracionPage() {
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saved ? '¡Guardado!' : 'Guardar logo'}
+              </button>
+            </div>
+          )}
+
+          {/* ── BARBERÍA (stats de la landing) ─────────────────── */}
+          {tab === 'barberia' && (
+            <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-6 space-y-5">
+              <p className="text-sm text-zinc-500">
+                Estos números aparecen en la portada de tu barbería. Dejá un campo
+                vacío para que se calcule automáticamente.
+              </p>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  Rating
+                </label>
+                <input
+                  type="number" min={0} max={5} step={0.1}
+                  value={tenant.stat_rating ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, stat_rating: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                  placeholder="Automático (promedio de reseñas)"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  Barberos
+                </label>
+                <input
+                  type="number" min={0} step={1}
+                  value={tenant.stat_barberos ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, stat_barberos: e.target.value === '' ? null : Math.floor(Number(e.target.value)) } : t)}
+                  placeholder="Automático (cantidad de profesionales)"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  Clientes
+                </label>
+                <input
+                  type="number" min={0} step={1}
+                  value={tenant.stat_clientes ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, stat_clientes: e.target.value === '' ? null : Math.floor(Number(e.target.value)) } : t)}
+                  placeholder="Automático (cantidad de clientes)"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+                <p className="text-xs text-zinc-400 mt-1.5">Se muestra con un “+” adelante (ej: +120).</p>
+              </div>
+
+              {saveError && (
+                <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{saveError}</p>
+              )}
+              <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {saved ? '¡Guardado!' : 'Guardar stats'}
               </button>
             </div>
           )}

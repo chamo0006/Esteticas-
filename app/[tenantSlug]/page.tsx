@@ -36,7 +36,7 @@ export default async function TenantBookingPage({ params }: Props) {
 
   if (tenant.tipo_negocio === 'barberia') {
     // ── Datos extra para la landing de barbería ──────────────────────────
-    const [barbersRes, reviewsRes, clientesRes] = await Promise.all([
+    const [barbersRes, reviewsRes, clientesRes, overridesRes] = await Promise.all([
       supabase
         .from('profesionales')
         .select('id, nombre, rol, rating')
@@ -54,6 +54,12 @@ export default async function TenantBookingPage({ params }: Props) {
         .from('clientes')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenant.id),
+      // Overrides manuales de las stats, configurables desde /admin
+      supabase
+        .from('tenants')
+        .select('stat_rating, stat_barberos, stat_clientes')
+        .eq('id', tenant.id)
+        .single(),
     ]);
 
     // Fallback: si las columnas rol/rating todavía no existen (migración sin
@@ -88,11 +94,16 @@ export default async function TenantBookingPage({ params }: Props) {
       ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
       : null;
 
+    // Si hay override manual (columna no nula) se usa ese; si no, el automático.
+    const ov = overridesRes.data as
+      | { stat_rating: number | null; stat_barberos: number | null; stat_clientes: number | null }
+      | null;
+
     const stats: BarberiaStats = {
-      rating: avgRating,
-      barberos: barbers.length,
-      clientes: clientesRes.count ?? 0,
-      reseñas: reviews.length,
+      rating:   ov?.stat_rating   != null ? Number(ov.stat_rating)   : avgRating,
+      barberos: ov?.stat_barberos != null ? ov.stat_barberos          : barbers.length,
+      clientes: ov?.stat_clientes != null ? ov.stat_clientes          : (clientesRes.count ?? 0),
+      reseñas:  reviews.length,
     };
 
     return (

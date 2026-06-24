@@ -316,20 +316,6 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
         <span style={navBadge}>● Abierto</span>
       </nav>
 
-      {/* STATS */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, padding: '16px 20px', borderBottom: `0.5px solid ${border}` }}>
-        {[
-          [stats.rating ? `${stats.rating}★` : 'Nuevo', 'Rating'],
-          [String(stats.barberos || '—'), stats.barberos === 1 ? 'Barbero' : 'Barberos'],
-          [stats.clientes ? `+${stats.clientes}` : '—', 'Clientes'],
-        ].map(([v, l]) => (
-          <div key={l} style={{ background: surface, border: `0.5px solid ${border}`, borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
-            <div style={{ fontSize: 17, fontWeight: 500, color: accent }}>{v}</div>
-            <div style={{ fontSize: 10, color: textSecondary, marginTop: 2 }}>{l}</div>
-          </div>
-        ))}
-      </div>
-
       {/* PROGRESS */}
       <div style={{ display: 'flex', gap: 4, padding: '12px 20px', borderBottom: `0.5px solid ${border}`, alignItems: 'center' }}>
         {STEPS.map((_, i) => (
@@ -357,6 +343,20 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
           </div>
           <div style={{ marginTop: 'auto', padding: '20px' }}>
             <button style={{ ...btnPrimary, opacity: service ? 1 : 0.4, cursor: service ? 'pointer' : 'default' }} onClick={() => service && goNext()}>Siguiente →</button>
+          </div>
+
+          {/* STATS */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, padding: '0 20px 20px' }}>
+            {[
+              [stats.rating ? `${stats.rating}★` : 'Nuevo', 'Rating'],
+              [String(stats.barberos || '—'), stats.barberos === 1 ? 'Barbero' : 'Barberos'],
+              [stats.clientes ? `+${stats.clientes}` : '—', 'Clientes'],
+            ].map(([v, l]) => (
+              <div key={l} style={{ background: surface, border: `0.5px solid ${border}`, borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 17, fontWeight: 500, color: accent }}>{v}</div>
+                <div style={{ fontSize: 10, color: textSecondary, marginTop: 2 }}>{l}</div>
+              </div>
+            ))}
           </div>
 
           {/* RESEÑAS */}
