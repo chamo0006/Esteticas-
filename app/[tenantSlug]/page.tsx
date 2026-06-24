@@ -56,7 +56,20 @@ export default async function TenantBookingPage({ params }: Props) {
         .eq('tenant_id', tenant.id),
     ]);
 
-    const barbers: Barber[] = (barbersRes.data ?? []).map((b) => ({
+    // Fallback: si las columnas rol/rating todavía no existen (migración sin
+    // correr), reintenta con los campos básicos para no perder los barberos.
+    let barbersData = barbersRes.data;
+    if (barbersRes.error) {
+      const { data } = await supabase
+        .from('profesionales')
+        .select('id, nombre')
+        .eq('tenant_id', tenant.id)
+        .eq('activo', true)
+        .order('created_at');
+      barbersData = (data ?? []).map((b) => ({ ...b, rol: null, rating: null }));
+    }
+
+    const barbers: Barber[] = (barbersData ?? []).map((b) => ({
       id: b.id,
       nombre: b.nombre,
       rol: b.rol ?? null,

@@ -16,6 +16,7 @@ export async function GET(
   const url = new URL(req.url);
   const fecha = url.searchParams.get('fecha');
   const duracion = Math.max(15, Math.min(480, parseInt(url.searchParams.get('duracion') ?? '60', 10)));
+  const profesionalId = url.searchParams.get('profesionalId');
 
   if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
     return NextResponse.json({ error: 'Parámetro fecha requerido (YYYY-MM-DD)' }, { status: 400 });
@@ -96,24 +97,24 @@ export async function GET(
       // Skip slots that are already past (compare UTC epochs, timezone-agnostic)
       if (esHoy && slotStartMs <= ahoraMs) continue;
 
+      // Turnos que se solapan con este slot
+      const solapados = turnosDelDia.filter((t: Record<string, unknown>) => {
+        const tStartMs = new Date(t.fecha_hora as string).getTime();
+        const svc      = t.servicios as { duracion_minutos?: number } | null;
+        const tEndMs   = tStartMs + (svc?.duracion_minutos ?? duracion) * 60_000;
+        return tStartMs < slotEndMs && tEndMs > slotStartMs;
+      });
+
       let ocupado: boolean;
 
-      if (totalProfesionales === 0) {
-        // No professional management: any overlap blocks the slot
-        ocupado = turnosDelDia.some((t: Record<string, unknown>) => {
-          const tStartMs = new Date(t.fecha_hora as string).getTime();
-          const svc      = t.servicios as { duracion_minutos?: number } | null;
-          const tEndMs   = tStartMs + (svc?.duracion_minutos ?? duracion) * 60_000;
-          return tStartMs < slotEndMs && tEndMs > slotStartMs;
-        });
+      if (profesionalId) {
+        // Disponibilidad para un barbero específico: ocupado si ESE barbero tiene turno
+        ocupado = solapados.some((t: Record<string, unknown>) => t.profesional_id === profesionalId);
+      } else if (totalProfesionales === 0) {
+        // Sin gestión de profesionales: cualquier solapamiento bloquea el slot
+        ocupado = solapados.length > 0;
       } else {
-        // With professionals: slot is full only when all are booked
-        const solapados = turnosDelDia.filter((t: Record<string, unknown>) => {
-          const tStartMs = new Date(t.fecha_hora as string).getTime();
-          const svc      = t.servicios as { duracion_minutos?: number } | null;
-          const tEndMs   = tStartMs + (svc?.duracion_minutos ?? duracion) * 60_000;
-          return tStartMs < slotEndMs && tEndMs > slotStartMs;
-        });
+        // Con profesionales: el slot está lleno solo cuando todos están ocupados
         ocupado = solapados.length >= totalProfesionales;
       }
 
