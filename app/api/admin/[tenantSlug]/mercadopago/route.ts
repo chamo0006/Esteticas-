@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { isOAuthConfigured } from '@/lib/mp-oauth';
 
 async function getAdminPayload(tenantSlug: string) {
   const cookieStore = await cookies();
@@ -29,7 +30,7 @@ export async function GET(
 
   const { data } = await supabase
     .from('tenants')
-    .select('mp_access_token, mp_public_key')
+    .select('mp_access_token, mp_public_key, mp_user_id')
     .eq('id', payload.tenantId)
     .single();
 
@@ -37,6 +38,8 @@ export async function GET(
     conectado: !!data?.mp_access_token,
     preview: maskToken(data?.mp_access_token ?? null),
     public_key: data?.mp_public_key ?? null,
+    via_oauth: !!data?.mp_user_id,        // true si se vinculó con el botón
+    oauth_disponible: isOAuthConfigured(), // true si la plataforma tiene OAuth configurado
   });
 }
 
@@ -92,7 +95,13 @@ export async function DELETE(
 
   const { error } = await supabase
     .from('tenants')
-    .update({ mp_access_token: null, mp_public_key: null })
+    .update({
+      mp_access_token: null,
+      mp_public_key: null,
+      mp_refresh_token: null,
+      mp_user_id: null,
+      mp_token_expires_at: null,
+    })
     .eq('id', payload.tenantId);
 
   if (error) {

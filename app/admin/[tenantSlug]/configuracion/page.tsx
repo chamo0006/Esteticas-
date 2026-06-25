@@ -64,17 +64,25 @@ export default function ConfiguracionPage() {
   const [nuevoMotivo, setNuevoMotivo] = useState('');
 
   // MercadoPago — conexión de la cuenta del comercio
-  const [mpStatus, setMpStatus] = useState<{ conectado: boolean; preview: string | null }>({ conectado: false, preview: null });
+  interface MpStatus { conectado: boolean; preview: string | null; via_oauth: boolean; oauth_disponible: boolean }
+  const [mpStatus, setMpStatus] = useState<MpStatus>({ conectado: false, preview: null, via_oauth: false, oauth_disponible: false });
   const [mpToken, setMpToken] = useState('');
   const [mpPublicKey, setMpPublicKey] = useState('');
   const [mpSaving, setMpSaving] = useState(false);
   const [mpError, setMpError] = useState<string | null>(null);
+  const [mpManual, setMpManual] = useState(false); // mostrar el formulario de token manual
+  const [mpReturn, setMpReturn] = useState<'ok' | 'error' | null>(null); // resultado del flujo OAuth
 
   const fetchMP = useCallback(async () => {
     const res = await fetch(`/api/admin/${tenantSlug}/mercadopago`);
     if (res.ok) {
       const data = await res.json();
-      setMpStatus({ conectado: data.conectado, preview: data.preview });
+      setMpStatus({
+        conectado: data.conectado,
+        preview: data.preview,
+        via_oauth: data.via_oauth ?? false,
+        oauth_disponible: data.oauth_disponible ?? false,
+      });
       setMpPublicKey(data.public_key ?? '');
     }
   }, [tenantSlug]);
@@ -90,8 +98,9 @@ export default function ConfiguracionPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setMpStatus({ conectado: true, preview: data.preview });
+        setMpStatus(s => ({ ...s, conectado: true, preview: data.preview, via_oauth: false }));
         setMpToken('');
+        setMpManual(false);
       } else {
         setMpError(data.error ?? 'Error al conectar');
       }
@@ -108,8 +117,9 @@ export default function ConfiguracionPage() {
     try {
       const res = await fetch(`/api/admin/${tenantSlug}/mercadopago`, { method: 'DELETE' });
       if (res.ok) {
-        setMpStatus({ conectado: false, preview: null });
+        setMpStatus(s => ({ ...s, conectado: false, preview: null, via_oauth: false }));
         setMpToken('');
+        setMpReturn(null);
       }
     } finally {
       setMpSaving(false);
@@ -135,6 +145,18 @@ export default function ConfiguracionPage() {
   }, [tenantSlug]);
 
   useEffect(() => { fetch_(); fetchMP(); }, [fetch_, fetchMP]);
+
+  // Al volver de la vinculación con MercadoPago (?tab=pagos&mp=ok|error)
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('tab') === 'pagos') setTab('pagos');
+    const mp = sp.get('mp');
+    if (mp === 'ok' || mp === 'error') {
+      setMpReturn(mp);
+      // Limpia la URL para que no reaparezca al refrescar
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   const saveTenant = async () => {
     setSaving(true);
@@ -382,10 +404,22 @@ export default function ConfiguracionPage() {
                   </div>
                 </div>
 
+                {/* Resultado del flujo de vinculación */}
+                {mpReturn === 'ok' && (
+                  <p className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                    ¡Cuenta de MercadoPago vinculada con éxito!
+                  </p>
+                )}
+                {mpReturn === 'error' && (
+                  <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                    No se pudo vincular la cuenta. Intentá de nuevo.
+                  </p>
+                )}
+
                 {mpStatus.conectado ? (
                   <div className="flex items-center justify-between bg-zinc-50 rounded-xl px-4 py-3">
                     <span className="text-sm text-zinc-600">
-                      Token: <span className="font-mono">{mpStatus.preview}</span>
+                      {mpStatus.via_oauth ? 'Vinculada con MercadoPago' : <>Token: <span className="font-mono">{mpStatus.preview}</span></>}
                     </span>
                     <button
                       onClick={desconectarMP}
@@ -397,41 +431,64 @@ export default function ConfiguracionPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-                        Access Token
-                      </label>
-                      <input
-                        type="password"
-                        value={mpToken}
-                        onChange={(e) => setMpToken(e.target.value)}
-                        placeholder="APP_USR-..."
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
-                      />
-                      <p className="text-xs text-zinc-400 mt-1.5">
-                        Lo obtenés en MercadoPago → Tus integraciones → Credenciales de producción.
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-                        Public Key <span className="text-zinc-300 normal-case">(opcional)</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={mpPublicKey}
-                        onChange={(e) => setMpPublicKey(e.target.value)}
-                        placeholder="APP_USR-..."
-                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
-                      />
-                    </div>
-                    <button
-                      onClick={conectarMP}
-                      disabled={mpSaving || !mpToken}
-                      className="w-full py-3 bg-[#009ee3] hover:bg-[#008fcc] disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
-                    >
-                      {mpSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                      Conectar MercadoPago
-                    </button>
+                    {/* Opción principal: vincular con un click (OAuth) */}
+                    {mpStatus.oauth_disponible && (
+                      <a
+                        href={`/api/admin/${tenantSlug}/mercadopago/oauth`}
+                        className="w-full py-3 bg-[#009ee3] hover:bg-[#008fcc] text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors no-underline"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Vincular con MercadoPago
+                      </a>
+                    )}
+
+                    {/* Opción secundaria: pegar el token manualmente */}
+                    {!mpManual ? (
+                      <button
+                        onClick={() => setMpManual(true)}
+                        className="w-full text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        {mpStatus.oauth_disponible ? '¿Preferís pegar el token manualmente?' : 'Conectar con tu Access Token'}
+                      </button>
+                    ) : (
+                      <div className="space-y-3 pt-1">
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                            Access Token
+                          </label>
+                          <input
+                            type="password"
+                            value={mpToken}
+                            onChange={(e) => setMpToken(e.target.value)}
+                            placeholder="APP_USR-..."
+                            className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          />
+                          <p className="text-xs text-zinc-400 mt-1.5">
+                            Lo obtenés en MercadoPago → Tus integraciones → Credenciales de producción.
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                            Public Key <span className="text-zinc-300 normal-case">(opcional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={mpPublicKey}
+                            onChange={(e) => setMpPublicKey(e.target.value)}
+                            placeholder="APP_USR-..."
+                            className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          />
+                        </div>
+                        <button
+                          onClick={conectarMP}
+                          disabled={mpSaving || !mpToken}
+                          className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                        >
+                          {mpSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                          Conectar con token
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
