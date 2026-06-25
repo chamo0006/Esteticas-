@@ -60,13 +60,18 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Seed alineado con los precios de la landing (app/page.tsx)
 INSERT INTO planes (slug, nombre, descripcion, precio_mensual, precio_anual, max_profesionales, orden, features) VALUES
-    ('basico',  'Básico', 'Para empezar con el pie derecho', 29999, 299990, 2,    1,
-        '["Página de reservas personalizada","Panel de administración completo","Hasta 2 profesionales","Estadísticas básicas","Soporte por email"]'::jsonb),
-    ('pro',     'Pro',    'El plan completo para tu negocio', 42999, 429990, NULL, 2,
-        '["Todo lo de Básico","Profesionales ilimitados","Recordatorios por WhatsApp","Señas con Mercado Pago","Historial de clientes con fotos","Soporte 7 días"]'::jsonb),
-    ('proplus', 'Pro+',   'Para centros con múltiples locales', 55000, 550000, NULL, 3,
+    ('basico',  'Básico', 'Para empezar con el pie derecho', 29999, 299990, 1,    1,
+        '["Hasta 1 profesional","Reservas online 24/7","Calendario de turnos","Gestión de clientes","Página personalizada con tu marca","Soporte por WhatsApp"]'::jsonb),
+    ('pro',     'Pro',    'El plan completo para tu estética', 49999, 499990, 5,    2,
+        '["Todo lo del Básico","Hasta 5 profesionales","Recordatorios automáticos","Gestión de empleados","Señas online con Mercado Pago","Estadísticas avanzadas","Historial completo de clientes","Soporte prioritario"]'::jsonb),
+    ('proplus', 'Pro+',   'Para centros con múltiples locales', 79999, 799990, NULL, 3,
         '["Todo lo de Pro","Múltiples locales","Reportes avanzados exportables","Manager de cuenta dedicado","API prioritaria"]'::jsonb)
 ON CONFLICT (slug) DO NOTHING;
+
+-- Corrección de precios para instalaciones existentes (el INSERT de arriba no actualiza por ON CONFLICT DO NOTHING)
+UPDATE planes SET precio_mensual = 29999, precio_anual = 299990, max_profesionales = 1    WHERE slug = 'basico';
+UPDATE planes SET precio_mensual = 49999, precio_anual = 499990, max_profesionales = 5    WHERE slug = 'pro';
+UPDATE planes SET precio_mensual = 79999, precio_anual = 799990, max_profesionales = NULL WHERE slug = 'proplus';
 
 
 -- ============================================================

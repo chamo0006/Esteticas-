@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ChevronRight, Plus, MoreHorizontal, Sparkles, Star } from 'lucide-react';
+import {
+  Check, ChevronRight, Plus, MoreHorizontal, Sparkles,
+  LayoutDashboard, Calendar, Scissors, UserCog, Users, Settings,
+  Clock, DollarSign, TrendingUp,
+} from 'lucide-react';
 
 type Tab = 'client' | 'admin' | 'staff';
 
@@ -125,96 +129,112 @@ function ClientView() {
 }
 
 function AdminView() {
-  const bars = [40, 62, 45, 78, 55, 88, 68];
+  const nav = [
+    { label: 'Dashboard',     icon: LayoutDashboard, active: true },
+    { label: 'Turnos',        icon: Calendar },
+    { label: 'Servicios',     icon: Scissors },
+    { label: 'Empleados',     icon: UserCog },
+    { label: 'Clientes',      icon: Users },
+    { label: 'Configuración', icon: Settings },
+  ];
+  const stats = [
+    { label: 'Turnos hoy',       value: '24',    icon: Calendar,    color: 'text-violet-500 bg-violet-50'   },
+    { label: 'Pendientes',       value: '3',     icon: Clock,       color: 'text-amber-500 bg-amber-50'     },
+    { label: 'Ingresos hoy',     value: '$48k',  icon: DollarSign,  color: 'text-emerald-500 bg-emerald-50' },
+    { label: 'Ingresos del mes', value: '$284k', icon: TrendingUp,  color: 'text-blue-500 bg-blue-50'       },
+    { label: 'Total clientes',   value: '156',   icon: Users,       color: 'text-pink-500 bg-pink-50'       },
+  ];
+  const turnos = [
+    { n: 'Ana García',   s: 'Esculpidas · Hoy 10:00',      p: '$15.000', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'A' },
+    { n: 'Laura Pérez',  s: 'Semi permanente · Hoy 11:30', p: '$8.000',  st: 'pendiente',  c: 'bg-amber-100 text-amber-700', ini: 'L' },
+    { n: 'Sofía R.',     s: 'Lifting de cejas · Hoy 13:00', p: '$6.500', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'S' },
+    { n: 'Valentina M.', s: 'Esculpidas · Hoy 15:30',      p: '$15.000', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'V' },
+  ];
   return (
     <div className="max-w-3xl mx-auto py-6 px-4">
       <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl shadow-gray-100/80 overflow-hidden">
         <div className="flex" style={{ height: '440px' }}>
           {/* Sidebar */}
-          <div className="w-44 bg-gray-950 p-4 flex flex-col shrink-0">
-            <div className="flex items-center gap-2 mb-6 px-2">
-              <div className="w-6 h-6 rounded-lg bg-violet-600 flex items-center justify-center">
-                <Star className="w-3 h-3 text-white fill-white" />
+          <div className="w-44 bg-zinc-900 flex flex-col shrink-0">
+            <div className="px-4 py-4 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-md shadow-violet-900/50">
+                  <Sparkles className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white text-xs font-semibold leading-tight truncate">Caracruz</p>
+                  <p className="text-zinc-500 text-[9px] truncate">caracruz</p>
+                </div>
               </div>
-              <span className="text-white text-xs font-semibold">Caracruz</span>
             </div>
-            {[
-              { label: 'Inicio', active: true },
-              { label: 'Turnos' },
-              { label: 'Servicios' },
-              { label: 'Staff' },
-              { label: 'Reportes' },
-            ].map(({ label, active }) => (
-              <div
-                key={label}
-                className={`px-3 py-2 rounded-lg text-xs font-medium mb-1 transition-colors ${
-                  active ? 'bg-violet-600 text-white' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {label}
+            <div className="flex-1 p-2.5 space-y-0.5">
+              {nav.map(({ label, icon: Icon, active }) => (
+                <div
+                  key={label}
+                  className={`flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors ${
+                    active ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  {label}
+                </div>
+              ))}
+            </div>
+            <div className="p-2.5 border-t border-zinc-800">
+              <div className="px-2.5 py-1">
+                <p className="text-white text-[10px] font-medium">Sofía</p>
+                <p className="text-zinc-500 text-[9px]">Administrador</p>
               </div>
-            ))}
+            </div>
           </div>
 
           {/* Main content */}
-          <div className="flex-1 p-5 bg-gray-50/40 overflow-hidden">
-            <div className="mb-4">
-              <p className="text-[11px] text-gray-400">Buenos días,</p>
-              <h3 className="text-sm font-semibold text-gray-900">Sofía ✨</h3>
+          <div className="flex-1 p-4 bg-gray-50/40 overflow-hidden">
+            <div className="mb-3">
+              <h3 className="text-sm font-bold text-zinc-900">Dashboard</h3>
+              <p className="text-[10px] text-zinc-400 mt-0.5">miércoles 24 de junio de 2026</p>
             </div>
 
             {/* KPIs */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {[
-                { label: 'Turnos hoy', value: '24', change: '+3 vs ayer', color: 'text-violet-600' },
-                { label: 'Ingresos mes', value: '$284k', change: '+18%', color: 'text-emerald-600' },
-                { label: 'Clientes nuevos', value: '12', change: 'esta semana', color: 'text-amber-600' },
-              ].map(k => (
-                <div key={k.label} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-                  <p className="text-[9px] text-gray-400 mb-1">{k.label}</p>
-                  <p className={`text-base font-bold ${k.color}`}>{k.value}</p>
-                  <p className="text-[8px] text-emerald-600 mt-0.5">{k.change}</p>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {stats.map(s => (
+                <div key={s.label} className="bg-white rounded-xl p-2.5 border border-zinc-100 shadow-sm">
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center mb-1.5 ${s.color}`}>
+                    <s.icon className="w-3 h-3" />
+                  </div>
+                  <p className="text-sm font-bold text-zinc-900 leading-none">{s.value}</p>
+                  <p className="text-[8px] text-zinc-400 mt-1 font-medium">{s.label}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-5 gap-3">
-              {/* Bar chart */}
-              <div className="col-span-2 bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-                <p className="text-[9px] font-semibold text-gray-500 mb-2">Ingresos — semana</p>
-                <div className="flex items-end gap-1" style={{ height: '56px' }}>
-                  {bars.map((h, i) => (
-                    <div
-                      key={i}
-                      className={`flex-1 rounded-sm ${i === 5 ? 'bg-violet-500' : 'bg-violet-100'}`}
-                      style={{ height: `${h}%` }}
-                    />
-                  ))}
+            {/* Próximos turnos */}
+            <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+              <div className="px-3 py-2 border-b border-zinc-100 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3 h-3 text-zinc-400" />
+                  <p className="text-[10px] font-semibold text-zinc-900">Próximos turnos</p>
                 </div>
-                <div className="flex justify-between mt-1">
-                  {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
-                    <span key={d} className="text-[7px] text-gray-300 flex-1 text-center">{d}</span>
-                  ))}
-                </div>
+                <span className="text-[9px] text-violet-600 font-medium">Ver todos →</span>
               </div>
-
-              {/* Upcoming appointments */}
-              <div className="col-span-3 bg-white rounded-xl p-3 border border-gray-100 shadow-sm overflow-hidden">
-                <p className="text-[9px] font-semibold text-gray-500 mb-2">Próximos turnos</p>
-                <div className="space-y-2">
-                  {[
-                    { t: '10:00', n: 'Ana García',   s: 'Esculpidas', st: 'Confirmado', c: 'bg-emerald-50 text-emerald-700' },
-                    { t: '11:30', n: 'Laura Pérez',  s: 'Semi perm.',  st: 'En curso',  c: 'bg-violet-50 text-violet-700'   },
-                    { t: '13:00', n: 'Sofía R.',     s: 'L. cejas',   st: 'Próximo',   c: 'bg-amber-50 text-amber-700'     },
-                    { t: '15:30', n: 'Valentina M.', s: 'Esculpidas', st: 'Confirmado', c: 'bg-emerald-50 text-emerald-700' },
-                  ].map(a => (
-                    <div key={a.t} className="flex items-center gap-1.5">
-                      <span className="text-[8px] text-gray-400 w-7 shrink-0">{a.t}</span>
-                      <span className="text-[9px] text-gray-600 flex-1 truncate">{a.n}</span>
-                      <span className={`text-[7px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${a.c}`}>{a.st}</span>
+              <div className="divide-y divide-zinc-50">
+                {turnos.map(a => (
+                  <div key={a.n} className="px-3 py-1.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                        <span className="text-[8px] font-bold text-violet-600">{a.ini}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-medium text-zinc-900 leading-tight truncate">{a.n}</p>
+                        <p className="text-[8px] text-zinc-400 truncate">{a.s}</p>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[9px] font-semibold text-zinc-700">{a.p}</span>
+                      <span className={`text-[7px] px-1.5 py-0.5 rounded-md font-semibold ${a.c}`}>{a.st}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

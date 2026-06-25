@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getMPClient, Payment } from '@/lib/mercadopago';
+import { getMPClient, Payment, resolveMPToken } from '@/lib/mercadopago';
 import { supabase } from '@/lib/supabase';
 
 // MP envía notificaciones a esta URL cuando cambia el estado de un pago
@@ -14,7 +14,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const accessToken = process.env.MP_ACCESS_TOKEN;
+  // El tenant_id viene en la query (lo puso crear-preferencia) para resolver
+  // con qué cuenta de MercadoPago consultar este pago.
+  const tenantId = new URL(req.url).searchParams.get('tenant_id');
+  const accessToken = tenantId
+    ? await resolveMPToken(tenantId)
+    : process.env.MP_ACCESS_TOKEN ?? null;
   if (!accessToken) return NextResponse.json({ ok: true });
 
   try {

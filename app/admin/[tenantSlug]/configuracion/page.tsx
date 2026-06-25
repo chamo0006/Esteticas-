@@ -63,6 +63,59 @@ export default function ConfiguracionPage() {
   const [nuevaFecha, setNuevaFecha] = useState('');
   const [nuevoMotivo, setNuevoMotivo] = useState('');
 
+  // MercadoPago — conexión de la cuenta del comercio
+  const [mpStatus, setMpStatus] = useState<{ conectado: boolean; preview: string | null }>({ conectado: false, preview: null });
+  const [mpToken, setMpToken] = useState('');
+  const [mpPublicKey, setMpPublicKey] = useState('');
+  const [mpSaving, setMpSaving] = useState(false);
+  const [mpError, setMpError] = useState<string | null>(null);
+
+  const fetchMP = useCallback(async () => {
+    const res = await fetch(`/api/admin/${tenantSlug}/mercadopago`);
+    if (res.ok) {
+      const data = await res.json();
+      setMpStatus({ conectado: data.conectado, preview: data.preview });
+      setMpPublicKey(data.public_key ?? '');
+    }
+  }, [tenantSlug]);
+
+  const conectarMP = async () => {
+    setMpSaving(true);
+    setMpError(null);
+    try {
+      const res = await fetch(`/api/admin/${tenantSlug}/mercadopago`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: mpToken, public_key: mpPublicKey }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMpStatus({ conectado: true, preview: data.preview });
+        setMpToken('');
+      } else {
+        setMpError(data.error ?? 'Error al conectar');
+      }
+    } catch {
+      setMpError('Error de red. Intentá de nuevo.');
+    } finally {
+      setMpSaving(false);
+    }
+  };
+
+  const desconectarMP = async () => {
+    setMpSaving(true);
+    setMpError(null);
+    try {
+      const res = await fetch(`/api/admin/${tenantSlug}/mercadopago`, { method: 'DELETE' });
+      if (res.ok) {
+        setMpStatus({ conectado: false, preview: null });
+        setMpToken('');
+      }
+    } finally {
+      setMpSaving(false);
+    }
+  };
+
   const fetch_ = useCallback(async () => {
     setLoading(true);
     const res = await fetch(`/api/admin/${tenantSlug}/configuracion`);
@@ -81,7 +134,7 @@ export default function ConfiguracionPage() {
     setLoading(false);
   }, [tenantSlug]);
 
-  useEffect(() => { fetch_(); }, [fetch_]);
+  useEffect(() => { fetch_(); fetchMP(); }, [fetch_, fetchMP]);
 
   const saveTenant = async () => {
     setSaving(true);
@@ -310,6 +363,82 @@ export default function ConfiguracionPage() {
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saved ? '¡Guardado!' : 'Guardar configuración'}
               </button>
+
+              {/* ── MercadoPago: cuenta del comercio ───────────── */}
+              <div className="pt-5 border-t border-zinc-100 space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-zinc-900 text-sm flex items-center gap-2">
+                      Cuenta de MercadoPago
+                      {mpStatus.conectado && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          Conectada
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Las señas se cobran directamente a tu cuenta de MercadoPago.
+                    </p>
+                  </div>
+                </div>
+
+                {mpStatus.conectado ? (
+                  <div className="flex items-center justify-between bg-zinc-50 rounded-xl px-4 py-3">
+                    <span className="text-sm text-zinc-600">
+                      Token: <span className="font-mono">{mpStatus.preview}</span>
+                    </span>
+                    <button
+                      onClick={desconectarMP}
+                      disabled={mpSaving}
+                      className="text-xs font-medium text-zinc-400 hover:text-red-500 transition-colors"
+                    >
+                      Desconectar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                        Access Token
+                      </label>
+                      <input
+                        type="password"
+                        value={mpToken}
+                        onChange={(e) => setMpToken(e.target.value)}
+                        placeholder="APP_USR-..."
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      />
+                      <p className="text-xs text-zinc-400 mt-1.5">
+                        Lo obtenés en MercadoPago → Tus integraciones → Credenciales de producción.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                        Public Key <span className="text-zinc-300 normal-case">(opcional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={mpPublicKey}
+                        onChange={(e) => setMpPublicKey(e.target.value)}
+                        placeholder="APP_USR-..."
+                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      />
+                    </div>
+                    <button
+                      onClick={conectarMP}
+                      disabled={mpSaving || !mpToken}
+                      className="w-full py-3 bg-[#009ee3] hover:bg-[#008fcc] disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                    >
+                      {mpSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                      Conectar MercadoPago
+                    </button>
+                  </div>
+                )}
+
+                {mpError && (
+                  <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{mpError}</p>
+                )}
+              </div>
             </div>
           )}
 

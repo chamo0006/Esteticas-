@@ -47,6 +47,33 @@ const features = [
   },
 ];
 
+const steps = [
+  {
+    n: '01',
+    title: 'Creás tu perfil',
+    description:
+      'Registrate gratis, cargá tus servicios con precio y duración, y configurá tus horarios. Funciona para estéticas, barberías, masajes, uñas y más.',
+    badgeBg: 'bg-violet-100',
+    badgeColor: 'text-violet-700',
+  },
+  {
+    n: '02',
+    title: 'Compartís tu link',
+    description:
+      'Cada negocio tiene su página única de reservas online. Compartila por WhatsApp, Instagram o donde quieras.',
+    badgeBg: 'bg-emerald-100',
+    badgeColor: 'text-emerald-700',
+  },
+  {
+    n: '03',
+    title: 'Recibís turnos',
+    description:
+      'Tus clientes eligen servicio, día y hora desde el celular. Vos recibís un email y lo ves en tu panel de control.',
+    badgeBg: 'bg-amber-100',
+    badgeColor: 'text-amber-700',
+  },
+];
+
 const pricingPlans = [
   {
     name: 'Básico',
@@ -57,12 +84,12 @@ const pricingPlans = [
     popular: false,
     dark: false,
     features: [
-      'Página de reservas personalizada',
-      'Panel de administración completo',
-      'Hasta 2 profesionales',
-      'Gestión de servicios y categorías',
-      'Estadísticas básicas',
-      'Soporte por email',
+      'Hasta 1 profesional',
+      'Reservas online 24/7',
+      'Calendario de turnos',
+      'Gestión de clientes',
+      'Página personalizada con tu marca',
+      'Soporte por WhatsApp',
     ],
     cta: 'Empezar gratis',
     ctaNote: 'Sin tarjeta de crédito',
@@ -70,20 +97,20 @@ const pricingPlans = [
   {
     name: 'Pro',
     tagline: 'El plan completo para tu estética',
-    price: '42.999',
-    yearlyNote: 'o $429.990/año — ahorrás 2 meses',
+    price: '49.999',
+    yearlyNote: 'o $499.990/año — ahorrás 2 meses',
     badge: 'Más popular',
     popular: true,
     dark: false,
     features: [
-      'Todo lo del plan Básico',
-      'Profesionales ilimitados',
-      'Recordatorios automáticos por WhatsApp',
+      'Todo lo del Básico',
+      'Hasta 5 profesionales',
+      'Recordatorios automáticos',
+      'Gestión de empleados',
       'Señas online con Mercado Pago',
-      'Gestión de staff y comisiones',
-      'Historial de clientes con fotos',
-      'Estadísticas e ingresos detallados',
-      'Soporte 7 días a la semana',
+      'Estadísticas avanzadas',
+      'Historial completo de clientes',
+      'Soporte prioritario',
     ],
     cta: 'Empezar gratis 14 días',
     ctaNote: 'Sin tarjeta de crédito',
@@ -91,8 +118,8 @@ const pricingPlans = [
   {
     name: 'Pro+',
     tagline: 'Para centros con múltiples locales',
-    price: '55.000',
-    yearlyNote: 'o $550.000/año — ahorrás 2 meses',
+    price: '79.999',
+    yearlyNote: 'o $799.990/año — ahorrás 2 meses',
     badge: null as string | null,
     popular: false,
     dark: true,
@@ -110,6 +137,8 @@ const pricingPlans = [
 ];
 
 const navLinks = [
+  ['Cómo funciona', '#como-funciona'],
+  ['Servicio', '#preview'],
   ['Beneficios', '#funciones'],
   ['Precios', '#precios'],
   ['Contacto', '#contacto'],
@@ -159,7 +188,7 @@ export default function LandingPage() {
       </header>
 
       {/* ── Hero ────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-6 pt-28 pb-24 text-center">
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-14 md:pb-16 text-center">
         <div className="animate-hero">
           <div className="inline-flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-full px-4 py-2 mb-8">
             <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
@@ -209,7 +238,7 @@ export default function LandingPage() {
 
         {/* Social proof */}
         <div
-          className="flex items-center justify-center flex-wrap gap-4 mt-16 animate-hero"
+          className="flex items-center justify-center flex-wrap gap-4 mt-12 animate-hero"
           style={{ animationDelay: '320ms' }}
         >
           <div className="flex -space-x-2">
@@ -226,8 +255,46 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Cómo funciona (3 pasos) ─────────────────────────── */}
+      <section id="como-funciona" className="py-14 md:py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <AnimateIn className="text-center mb-14">
+            <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
+              Cómo funciona
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+              Tan simple como debe ser
+            </h2>
+            <p className="text-gray-500 max-w-lg mx-auto">
+              Tres pasos y tu negocio ya está en Caracruz.
+            </p>
+          </AnimateIn>
+
+          <div className="relative max-w-4xl mx-auto">
+            {/* Línea conectora (solo desktop) */}
+            <div className="hidden md:block absolute top-7 left-[18%] right-[18%] border-t-2 border-dashed border-gray-200" />
+
+            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+              {steps.map((s, i) => (
+                <AnimateIn key={s.n} delay={i * 100} className="text-center">
+                  <div
+                    className={`relative z-10 w-14 h-14 rounded-2xl ${s.badgeBg} ${s.badgeColor} flex items-center justify-center font-bold mx-auto mb-5 shadow-sm`}
+                  >
+                    {s.n}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{s.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">
+                    {s.description}
+                  </p>
+                </AnimateIn>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── System Preview (tabs interactivos) ──────────────── */}
-      <section id="preview" className="bg-gray-50 py-24 px-6">
+      <section id="preview" className="bg-gray-50 py-14 md:py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <AnimateIn className="text-center mb-12">
             <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
@@ -248,9 +315,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features Bento Grid ──────────────────────────────── */}
-      <section id="funciones" className="py-24 px-6">
+      <section id="funciones" className="py-14 md:py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <AnimateIn className="text-center mb-16">
+          <AnimateIn className="text-center mb-12">
             <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
               Funcionalidades
             </span>
@@ -265,7 +332,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {features.map((f, i) => (
               <AnimateIn key={f.title} delay={i * 80}>
-                <div className="group bg-white border border-gray-100 rounded-3xl p-8 hover:shadow-xl hover:shadow-gray-100/80 hover:-translate-y-1 transition-all duration-300 h-full">
+                <div className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-xl hover:shadow-gray-100/80 hover:-translate-y-1 transition-all duration-300 h-full">
                   <div className={`w-12 h-12 rounded-2xl ${f.iconBg} flex items-center justify-center mb-5`}>
                     <f.Icon className={`w-6 h-6 ${f.iconColor}`} />
                   </div>
@@ -279,9 +346,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ─────────────────────────────────────────── */}
-      <section id="precios" className="bg-gray-50 py-24 px-6">
+      <section id="precios" className="bg-gray-50 py-14 md:py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <AnimateIn className="text-center mb-14">
+          <AnimateIn className="text-center mb-10">
             <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">
               Precios
             </span>
@@ -298,7 +365,7 @@ export default function LandingPage() {
               <AnimateIn key={plan.name} delay={i * 80} className="h-full">
                 <div
                   className={
-                    'relative flex flex-col rounded-3xl p-8 h-full transition-all duration-300 ' +
+                    'relative flex flex-col rounded-3xl p-6 h-full transition-all duration-300 ' +
                     (plan.popular
                       ? 'bg-white border border-violet-200 shadow-2xl shadow-violet-100/60 hover:-translate-y-1 overflow-hidden'
                       : plan.dark
@@ -320,21 +387,21 @@ export default function LandingPage() {
                   <h3 className={'text-lg font-semibold mb-1 ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
                     {plan.name}
                   </h3>
-                  <p className={'text-sm mb-5 ' + (plan.dark ? 'text-gray-400' : 'text-gray-500')}>
+                  <p className={'text-sm mb-4 ' + (plan.dark ? 'text-gray-400' : 'text-gray-500')}>
                     {plan.tagline}
                   </p>
 
                   <div className="flex items-baseline gap-1.5 mb-2">
-                    <span className={'text-4xl font-bold ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
+                    <span className={'text-3xl font-bold ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
                       ${plan.price}
                     </span>
                     <span className={'font-medium text-gray-400'}>/mes</span>
                   </div>
-                  <p className={'text-xs mb-7 ' + (plan.dark ? 'text-gray-500' : 'text-gray-400')}>
+                  <p className={'text-xs mb-5 ' + (plan.dark ? 'text-gray-500' : 'text-gray-400')}>
                     {plan.yearlyNote}
                   </p>
 
-                  <ul className="space-y-3 mb-8 flex-1">
+                  <ul className="space-y-2.5 mb-6 flex-1">
                     {plan.features.map(f => (
                       <li key={f} className="flex items-start gap-3">
                         <div
@@ -364,7 +431,7 @@ export default function LandingPage() {
                   <a
                     href="#contacto"
                     className={
-                      'block w-full text-center py-4 rounded-2xl font-semibold transition-all duration-200 hover:-translate-y-0.5 ' +
+                      'block w-full text-center py-3.5 rounded-2xl font-semibold transition-all duration-200 hover:-translate-y-0.5 ' +
                       (plan.popular
                         ? 'bg-gray-900 text-white hover:bg-gray-700'
                         : plan.dark
@@ -385,7 +452,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Contact ─────────────────────────────────────────── */}
-      <section id="contacto" className="py-24 px-6">
+      <section id="contacto" className="py-14 md:py-20 px-6">
         <div className="max-w-xl mx-auto">
           <AnimateIn className="text-center mb-10">
             <span className="text-xs font-semibold text-violet-600 uppercase tracking-widest block mb-3">

@@ -52,6 +52,35 @@ const fmtApiDate = (d: Date) =>
 const iniciales = (nombre: string) =>
   nombre.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
 
+// Fondo de página + enmarcado de la columna SOLO en desktop (en mobile queda full-bleed).
+const BB_CSS = `
+.bb-shell { min-height: 100vh; min-height: 100dvh; background: #000; display: flex; justify-content: center; }
+.bb-card  { min-height: 100vh; min-height: 100dvh; }
+@media (min-width: 640px) {
+  .bb-shell {
+    background: radial-gradient(130% 70% at 50% 0%, #1a1a1a 0%, #050505 55%, #000 100%);
+    padding: 36px 24px;
+    align-items: flex-start;
+  }
+  .bb-card {
+    min-height: calc(100dvh - 72px);
+    border-radius: 22px;
+    border: 0.5px solid #1e1e1e;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+}
+`;
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bb-shell">
+      <style dangerouslySetInnerHTML={{ __html: BB_CSS }} />
+      {children}
+    </div>
+  );
+}
+
 export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Props) {
   const today = new Date();
   const hasBarbers = barbers.length > 0;
@@ -204,7 +233,7 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
   const brand = tenant.nombre || 'Barbería';
 
   const wrap: React.CSSProperties = {
-    background: bg, minHeight: '100vh', maxWidth: 430, margin: '0 auto',
+    background: bg, width: '100%', maxWidth: 430, margin: '0 auto',
     display: 'flex', flexDirection: 'column',
     fontFamily: 'system-ui, -apple-system, sans-serif', color: textPrimary,
   };
@@ -274,7 +303,8 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
       ? `https://wa.me/${wppDigits}?text=${encodeURIComponent(`¡Hola! Reservé un turno ✂️\n${service?.name ?? ''}${barber ? ` con ${barber.nombre}` : ''}\n${summaryDate} a las ${time}`)}`
       : undefined;
     return (
-      <div style={wrap}>
+      <Shell>
+      <div className="bb-card" style={wrap}>
         <nav style={nav}>
           <span style={navLogo}>✂ {brand}</span>
           <span style={navBadge}>● Abierto</span>
@@ -305,11 +335,13 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
         </div>
         {footer}
       </div>
+      </Shell>
     );
   }
 
   return (
-    <div style={wrap}>
+    <Shell>
+    <div className="bb-card" style={wrap}>
       {/* NAV */}
       <nav style={nav}>
         <span style={navLogo}>✂ {brand}</span>
@@ -535,5 +567,6 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
       {/* FOOTER */}
       {footer}
     </div>
+    </Shell>
   );
 }

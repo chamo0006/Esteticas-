@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getTenantBySlug } from '@/lib/tenant';
-import { getMPClient, Preference } from '@/lib/mercadopago';
+import { getMPClient, Preference, resolveMPToken } from '@/lib/mercadopago';
 import { supabase } from '@/lib/supabase';
 
 // POST /api/[tenantSlug]/crear-preferencia
@@ -14,8 +14,8 @@ export async function POST(
   const tenant = await getTenantBySlug(tenantSlug);
   if (!tenant) return NextResponse.json({ error: 'Tenant no encontrado' }, { status: 404 });
 
-  // Cada estética puede tener su propio MP_ACCESS_TOKEN, o se usa el de la plataforma
-  const accessToken = process.env.MP_ACCESS_TOKEN;
+  // Cada estética cobra a SU cuenta de MP; si no la conectó, cae al token de plataforma
+  const accessToken = await resolveMPToken(tenant.id);
   if (!accessToken) {
     return NextResponse.json({ error: 'MercadoPago no configurado' }, { status: 503 });
   }
@@ -67,7 +67,9 @@ export async function POST(
           pending: `${baseUrl}/${tenantSlug}/reserva/pendiente`,
         },
         auto_return: 'approved',
-        notification_url: `${baseUrl}/api/webhooks/mercadopago`,
+        // El tenant_id viaja en la URL para que el webhook sepa con qué
+        // cuenta (token) consultar el pago — clave en multi-tenant.
+        notification_url: `${baseUrl}/api/webhooks/mercadopago?tenant_id=${tenant.id}`,
         external_reference: pagoId,
         expires: true,
         expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),

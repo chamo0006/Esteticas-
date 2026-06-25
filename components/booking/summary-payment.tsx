@@ -122,12 +122,23 @@ export function SummaryPayment({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pagoId: data.pagoId, clienteNombre: `${formData.nombre} ${formData.apellido}`.trim(), clienteEmail: formData.email, items: cart.map(i => ({ name: i.name })) }),
         });
-        if (mpRes.ok) {
-          const mpData = await mpRes.json();
-          const url = process.env.NODE_ENV === "production" ? mpData.initPoint : (mpData.sandboxInitPoint ?? mpData.initPoint);
-          window.location.href = url;
-          return;
+
+        if (!mpRes.ok) {
+          const mpErr = await mpRes.json().catch(() => ({}));
+          throw new Error(
+            mpRes.status === 503
+              ? "El pago con Mercado Pago no está disponible en este momento. Probá con otro método de pago."
+              : (mpErr.error ?? "No se pudo iniciar el pago con Mercado Pago. Intentá de nuevo.")
+          );
         }
+
+        const mpData = await mpRes.json();
+        const url = process.env.NODE_ENV === "production" ? mpData.initPoint : (mpData.sandboxInitPoint ?? mpData.initPoint);
+        if (!url) {
+          throw new Error("No se pudo iniciar el pago con Mercado Pago. Intentá de nuevo.");
+        }
+        window.location.href = url;
+        return;
       }
 
       setBookingResult(data);

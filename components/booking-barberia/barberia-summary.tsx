@@ -91,11 +91,19 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pagoId: data.pagoId, clienteNombre: `${form.nombre} ${form.apellido}`.trim(), clienteEmail: form.email, items: cart.map(i => ({ name: i.name })) }),
         });
-        if (mp.ok) {
-          const mpD = await mp.json();
-          window.location.href = process.env.NODE_ENV === "production" ? mpD.initPoint : (mpD.sandboxInitPoint ?? mpD.initPoint);
-          return;
+        if (!mp.ok) {
+          const mpErr = await mp.json().catch(() => ({}));
+          throw new Error(
+            mp.status === 503
+              ? "El pago con Mercado Pago no está disponible en este momento. Probá con otro método de pago."
+              : (mpErr.error ?? "No se pudo iniciar el pago con Mercado Pago. Intentá de nuevo.")
+          );
         }
+        const mpD = await mp.json();
+        const url = process.env.NODE_ENV === "production" ? mpD.initPoint : (mpD.sandboxInitPoint ?? mpD.initPoint);
+        if (!url) throw new Error("No se pudo iniciar el pago con Mercado Pago. Intentá de nuevo.");
+        window.location.href = url;
+        return;
       }
       setResult(data); setStatus("success");
     } catch (e) {

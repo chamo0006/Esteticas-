@@ -186,6 +186,11 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Scroll suave + offset para que los anclas del nav no queden tapados por el header sticky */
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
 }
 
 /* ── Animations ──────────────────────────────────────────────────────────── */
