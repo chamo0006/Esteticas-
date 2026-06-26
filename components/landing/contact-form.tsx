@@ -21,8 +21,24 @@ export function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    // Validación: email con @ y formato válido
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      setError('Ingresá un email válido (debe incluir @ y un dominio, ej: nombre@gmail.com).');
+      return;
+    }
+
+    // Validación: teléfono con 10 dígitos (ignora espacios, guiones y el +54 opcional)
+    let digitos = form.telefono.replace(/\D/g, '');
+    if (digitos.startsWith('54')) digitos = digitos.slice(2);
+    if (digitos.length !== 10) {
+      setError('El teléfono debe tener 10 dígitos (código de área + número, sin el +54).');
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch('/api/contacto', {
         method: 'POST',
@@ -59,7 +75,7 @@ export function ContactForm() {
   const fields: { field: keyof FormState; label: string; placeholder: string; type: string; required: boolean }[] = [
     { field: 'nombre', label: 'Tu nombre', placeholder: 'María García', type: 'text', required: true },
     { field: 'email', label: 'Email', placeholder: 'tu@email.com', type: 'email', required: true },
-    { field: 'telefono', label: 'Teléfono', placeholder: '+54 11 xxxx-xxxx', type: 'tel', required: false },
+    { field: 'telefono', label: 'Teléfono', placeholder: '+54 11 xxxx-xxxx', type: 'tel', required: true },
     { field: 'estetica', label: 'Nombre de tu estética', placeholder: 'Estética Bella', type: 'text', required: false },
   ];
 

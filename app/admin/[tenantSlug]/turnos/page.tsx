@@ -223,11 +223,13 @@ function DailyCalendar({
   profesionales,
   selectedDate,
   onOpenModal,
+  colorFor,
 }: {
   turnos: Turno[];
   profesionales: Profesional[];
   selectedDate: Date;
   onOpenModal: (t: Turno) => void;
+  colorFor: (id: string | null) => string;
 }) {
   const isToday = toDateStr(selectedDate) === toDateStr(new Date());
 
@@ -235,10 +237,10 @@ function DailyCalendar({
   const columns: Array<{ id: string | null; nombre: string; color: string; turnos: Turno[] }> = [
     ...profesionales
       .filter(p => p.activo)
-      .map((p, idx) => ({
+      .map((p) => ({
         id: p.id,
         nombre: p.nombre,
-        color: EMPLOYEE_COLORS[idx % EMPLOYEE_COLORS.length],
+        color: colorFor(p.id),
         turnos: turnos.filter(t => t.profesional_id === p.id),
       })),
     ...(unassigned.length > 0
@@ -417,6 +419,8 @@ export default function TurnosPage() {
   const [fetchError, setFetchError] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
   const [vista, setVista] = useState<Vista>('calendario');
+  // Filtro por empleado (null = todos). Se sincroniza solo con el apartado de empleados.
+  const [filtroProfesional, setFiltroProfesional] = useState<string | null>(null);
 
   // Modal state
   const [modalTurno, setModalTurno] = useState<Turno | null>(null);
@@ -490,26 +494,40 @@ export default function TurnosPage() {
     setCanceling(false);
   };
 
-  // ── Color lookup for a profesional ────────────────────────────────────────
+  // ── Color lookup + filtro por empleado ─────────────────────────────────────
 
-  const getProfesionalColor = (turno: Turno): string => {
-    if (!turno.profesional_id) return '#71717a';
-    const idx = profesionales.filter(p => p.activo).findIndex(p => p.id === turno.profesional_id);
-    if (idx < 0) return '#71717a';
-    return EMPLOYEE_COLORS[idx % EMPLOYEE_COLORS.length];
+  const activeProfs = profesionales.filter(p => p.activo);
+
+  // Color estable por empleado (según su posición en la lista de activos)
+  const colorFor = (id: string | null): string => {
+    if (!id) return '#71717a';
+    const idx = activeProfs.findIndex(p => p.id === id);
+    return idx < 0 ? '#71717a' : EMPLOYEE_COLORS[idx % EMPLOYEE_COLORS.length];
   };
+
+  // Si el empleado filtrado ya no existe (se borró/desactivó), volvemos a "Todos"
+  const filtroActivo = filtroProfesional && activeProfs.some(p => p.id === filtroProfesional)
+    ? filtroProfesional
+    : null;
+
+  const turnosFiltrados = filtroActivo
+    ? turnos.filter(t => t.profesional_id === filtroActivo)
+    : turnos;
+
+  // En el calendario, al filtrar mostramos solo la columna de ese empleado
+  const profesionalesCalendario = filtroActivo ? activeProfs.filter(p => p.id === filtroActivo) : profesionales;
 
   // ── Agenda (list) view ─────────────────────────────────────────────────────
 
   const renderAgenda = () => (
-    turnos.length === 0 ? (
+    turnosFiltrados.length === 0 ? (
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
         <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
         <p className="text-zinc-400 font-medium">Sin turnos para este día</p>
       </div>
     ) : (
       <div className="space-y-3">
-        {turnos.map((t) => (
+        {turnosFiltrados.map((t) => (
           <div key={t.id} className={cn(
             'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all',
             t.estado === 'cancelado' ? 'opacity-50' : ''
@@ -591,8 +609,8 @@ export default function TurnosPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">Agenda de Turnos</h1>
           <p className="text-zinc-400 text-sm mt-1">
-            {turnos.filter(t => t.estado !== 'cancelado').length} turno
-            {turnos.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} para este día
+            {turnosFiltrados.filter(t => t.estado !== 'cancelado').length} turno
+            {turnosFiltrados.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} para este día
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -638,6 +656,43 @@ export default function TurnosPage() {
         </button>
       </div>
 
+      {/* Nav de empleados — se sincroniza solo con el apartado de Empleados */}
+      {activeProfs.length > 0 && (
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
+          <button
+            onClick={() => setFiltroProfesional(null)}
+            className={cn(
+              'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors border',
+              filtroActivo === null
+                ? 'bg-zinc-900 text-white border-zinc-900'
+                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+            )}
+          >
+            Todos
+          </button>
+          {activeProfs.map((p) => {
+            const sel = filtroActivo === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setFiltroProfesional(p.id)}
+                className={cn(
+                  'flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors border',
+                  sel ? 'text-white border-transparent' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                )}
+                style={sel ? { backgroundColor: colorFor(p.id) } : undefined}
+              >
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: sel ? 'rgba(255,255,255,0.9)' : colorFor(p.id) }}
+                />
+                {p.nombre}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20 text-zinc-400">
@@ -650,10 +705,11 @@ export default function TurnosPage() {
         </div>
       ) : vista === 'calendario' ? (
         <DailyCalendar
-          turnos={turnos}
-          profesionales={profesionales}
+          turnos={turnosFiltrados}
+          profesionales={profesionalesCalendario}
           selectedDate={selectedDate}
           onOpenModal={setModalTurno}
+          colorFor={colorFor}
         />
       ) : renderAgenda()}
 
@@ -661,7 +717,7 @@ export default function TurnosPage() {
       {modalTurno && (
         <TurnoModal
           turno={modalTurno}
-          profesionalColor={getProfesionalColor(modalTurno)}
+          profesionalColor={colorFor(modalTurno.profesional_id)}
           onClose={() => setModalTurno(null)}
           onCancelar={handleCancelarModal}
           canceling={canceling}

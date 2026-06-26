@@ -31,6 +31,8 @@ export default function ClientesPage() {
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<Cliente | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
@@ -50,6 +52,14 @@ export default function ClientesPage() {
     await fetch_();
   };
 
+  const handleReset = async () => {
+    setResetting(true);
+    await fetch(`/api/admin/${tenantSlug}/clientes?all=true`, { method: 'DELETE' });
+    setConfirmReset(false);
+    setResetting(false);
+    await fetch_();
+  };
+
   const filtered = clientes.filter(c =>
     c.nombre.toLowerCase().includes(search.toLowerCase()) ||
     c.email?.toLowerCase().includes(search.toLowerCase()) ||
@@ -64,6 +74,15 @@ export default function ClientesPage() {
           <h1 className="text-2xl font-bold text-zinc-900">Clientes</h1>
           <p className="text-zinc-400 text-sm mt-1">{clientes.length} cliente{clientes.length !== 1 ? 's' : ''} registrados</p>
         </div>
+        {clientes.length > 0 && (
+          <button
+            onClick={() => setConfirmReset(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+          >
+            <Trash2 className="w-4 h-4" />
+            Reiniciar todo
+          </button>
+        )}
       </div>
 
       {/* Buscador */}
@@ -198,6 +217,50 @@ export default function ClientesPage() {
               >
                 {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación: reiniciar todo */}
+      {confirmReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setConfirmReset(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-zinc-900">Reiniciar todo</p>
+                  <p className="text-sm text-zinc-500 mt-0.5">Esta acción no se puede deshacer</p>
+                </div>
+              </div>
+              <button onClick={() => setConfirmReset(false)} className="text-zinc-400 hover:text-zinc-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-zinc-600 mb-5">
+              Se borrarán <strong className="text-zinc-900">los {clientes.length} clientes</strong> del comercio
+              junto con todo su historial de turnos y pagos. La lista quedará vacía.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmReset(false)}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleReset}
+                disabled={resetting}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Sí, borrar todo
               </button>
             </div>
           </div>

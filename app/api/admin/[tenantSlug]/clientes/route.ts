@@ -80,7 +80,23 @@ export async function DELETE(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const id = new URL(req.url).searchParams.get('id');
+  const url = new URL(req.url);
+
+  // Reiniciar todo: borra TODOS los clientes del comercio con sus turnos y pagos.
+  if (url.searchParams.get('all') === 'true') {
+    // Orden por las foreign keys: pagos → turnos → clientes
+    await supabase.from('pagos').delete().eq('tenant_id', payload.tenantId);
+    await supabase.from('turnos').delete().eq('tenant_id', payload.tenantId);
+    const { error } = await supabase.from('clientes').delete().eq('tenant_id', payload.tenantId);
+
+    if (error) {
+      console.error('[clientes DELETE all]', error);
+      return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  const id = url.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
   // Verify the client belongs to this tenant

@@ -37,7 +37,7 @@ export async function GET(
       profesional_id,
       clientes!inner(nombre, email, telefono),
       servicios!inner(nombre, duracion_minutos, precio),
-      pagos(monto, tipo, metodo, estado),
+      pagos!turno_id(monto, tipo, metodo, estado),
       profesionales(nombre)
     `)
     .eq('tenant_id', payload.tenantId)

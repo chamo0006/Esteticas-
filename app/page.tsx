@@ -1,10 +1,6 @@
 import {
   ArrowRight,
   Check,
-  MessageCircle,
-  CreditCard,
-  ImageIcon,
-  Calculator,
   Sparkles,
   Star,
 } from 'lucide-react';
@@ -14,36 +10,46 @@ import { ContactForm } from '@/components/landing/contact-form';
 
 const features = [
   {
-    Icon: MessageCircle,
-    title: 'Recordatorios por WhatsApp',
+    emoji: '📅',
+    title: 'Calendario inteligente',
     description:
-      'Enviá recordatorios automáticos 24hs antes del turno. Reducí ausentes hasta un 80% sin hacer nada.',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+      'Agenda digital para cualquier profesional. Los slots se calculan automáticamente según la duración de cada servicio.',
+    iconBg: 'bg-violet-50',
   },
   {
-    Icon: CreditCard,
+    emoji: '📱',
+    title: 'Reservas online 24/7',
+    description:
+      'Tus clientes reservan turnos desde el celular en segundos. Sin llamadas, sin idas y vueltas, sin WhatsApp.',
+    iconBg: 'bg-blue-50',
+  },
+  {
+    emoji: '💳',
     title: 'Señas con Mercado Pago',
     description:
       'Tu cliente paga la seña al reservar. Confirmación automática, cero cancelaciones de último momento.',
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-emerald-50',
   },
   {
-    Icon: ImageIcon,
-    title: 'Historial con fotos',
+    emoji: '📒',
+    title: 'Libreta de clientes',
     description:
-      'Cada cliente tiene su carpeta. Subí fotos, anotá preferencias y trackeá el progreso de cada trabajo.',
-    iconBg: 'bg-rose-50',
-    iconColor: 'text-rose-500',
-  },
-  {
-    Icon: Calculator,
-    title: 'Cobro de seña',
-    description:
-      'Configurá el monto de seña por servicio. Tu cliente lo paga al reservar y se descuenta del total automáticamente.',
+      'Historial de visitas, servicios y notas privadas de cada cliente de tu negocio.',
     iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
+  },
+  {
+    emoji: '💰',
+    title: 'Balance de ingresos',
+    description:
+      'Cuánto ganaste hoy, esta semana y este mes. Con breakdown por servicio para entender tu negocio.',
+    iconBg: 'bg-rose-50',
+  },
+  {
+    emoji: '🗂️',
+    title: 'Agendas separadas',
+    description:
+      'Cada tipo de servicio puede tener su propia agenda independiente para no mezclar turnos.',
+    iconBg: 'bg-sky-50',
   },
 ];
 
@@ -77,7 +83,7 @@ const steps = [
 const pricingPlans = [
   {
     name: 'Básico',
-    tagline: 'Para empezar con el pie derecho',
+    tagline: 'Para profesionales independientes',
     price: '29.999',
     yearlyNote: 'o $299.990/año — ahorrás 2 meses',
     badge: null as string | null,
@@ -96,7 +102,7 @@ const pricingPlans = [
   },
   {
     name: 'Pro',
-    tagline: 'El plan completo para tu estética',
+    tagline: 'Para equipos en crecimiento',
     price: '49.999',
     yearlyNote: 'o $499.990/año — ahorrás 2 meses',
     badge: 'Más popular',
@@ -105,11 +111,9 @@ const pricingPlans = [
     features: [
       'Todo lo del Básico',
       'Hasta 5 profesionales',
-      'Recordatorios automáticos',
       'Gestión de empleados',
       'Señas online con Mercado Pago',
       'Estadísticas avanzadas',
-      'Historial completo de clientes',
       'Soporte prioritario',
     ],
     cta: 'Empezar gratis 14 días',
@@ -117,19 +121,20 @@ const pricingPlans = [
   },
   {
     name: 'Pro+',
-    tagline: 'Para centros con múltiples locales',
+    tagline: 'Para cadenas y centros con múltiples sucursales',
     price: '79.999',
     yearlyNote: 'o $799.990/año — ahorrás 2 meses',
     badge: null as string | null,
     popular: false,
     dark: true,
     features: [
-      'Todo lo del plan Pro',
-      'Múltiples locales y sucursales',
-      'Reportes avanzados exportables',
-      'Manager de cuenta dedicado',
-      'Integraciones y API prioritarias',
-      'Configuración guiada incluida',
+      'Más de 5 profesionales',
+      'Todo lo incluido en el Plan Pro',
+      'Reportes avanzados y métricas de negocio',
+      'Prioridad en soporte técnico',
+      'Capacitación personalizada',
+      'Integraciones avanzadas',
+      'Posibilidad de agregar sucursales adicionales',
     ],
     cta: 'Hablar con ventas',
     ctaNote: 'Te contactamos en menos de 24hs',
@@ -329,12 +334,12 @@ export default function LandingPage() {
             </p>
           </AnimateIn>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
             {features.map((f, i) => (
               <AnimateIn key={f.title} delay={i * 80}>
                 <div className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-xl hover:shadow-gray-100/80 hover:-translate-y-1 transition-all duration-300 h-full">
-                  <div className={`w-12 h-12 rounded-2xl ${f.iconBg} flex items-center justify-center mb-5`}>
-                    <f.Icon className={`w-6 h-6 ${f.iconColor}`} />
+                  <div className={`w-12 h-12 rounded-2xl ${f.iconBg} flex items-center justify-center mb-5 text-2xl leading-none`}>
+                    <span aria-hidden="true">{f.emoji}</span>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{f.title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{f.description}</p>
@@ -441,9 +446,6 @@ export default function LandingPage() {
                   >
                     {plan.cta}
                   </a>
-                  <p className={'text-center text-xs mt-3 ' + (plan.dark ? 'text-gray-500' : 'text-gray-400')}>
-                    {plan.ctaNote}
-                  </p>
                 </div>
               </AnimateIn>
             ))}

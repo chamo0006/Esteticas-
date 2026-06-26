@@ -25,7 +25,7 @@ export async function POST(
   // Verifica que el pago exista y pertenezca a este tenant
   const { data: pagoData, error: pagoError } = await supabase
     .from('pagos')
-    .select('monto, tipo, turnos!inner(tenant_id)')
+    .select('monto, tipo, turnos!turno_id!inner(tenant_id)')
     .eq('id', pagoId)
     .eq('turnos.tenant_id', tenant.id)
     .single();
