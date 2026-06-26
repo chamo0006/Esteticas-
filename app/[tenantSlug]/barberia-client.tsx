@@ -535,9 +535,8 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
             <div style={{ ...sectionTitle, marginTop: 8, marginBottom: 8 }}>Método de pago</div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
               {([
-                { id: 'mercadopago', label: '💳 MP', show: true },
-                { id: 'efectivo', label: '💵 Efectivo', show: tenant.permite_efectivo },
-                { id: 'transferencia', label: '🏦 Transf.', show: true },
+                { id: 'mercadopago', label: '💳 MercadoPago', show: true },
+                { id: 'efectivo', label: '💵 Efectivo / Transferencia', show: tenant.permite_efectivo },
               ] as { id: PaymentMethod; label: string; show: boolean }[]).filter((p) => p.show).map((p) => {
                 const sel = payMethod === p.id;
                 return (
@@ -549,6 +548,18 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
                 );
               })}
             </div>
+
+            {/* Datos para transferencia / efectivo */}
+            {payMethod === 'efectivo' && (
+              <div style={{ marginTop: 8, fontSize: 12, color: textSecondary, background: surface, border: `0.5px solid ${border}`, borderRadius: 10, padding: '10px 12px', lineHeight: 1.5 }}>
+                {tenant.alias_pago ? (
+                  <>Coordiná el pago en efectivo en el local, o por transferencia al alias:{' '}
+                  <strong style={{ color: accent }}>{tenant.alias_pago}</strong></>
+                ) : (
+                  <>Coordinás el pago en efectivo o por transferencia directamente con el local.</>
+                )}
+              </div>
+            )}
 
             {error && <div style={{ marginTop: 12, fontSize: 12, color: '#ff6b6b', background: 'rgba(255,107,107,0.08)', border: '0.5px solid rgba(255,107,107,0.2)', borderRadius: 10, padding: '10px 12px' }}>{error}</div>}
           </div>

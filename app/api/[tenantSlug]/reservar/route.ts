@@ -8,11 +8,17 @@ import { supabase } from '@/lib/supabase';
 const MONTHS   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
+// Argentina es UTC-3 (sin horario de verano). El servidor en producción corre
+// en UTC, así que convertimos a hora argentina antes de formatear para los emails.
+const AR_OFFSET_MS = -3 * 60 * 60 * 1000;
+
 function formatFechaEmail(dt: Date) {
-  return `${WEEKDAYS[dt.getDay()]} ${dt.getDate()} de ${MONTHS[dt.getMonth()]} de ${dt.getFullYear()}`;
+  const ar = new Date(dt.getTime() + AR_OFFSET_MS);
+  return `${WEEKDAYS[ar.getUTCDay()]} ${ar.getUTCDate()} de ${MONTHS[ar.getUTCMonth()]} de ${ar.getUTCFullYear()}`;
 }
 function formatHoraEmail(dt: Date) {
-  return `${dt.getHours().toString().padStart(2,'0')}:${dt.getMinutes().toString().padStart(2,'0')}`;
+  const ar = new Date(dt.getTime() + AR_OFFSET_MS);
+  return `${ar.getUTCHours().toString().padStart(2,'0')}:${ar.getUTCMinutes().toString().padStart(2,'0')}`;
 }
 
 export async function POST(
@@ -232,6 +238,10 @@ export async function POST(
     await cleanup();
     return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
   }
+
+  // Vincula todos los turnos de esta reserva al pago, para que el webhook
+  // confirme solo estos y no otras reservas pendientes del mismo cliente.
+  await supabase.from('turnos').update({ pago_id: pagoData.id }).in('id', turnoIds);
 
   // ── Emails (no bloquean la respuesta) ─────────────────────────────────────
   const fechaDt = new Date(fechaHora);

@@ -33,6 +33,7 @@ interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
 interface TenantConfig {
   nombre: string; email_contacto: string; telefono: string;
   exige_sena: boolean; porcentaje_sena: number | null; permite_efectivo: boolean;
+  alias_pago: string | null;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
   stat_rating: number | null; stat_barberos: number | null; stat_clientes: number | null;
@@ -341,6 +342,21 @@ export default function ConfiguracionPage() {
                     tenant.permite_efectivo ? 'translate-x-6' : 'translate-x-0'
                   )} />
                 </button>
+              </div>
+
+              {/* Alias / CBU para transferencias */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  Alias / CBU para transferencias
+                </label>
+                <input
+                  type="text"
+                  value={tenant.alias_pago ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, alias_pago: e.target.value || null } : t)}
+                  placeholder="tu.alias.mp"
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+                <p className="text-xs text-zinc-400 mt-1.5">Se le muestra al cliente cuando elige pagar por transferencia.</p>
               </div>
 
               {/* Seña toggle */}

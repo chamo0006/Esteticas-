@@ -34,6 +34,7 @@ export const configuracionSchema = z.object({
   exige_sena:       z.boolean().optional(),
   porcentaje_sena:  z.number().min(0).max(100).nullish(),
   permite_efectivo: z.boolean().optional(),
+  alias_pago:       z.string().max(100).nullish(),
   // Overrides de las stats de la landing de barbería (null = automático)
   stat_rating:      z.number().min(0).max(5).nullish(),
   stat_barberos:    z.number().int().min(0).nullish(),

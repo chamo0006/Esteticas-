@@ -51,32 +51,27 @@ export async function POST(req: Request) {
       .update({ estado: nuevoEstado, referencia_externa: String(data.id) })
       .eq('id', externalRef);
 
-    // Si el pago fue aprobado, confirma TODOS los turnos pendientes del cliente
-    // (una reserva puede incluir múltiples servicios consecutivos → múltiples turnos,
-    //  pero el pago solo guarda el turno_id del primero).
+    // Si el pago fue aprobado, confirma únicamente los turnos de ESTA reserva.
+    // Una reserva puede incluir varios servicios consecutivos → varios turnos,
+    // todos vinculados al pago vía turnos.pago_id (ver migrate_turnos_pago.sql).
     if (nuevoEstado === 'acreditado') {
-      const { data: pagoData } = await supabase
-        .from('pagos')
-        .select('turno_id')
-        .eq('id', externalRef)
-        .single();
+      const { data: confirmados } = await supabase
+        .from('turnos')
+        .update({ estado: 'confirmado' })
+        .eq('pago_id', externalRef)
+        .eq('estado', 'pendiente')
+        .select('id');
 
-      if (pagoData?.turno_id) {
-        // Obtener el cliente_id desde el primer turno para confirmar todos los suyos
-        const { data: turnoData } = await supabase
-          .from('turnos')
-          .select('cliente_id')
-          .eq('id', pagoData.turno_id)
+      // Fallback para reservas creadas antes de existir pago_id: confirma
+      // solo el turno referenciado por el pago (nunca todos los del cliente).
+      if (!confirmados || confirmados.length === 0) {
+        const { data: pagoData } = await supabase
+          .from('pagos')
+          .select('turno_id')
+          .eq('id', externalRef)
           .single();
 
-        if (turnoData?.cliente_id) {
-          await supabase
-            .from('turnos')
-            .update({ estado: 'confirmado' })
-            .eq('cliente_id', turnoData.cliente_id)
-            .eq('estado', 'pendiente');
-        } else {
-          // Fallback: confirmar solo el turno referenciado
+        if (pagoData?.turno_id) {
           await supabase
             .from('turnos')
             .update({ estado: 'confirmado' })

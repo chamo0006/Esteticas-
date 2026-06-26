@@ -30,6 +30,7 @@ export interface TenantConfig {
   color_acento: string | null;     // hex, ej: "#D4A0A7"
   telefono: string | null;
   tipo_negocio: TipoNegocio;
+  alias_pago: string | null;       // alias/CBU para transferencias
 }
 
 export interface TimeSlot {

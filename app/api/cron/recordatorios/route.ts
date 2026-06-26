@@ -5,11 +5,17 @@ import { enviarRecordatorio } from '@/lib/email';
 const MONTHS   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
+// Argentina es UTC-3 (sin horario de verano). El servidor en producción corre
+// en UTC, así que trabajamos siempre en hora argentina explícitamente.
+const AR_OFFSET_MS = -3 * 60 * 60 * 1000;
+
 function formatFecha(dt: Date) {
-  return `${WEEKDAYS[dt.getDay()]} ${dt.getDate()} de ${MONTHS[dt.getMonth()]}`;
+  const ar = new Date(dt.getTime() + AR_OFFSET_MS);
+  return `${WEEKDAYS[ar.getUTCDay()]} ${ar.getUTCDate()} de ${MONTHS[ar.getUTCMonth()]}`;
 }
 function formatHora(dt: Date) {
-  return `${dt.getHours().toString().padStart(2,'0')}:${dt.getMinutes().toString().padStart(2,'0')}`;
+  const ar = new Date(dt.getTime() + AR_OFFSET_MS);
+  return `${ar.getUTCHours().toString().padStart(2,'0')}:${ar.getUTCMinutes().toString().padStart(2,'0')}`;
 }
 
 // Vercel Cron llama este endpoint todos los días a las 10:00 AM
@@ -21,12 +27,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  const mañana = new Date();
-  mañana.setDate(mañana.getDate() + 1);
-  const fechaMañana = mañana.toISOString().split('T')[0];
+  // "Mañana" en hora argentina (no UTC), para no perder turnos de la noche.
+  const ahoraAR  = new Date(Date.now() + AR_OFFSET_MS);
+  const mañanaAR = new Date(ahoraAR.getTime() + 86_400_000);
+  const y  = mañanaAR.getUTCFullYear();
+  const mo = String(mañanaAR.getUTCMonth() + 1).padStart(2, '0');
+  const d  = String(mañanaAR.getUTCDate()).padStart(2, '0');
+  const fechaMañana = `${y}-${mo}-${d}`;
 
-  const dayStart = `${fechaMañana}T00:00:00.000Z`;
-  const dayEnd   = `${fechaMañana}T23:59:59.999Z`;
+  // Límites del día argentino convertidos a instantes UTC para comparar en la DB.
+  const dayStart = new Date(`${fechaMañana}T00:00:00-03:00`).toISOString();
+  const dayEnd   = new Date(`${fechaMañana}T23:59:59-03:00`).toISOString();
 
   const { data, error } = await supabase
     .from('turnos')
