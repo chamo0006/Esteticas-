@@ -24,6 +24,13 @@ export interface AdminPayload {
   impersonatedBy?: string;   // id del platform_admin que está impersonando
 }
 
+// Nombres de cookies de sesión. Se mantienen SEPARADAS para que loguearse a un
+// comercio o impersonar no pise la sesión de superadmin (y viceversa):
+//  - admin_token:      sesión de comercio (incluye la impersonación de un comercio).
+//  - superadmin_token: sesión del panel de plataforma (superadmin/finanzas/soporte).
+export const ADMIN_COOKIE = 'admin_token';
+export const SUPERADMIN_COOKIE = 'superadmin_token';
+
 // Roles del panel Superadmin (NO son roles de comercio)
 export const PLATFORM_ROLES = ['superadmin', 'finanzas', 'soporte'] as const;
 

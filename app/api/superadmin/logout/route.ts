@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { ADMIN_COOKIE, SUPERADMIN_COOKIE } from '@/lib/auth';
 
 export async function POST() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.delete('admin_token');
-  res.cookies.delete('superadmin_token');
+  // Cierra la sesión de plataforma y descarta cualquier impersonación colgada.
+  res.cookies.delete(SUPERADMIN_COOKIE);
+  res.cookies.delete(ADMIN_COOKIE);
   return res;
 }

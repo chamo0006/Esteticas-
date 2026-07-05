@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createToken } from '@/lib/auth';
+import { createToken, ADMIN_COOKIE } from '@/lib/auth';
 import { getPlatformAdmin } from '@/lib/superadmin-auth';
 import { supabase } from '@/lib/supabase';
 
@@ -37,10 +36,6 @@ export async function POST(req: Request) {
     impersonatedBy: admin.adminId,
   });
 
-  // Guarda el token de superadmin para poder volver
-  const cookieStore = await cookies();
-  const currentToken = cookieStore.get('admin_token')?.value;
-
   await supabase.from('superadmin_logs').insert({
     platform_admin_id: admin.adminId,
     accion: 'impersonate',
@@ -48,17 +43,11 @@ export async function POST(req: Request) {
     detalle: { tenant_slug: tenant.slug },
   });
 
+  // Solo seteamos la cookie de comercio. La sesión de superadmin vive en su
+  // propia cookie (SUPERADMIN_COOKIE) y queda intacta, así que no hay que
+  // guardarla ni restaurarla: el panel /superadmin sigue funcionando en paralelo.
   const res = NextResponse.json({ ok: true, tenantSlug: tenant.slug });
-  if (currentToken) {
-    res.cookies.set('superadmin_token', currentToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24,
-      path: '/',
-    });
-  }
-  res.cookies.set('admin_token', tenantToken, {
+  res.cookies.set(ADMIN_COOKIE, tenantToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -68,23 +57,9 @@ export async function POST(req: Request) {
   return res;
 }
 
-// Salir del impersonate: vuelve a la sesión de superadmin.
+// Salir del impersonate: descarta la sesión de comercio; la de superadmin sigue viva.
 export async function DELETE() {
-  const cookieStore = await cookies();
-  const saved = cookieStore.get('superadmin_token')?.value;
-
   const res = NextResponse.json({ ok: true });
-  if (saved) {
-    res.cookies.set('admin_token', saved, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24,
-      path: '/',
-    });
-    res.cookies.delete('superadmin_token');
-  } else {
-    res.cookies.delete('admin_token');
-  }
+  res.cookies.delete(ADMIN_COOKIE);
   return res;
 }

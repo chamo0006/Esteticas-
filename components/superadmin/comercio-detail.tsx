@@ -72,6 +72,15 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     periodo_inicio: '', periodo_fin: '', referencia_externa: '',
   });
 
+  // Si la sesión de superadmin caducó, el endpoint responde 401. En vez del
+  // genérico "Error al guardar", avisamos y mandamos a re-loguear.
+  const sesionExpirada = (res: Response) => {
+    if (res.status !== 401) return false;
+    setMsg('Tu sesión expiró. Redirigiendo al login…');
+    setTimeout(() => router.push('/superadmin/login'), 1200);
+    return true;
+  };
+
   const guardarSuscripcion = async () => {
     setSaving(true); setMsg(null);
     const res = await fetch(`/api/superadmin/tenants/${tenant.id}`, {
@@ -79,20 +88,21 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
       body: JSON.stringify({ ...form, plan_id: form.plan_id || null }),
     });
     setSaving(false);
-    setMsg(res.ok ? 'Suscripción guardada ✓' : 'Error al guardar');
-    if (res.ok) router.refresh();
+    if (res.ok) { setMsg('Suscripción guardada ✓'); router.refresh(); }
+    else if (!sesionExpirada(res)) setMsg('Error al guardar');
   };
 
   const toggleBloqueo = async () => {
     const nuevo = !suscripcion?.bloqueado;
     if (!confirm(nuevo ? '¿Bloquear el acceso de este comercio?' : '¿Reactivar el acceso de este comercio?')) return;
-    setSaving(true);
+    setSaving(true); setMsg(null);
     const res = await fetch(`/api/superadmin/tenants/${tenant.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bloqueado: nuevo, estado: nuevo ? 'suspendida' : 'activa' }),
     });
     setSaving(false);
     if (res.ok) router.refresh();
+    else if (!sesionExpirada(res)) setMsg('No se pudo actualizar el estado');
   };
 
   const registrarPago = async () => {
@@ -107,7 +117,7 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
       setMsg('Pago registrado ✓');
       setPago({ monto: '', metodo: 'transferencia', estado: 'aprobado', periodo_inicio: '', periodo_fin: '', referencia_externa: '' });
       router.refresh();
-    } else { setMsg('Error al registrar el pago'); }
+    } else if (!sesionExpirada(res)) { setMsg('Error al registrar el pago'); }
   };
 
   const eliminar = async () => {

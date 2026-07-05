@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { loginSuperadmin, createToken } from '@/lib/auth';
+import { loginSuperadmin, createToken, SUPERADMIN_COOKIE } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     });
 
     const res = NextResponse.json({ ok: true, rol: payload.rol });
-    res.cookies.set('admin_token', token, {
+    res.cookies.set(SUPERADMIN_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
