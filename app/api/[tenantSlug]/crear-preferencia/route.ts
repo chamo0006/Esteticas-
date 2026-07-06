@@ -39,7 +39,16 @@ export async function POST(
     ? `Seña — ${tenant.nombre}`
     : `Reserva — ${tenant.nombre}`;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+  // Base URL para back_urls/notification. MercadoPago exige URLs públicas válidas
+  // (con auto_return, deben ser https). Preferimos el origen REAL del request
+  // (así en producción siempre es el dominio correcto, sin depender de que
+  // NEXT_PUBLIC_BASE_URL esté bien seteada); caemos a la env var solo en local.
+  const fwdHost  = req.headers.get('x-forwarded-host') ?? req.headers.get('host');
+  const fwdProto = req.headers.get('x-forwarded-proto') ?? 'https';
+  const reqOrigin = fwdHost ? `${fwdProto}://${fwdHost}` : null;
+  const baseUrl = (reqOrigin && reqOrigin.startsWith('https://'))
+    ? reqOrigin
+    : (process.env.NEXT_PUBLIC_BASE_URL ?? reqOrigin ?? 'http://localhost:3000');
 
   try {
     const client = getMPClient(accessToken);
