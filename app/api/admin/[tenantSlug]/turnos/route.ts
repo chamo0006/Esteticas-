@@ -150,7 +150,21 @@ export async function GET(
     };
   });
 
-  return NextResponse.json(rows);
+  // Ocultamos las reservas de MercadoPago cuya seña todavía no se acreditó:
+  // el turno existe solo para retener el horario mientras la clienta paga, y no
+  // debe figurar en la agenda hasta que la seña esté paga. Al acreditarse, el
+  // webhook lo pasa a 'confirmado' y entonces sí aparece. Efectivo/transferencia
+  // no tienen pago online, así que se muestran apenas se reservan.
+  const visibles = rows.filter(
+    (r) =>
+      !(
+        r.estado === 'pendiente' &&
+        r.pago_metodo === 'mercadopago' &&
+        r.pago_estado !== 'acreditado'
+      )
+  );
+
+  return NextResponse.json(visibles);
 }
 
 // PATCH /api/admin/[tenantSlug]/turnos  body: { id, estado }

@@ -129,6 +129,9 @@ export async function POST(
   // ── Crea turnos consecutivos ──────────────────────────────────────────────
   const turnoIds: string[] = [];
   let currentTime = new Date(fechaHora);
+  // Profesional del primer turno (para mostrarlo en la confirmación / WhatsApp).
+  // Si el negocio no tiene profesionales, queda null y no se muestra.
+  let primerProfesionalId: string | null = null;
 
   // Limpia los registros creados en esta request si ocurre un error a mitad
   const cleanup = async () => {
@@ -216,7 +219,16 @@ export async function POST(
     }
 
     turnoIds.push(turnoData.id);
+    if (primerProfesionalId === null) primerProfesionalId = profesionalId;
     currentTime = new Date(currentTime.getTime() + servicio.duracion_minutos * 60_000);
+  }
+
+  // Nombre de la profesional asignada (si hay), para la confirmación al cliente.
+  let profesionalNombre: string | null = null;
+  if (primerProfesionalId) {
+    const { data: prof } = await supabase
+      .from('profesionales').select('nombre').eq('id', primerProfesionalId).single();
+    profesionalNombre = prof?.nombre ?? null;
   }
 
   // ── Crea pago ─────────────────────────────────────────────────────────────
@@ -257,29 +269,36 @@ export async function POST(
     turnoId: turnoIds[0],
   };
 
-  enviarConfirmacionCliente(cliente.email, emailData).catch(console.error);
+  // Con MercadoPago la reserva todavía NO está pagada: el turno queda 'pendiente'
+  // solo para reservar el horario mientras la clienta paga la seña. Los emails de
+  // confirmación se envían recién cuando el pago se acredita (ver webhook). Para
+  // efectivo/transferencia no hay pago online, así que confirmamos al instante.
+  if (metodoPago !== 'mercadopago') {
+    enviarConfirmacionCliente(cliente.email, emailData).catch(console.error);
 
-  (async () => {
-    try {
-      const { data } = await supabase
-        .from('usuarios_admin')
-        .select('email')
-        .eq('tenant_id', tenant.id)
-        .eq('activo', true)
-        .limit(1)
-        .single();
-      if (data?.email) {
-        await enviarNotificacionAdmin(data.email, emailData);
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('usuarios_admin')
+          .select('email')
+          .eq('tenant_id', tenant.id)
+          .eq('activo', true)
+          .limit(1)
+          .single();
+        if (data?.email) {
+          await enviarNotificacionAdmin(data.email, emailData);
+        }
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  })();
+    })();
+  }
 
   return NextResponse.json({
     turnoIds,
     pagoId: pagoData.id,
     monto: montoAPagar,
     tipo: tipoPago,
+    profesionalNombre,
   });
 }

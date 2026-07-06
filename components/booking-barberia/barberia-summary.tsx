@@ -117,7 +117,7 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
   if (status === "success" && result) {
     const wpp = tenant.telefono?.replace(/\D/g, "") ?? "";
     const msg = encodeURIComponent(
-      `¡Hola! Acabo de reservar un turno ✂️\n\n👤 *${form.nombre} ${form.apellido}*\n📅 *Fecha:* ${fmtDate(selectedDate)}\n🕐 *Horario:* ${fmtTime(selectedTime)}\n✨ *Servicios:*\n${cart.map(i=>`• ${i.name}`).join("\n")}\n💰 *${result.tipo === "sena" ? "Seña" : "Total"}:* ${fmt(result.monto)}\n\n¡Gracias!`
+      `¡Hola! Acabo de reservar un turno ✂️\n\n👤 *${form.nombre} ${form.apellido}*\n📅 *Fecha:* ${fmtDate(selectedDate)}\n🕐 *Horario:* ${fmtTime(selectedTime)}\n${result.profesionalNombre ? `💈 *Profesional:* ${result.profesionalNombre}\n` : ""}✨ *Servicios:*\n${cart.map(i=>`• ${i.name}`).join("\n")}\n💰 *${result.tipo === "sena" ? "Seña" : "Total"}:* ${fmt(result.monto)}\n\n¡Gracias!`
     );
     const wppUrl = wpp ? `https://wa.me/${wpp}?text=${msg}` : `https://wa.me/?text=${msg}`;
 

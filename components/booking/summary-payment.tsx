@@ -163,6 +163,7 @@ export function SummaryPayment({
       `👤 *${formData.nombre} ${formData.apellido}*\n` +
       `📅 *Fecha:* ${formatDate(selectedDate)}\n` +
       `🕐 *Horario:* ${formatTime(selectedTime)}\n` +
+      (bookingResult.profesionalNombre ? `💇 *Profesional:* ${bookingResult.profesionalNombre}\n` : "") +
       `✨ *Servicios:*\n${serviciosTexto}\n` +
       `💰 *${bookingResult.tipo === "sena" ? "Seña" : "Total"}:* ${formatPrice(bookingResult.monto)}\n\n¡Muchas gracias!`
     );

@@ -104,4 +104,5 @@ export interface BookingConfirmation {
   pagoId: string;
   monto: number;
   tipo: 'total' | 'sena';
+  profesionalNombre?: string | null;   // profesional asignada (null si el negocio no tiene)
 }
