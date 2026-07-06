@@ -135,7 +135,9 @@ export function SummaryPayment({
         }
 
         const mpData = await mpRes.json();
-        const url = process.env.NODE_ENV === "production" ? mpData.initPoint : (mpData.sandboxInitPoint ?? mpData.initPoint);
+        // Siempre usamos el checkout de PRODUCCIÓN (init_point). El sandbox queda
+        // solo como último recurso si MP no devolviera init_point.
+        const url = mpData.initPoint ?? mpData.sandboxInitPoint;
         if (!url) {
           throw new Error("No se pudo iniciar el pago con Mercado Pago. Intentá de nuevo.");
         }

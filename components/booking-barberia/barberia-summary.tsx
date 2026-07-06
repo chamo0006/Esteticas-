@@ -100,7 +100,8 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
           );
         }
         const mpD = await mp.json();
-        const url = process.env.NODE_ENV === "production" ? mpD.initPoint : (mpD.sandboxInitPoint ?? mpD.initPoint);
+        // Siempre checkout de PRODUCCIÓN (init_point); sandbox solo como fallback.
+        const url = mpD.initPoint ?? mpD.sandboxInitPoint;
         if (!url) throw new Error("No se pudo iniciar el pago con Mercado Pago. Intentá de nuevo.");
         window.location.href = url;
         return;
