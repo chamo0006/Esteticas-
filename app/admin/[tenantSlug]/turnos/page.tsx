@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Check, X, Clock, Loader2, RefreshCw,
-  CalendarDays, List, MoreHorizontal, Scissors, Phone, DollarSign,
+  CalendarDays, List, CalendarRange, MoreHorizontal, Scissors, Phone, DollarSign,
   FileText, CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Estado = 'pendiente' | 'confirmado' | 'completado' | 'cancelado';
-type Vista = 'agenda' | 'calendario';
+type Vista = 'agenda' | 'calendario' | 'todos';
 
 interface Turno {
   id: string;
@@ -434,36 +434,36 @@ export default function TurnosPage() {
     if (Array.isArray(data)) setProfesionales(data);
   }, [tenantSlug]);
 
-  const fetchDayTurnos = useCallback(async () => {
+  const fetchTurnos = useCallback(async () => {
     setLoading(true);
     setFetchError(false);
     try {
-      const fecha = toDateStr(selectedDate);
-      const res = await fetch(`/api/admin/${tenantSlug}/turnos?fecha=${fecha}`);
+      // Vista "Todos": traemos todos los turnos (sin filtro de fecha).
+      const url = vista === 'todos'
+        ? `/api/admin/${tenantSlug}/turnos`
+        : `/api/admin/${tenantSlug}/turnos?fecha=${toDateStr(selectedDate)}`;
+      const res = await fetch(url);
       const data = await res.json();
-      if (Array.isArray(data)) {
-        setTurnos(data);
-      } else {
-        setFetchError(true);
-      }
+      if (Array.isArray(data)) setTurnos(data);
+      else setFetchError(true);
     } catch {
       setFetchError(true);
     } finally {
       setLoading(false);
     }
-  }, [tenantSlug, selectedDate]);
+  }, [tenantSlug, selectedDate, vista]);
 
   useEffect(() => { fetchProfesionales(); }, [fetchProfesionales]);
-  useEffect(() => { fetchDayTurnos(); }, [fetchDayTurnos]);
+  useEffect(() => { fetchTurnos(); }, [fetchTurnos]);
 
   // Recargar cuando el admin vuelve a la pestaña (por si llegó un turno nuevo)
   useEffect(() => {
-    const handleVisibility = () => { if (!document.hidden) fetchDayTurnos(); };
+    const handleVisibility = () => { if (!document.hidden) fetchTurnos(); };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [fetchDayTurnos]);
+  }, [fetchTurnos]);
 
-  const refetch = () => fetchDayTurnos();
+  const refetch = () => fetchTurnos();
 
   // Traduce el resultado de la devolución de seña (que devuelve el PATCH al cancelar)
   // en un mensaje para el admin. Devuelve null si no hubo seña que devolver.
@@ -492,7 +492,7 @@ export default function TurnosPage() {
       body: JSON.stringify({ id, estado }),
     });
     const data = await res.json().catch(() => ({}));
-    await fetchDayTurnos();
+    await fetchTurnos();
     setUpdating(null);
     if (estado === 'cancelado') avisarDevolucion(data?.devolucion ?? null);
   };
@@ -511,7 +511,7 @@ export default function TurnosPage() {
       body: JSON.stringify({ id: modalTurno.id, estado: 'cancelado' }),
     });
     const data = await res.json().catch(() => ({}));
-    await fetchDayTurnos();
+    await fetchTurnos();
     setModalTurno(prev => prev ? { ...prev, estado: 'cancelado' } : null);
     setCanceling(false);
     avisarDevolucion(data?.devolucion ?? null);
@@ -542,20 +542,13 @@ export default function TurnosPage() {
 
   // ── Agenda (list) view ─────────────────────────────────────────────────────
 
-  const renderAgenda = () => (
-    turnosFiltrados.length === 0 ? (
-      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-        <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
-        <p className="text-zinc-400 font-medium">Sin turnos para este día</p>
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {turnosFiltrados.map((t) => (
-          <div key={t.id} className={cn(
-            'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all',
-            t.estado === 'cancelado' ? 'opacity-50' : ''
-          )}>
-            <div className="p-4 flex items-start gap-3 md:gap-4">
+  // Tarjeta de un turno — compartida por la vista lista y la vista "Todos".
+  const turnoCard = (t: Turno) => (
+    <div key={t.id} className={cn(
+      'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all',
+      t.estado === 'cancelado' ? 'opacity-50' : ''
+    )}>
+      <div className="p-4 flex items-start gap-3 md:gap-4">
               <div className="text-center min-w-[52px]">
                 <p className="text-lg font-bold text-zinc-900">{formatHora(t.fecha_hora)}</p>
                 <p className="text-xs text-zinc-400">{t.duracion_minutos} min</p>
@@ -617,10 +610,71 @@ export default function TurnosPage() {
               </div>
             </div>
           </div>
-        ))}
+  );
+
+  const renderAgenda = () => (
+    turnosFiltrados.length === 0 ? (
+      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
+        <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
+        <p className="text-zinc-400 font-medium">Sin turnos para este día</p>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {turnosFiltrados.map(turnoCard)}
       </div>
     )
   );
+
+  // Vista "Todos": agrupa por día; hoy y futuro primero (asc), luego pasado (desc).
+  const renderTodos = () => {
+    if (turnosFiltrados.length === 0) {
+      return (
+        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
+          <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
+          <p className="text-zinc-400 font-medium">No hay turnos cargados</p>
+        </div>
+      );
+    }
+    const groups = new Map<string, Turno[]>();
+    for (const t of turnosFiltrados) {
+      const key = toDateStr(new Date(t.fecha_hora));
+      const arr = groups.get(key) ?? [];
+      if (!groups.has(key)) groups.set(key, arr);
+      arr.push(t);
+    }
+    const todayStr = toDateStr(new Date());
+    const entries = Array.from(groups.entries()).sort((a, b) => {
+      const af = a[0] >= todayStr, bf = b[0] >= todayStr;
+      if (af && bf) return a[0] < b[0] ? -1 : 1;
+      if (!af && !bf) return a[0] > b[0] ? -1 : 1;
+      return af ? -1 : 1;
+    });
+    const headerLabel = (dateStr: string) => {
+      const d = new Date(`${dateStr}T00:00:00`);
+      return `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+    };
+    return (
+      <div className="space-y-6">
+        {entries.map(([date, ts]) => {
+          const activos = ts.filter(t => t.estado !== 'cancelado').length;
+          return (
+            <div key={date}>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-bold text-zinc-700">{headerLabel(date)}</h3>
+                {date === todayStr && (
+                  <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">Hoy</span>
+                )}
+                <span className="text-xs text-zinc-400">{activos} turno{activos !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="space-y-3">
+                {ts.map(turnoCard)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -633,7 +687,7 @@ export default function TurnosPage() {
           <h1 className="text-2xl font-bold text-zinc-900">Agenda de Turnos</h1>
           <p className="text-zinc-400 text-sm mt-1">
             {turnosFiltrados.filter(t => t.estado !== 'cancelado').length} turno
-            {turnosFiltrados.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} para este día
+            {turnosFiltrados.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} {vista === 'todos' ? 'en total' : 'para este día'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -653,6 +707,13 @@ export default function TurnosPage() {
             >
               <List className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => setVista('todos')}
+              className={cn('p-2 rounded-lg transition-colors', vista === 'todos' ? 'bg-white shadow-sm text-violet-600' : 'text-zinc-400 hover:text-zinc-600')}
+              title="Todos los turnos"
+            >
+              <CalendarRange className="w-4 h-4" />
+            </button>
           </div>
           <button onClick={refetch} className="p-2 rounded-xl hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
             <RefreshCw className="w-4 h-4" />
@@ -660,7 +721,8 @@ export default function TurnosPage() {
         </div>
       </div>
 
-      {/* Navegación diaria — igual para ambas vistas */}
+      {/* Navegación diaria — se oculta en la vista "Todos" */}
+      {vista !== 'todos' && (
       <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4 mb-6 flex items-center justify-between">
         <button onClick={prevDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
           <ChevronLeft className="w-5 h-5 text-zinc-600" />
@@ -678,6 +740,7 @@ export default function TurnosPage() {
           <ChevronRight className="w-5 h-5 text-zinc-600" />
         </button>
       </div>
+      )}
 
       {/* Nav de empleados — se sincroniza solo con el apartado de Empleados */}
       {activeProfs.length > 0 && (
@@ -726,6 +789,8 @@ export default function TurnosPage() {
           <p className="text-zinc-400 font-medium mb-3">No se pudieron cargar los turnos</p>
           <button onClick={refetch} className="text-sm text-violet-600 hover:underline">Reintentar</button>
         </div>
+      ) : vista === 'todos' ? (
+        renderTodos()
       ) : vista === 'calendario' ? (
         <DailyCalendar
           turnos={turnosFiltrados}
