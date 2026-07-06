@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Instagram, Search, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import type { Service, TenantConfig } from "@/lib/booking-types";
 import { getBookingTheme } from "@/lib/booking-theme";
 import { ServiceCard } from "./service-card";
+import { StepBar } from "./step-bar";
 
 interface ServicesCatalogProps {
   services: Service[];
@@ -50,6 +52,12 @@ export function ServicesCatalog({
   // Estéticas usan la paleta Sora fija (negro + dorado); la barbería mantiene sus colores.
   const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
   const accentColor  = isBarberia ? (tenantConfig?.color_acento  ?? "#B8935A") : T.accent;
+
+  // Chips de categoría (Sora). Se derivan de los servicios; filtran junto al buscador.
+  const [activeCat, setActiveCat] = useState("Todo");
+  const cats = Array.from(new Set(services.map((s) => s.category).filter(Boolean)));
+  const showCats = cats.length > 1;
+  const shown = activeCat === "Todo" ? services : services.filter((s) => s.category === activeCat);
 
   const wppPhone = telefono?.replace(/\D/g, "") ?? "";
   const wppUrl = wppPhone ? `https://wa.me/${wppPhone}` : undefined;
@@ -126,20 +134,40 @@ export function ServicesCatalog({
         </div>
       </header>
 
+      {!isBarberia && <StepBar current={0} theme={T} />}
+
+      {/* Chips de categoría */}
+      {!isBarberia && showCats && (
+        <div className="flex gap-2 overflow-x-auto px-5 pt-4 pb-1" style={{ scrollbarWidth: "none" }}>
+          {["Todo", ...cats].map((c) => {
+            const sel = activeCat === c;
+            return (
+              <button key={c} onClick={() => setActiveCat(c)}
+                className="text-xs px-3.5 py-1.5 rounded-sm whitespace-nowrap transition-colors capitalize"
+                style={sel
+                  ? { backgroundColor: T.primary, color: T.bg, border: `1px solid ${T.primary}` }
+                  : { backgroundColor: "transparent", color: T.muted, border: `1px solid ${T.border}` }}>
+                {c}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Services list */}
-      <div className="px-5 pb-4 space-y-3 pt-4">
-        {!isBarberia && services.length > 0 && (
-          <div className="text-[10px] uppercase tracking-[0.16em] mb-1" style={{ color: T.muted }}>Servicios</div>
+      <div className="px-5 pb-4 pt-4">
+        {!isBarberia && shown.length > 0 && (
+          <div className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: T.muted }}>Servicios</div>
         )}
-        {services.map((service, index) => (
+        {shown.map((service, index) => (
           <ServiceCard
             key={service.id} service={service} isSelected={isInCart(service.id)}
             onToggle={() => onToggleService(service)} index={index}
             primaryColor={primaryColor} accentColor={accentColor} borderColor={T.border}
-            cardBg={T.cardBg} textColor={T.text} mutedColor={T.muted}
+            cardBg={T.cardBg} textColor={T.text} mutedColor={T.muted} surf2={T.surf2}
           />
         ))}
-        {services.length === 0 && (
+        {shown.length === 0 && (
           <div className="text-center py-16" style={{ color: T.muted }}>
             {isBarberia ? <BarberDecoration color={accentColor} /> : <BotanicalLeaf color={accentColor} />}
             <p className="font-serif italic mt-3">No se encontraron servicios</p>

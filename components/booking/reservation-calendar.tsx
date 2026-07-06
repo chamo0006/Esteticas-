@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { SchedulingMode, TimeSlot, TenantConfig } from "@/lib/booking-types";
 import { getBookingTheme } from "@/lib/booking-theme";
+import { StepBar } from "./step-bar";
 import { useState, useMemo, useEffect } from "react";
 
 interface Profesional {
@@ -37,7 +38,7 @@ const DEMO_SLOTS: TimeSlot[] = [
   { time: "5:00 PM",  timeValue: "17:00", available: true  },
 ];
 
-const weekDays = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+const weekDays = ["D", "L", "M", "X", "J", "V", "S"];
 const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 export function ReservationCalendar({
@@ -136,6 +137,8 @@ export function ReservationCalendar({
         </div>
       </header>
 
+      {!isBarberia && <StepBar current={1} theme={T} />}
+
       <div className="px-5 pt-6 pb-6 space-y-6">
         {/* Calendar card */}
         <div className="rounded-2xl p-5"
@@ -176,7 +179,7 @@ export function ReservationCalendar({
               return (
                 <button key={date.toISOString()} onClick={() => !past && onSelectDate(date)}
                   disabled={past}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
+                  className="w-9 h-9 rounded-[4px] flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
                   style={
                     selected ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600 }
                     : past   ? { color: T.border, cursor: "not-allowed", opacity: 0.4 }
@@ -195,9 +198,9 @@ export function ReservationCalendar({
           <h3 className="font-serif text-lg mb-4" style={{ color: T.text }}>Horarios disponibles</h3>
 
           {slotsLoading ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 rounded-full animate-pulse" style={{ backgroundColor: T.border }} />
+                <div key={i} className="h-11 rounded-[4px] animate-pulse" style={{ backgroundColor: T.border }} />
               ))}
             </div>
           ) : !selectedDate ? (
@@ -209,19 +212,19 @@ export function ReservationCalendar({
               No hay horarios disponibles para este día
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {slots.map(slot => {
                 const isSelected = selectedTime === slot.timeValue;
                 return (
                   <button key={slot.timeValue} onClick={() => slot.available && onSelectTime(slot.timeValue)}
                     disabled={!slot.available}
-                    className="py-3 px-4 text-sm font-sans transition-all duration-200"
+                    className="py-2.5 px-3 text-sm font-sans transition-all duration-200"
                     style={
                       isSelected
-                        ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600, borderRadius: "9999px", border: `1px solid ${primaryColor}` }
+                        ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600, borderRadius: "4px", border: `1px solid ${primaryColor}` }
                         : slot.available
-                        ? { backgroundColor: T.cardBg, color: T.text, borderRadius: "9999px", border: `1px solid ${T.border}`, boxShadow: `0 1px 8px ${T.shadow}` }
-                        : { backgroundColor: T.bg, color: T.border, borderRadius: "9999px", border: `1px solid ${T.border}`, opacity: 0.5, cursor: "not-allowed" }
+                        ? { backgroundColor: T.cardBg, color: T.text, borderRadius: "4px", border: `1px solid ${T.border}`, boxShadow: `0 1px 8px ${T.shadow}` }
+                        : { backgroundColor: T.bg, color: T.border, borderRadius: "4px", border: `1px solid ${T.border}`, opacity: 0.5, cursor: "not-allowed" }
                     }>
                     {slot.time}
                   </button>

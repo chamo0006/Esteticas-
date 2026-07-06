@@ -3,6 +3,7 @@
 import { ChevronLeft, Calendar, CheckCircle, Loader2, MessageCircle } from "lucide-react";
 import type { CartItem, TenantConfig, BookingConfirmation } from "@/lib/booking-types";
 import { getBookingTheme } from "@/lib/booking-theme";
+import { StepBar } from "./step-bar";
 import { useState } from "react";
 
 interface SummaryPaymentProps {
@@ -168,11 +169,12 @@ export function SummaryPayment({
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: T.bg }}>
         <div className="w-full max-w-sm text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-            style={{ backgroundColor: `${primaryColor}18`, border: `1px solid ${T.border}` }}>
-            <CheckCircle className="w-9 h-9" style={{ color: primaryColor }} strokeWidth={1.5} />
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+            style={{ border: `1px solid ${accentColor}` }}>
+            <CheckCircle className="w-7 h-7" style={{ color: accentColor }} strokeWidth={1.2} />
           </div>
-          <h2 className="font-serif text-3xl mb-2" style={{ color: T.text }}>¡Reserva confirmada!</h2>
+          <h2 className="font-serif font-light text-3xl mb-2" style={{ color: T.text }}>¡Reserva confirmada!</h2>
+          <div className="w-7 h-px mx-auto mb-4" style={{ backgroundColor: accentColor }} />
           <p className="font-serif italic text-sm mb-8" style={{ color: T.muted }}>
             {isBarberia ? "Tu turno está agendado" : "Tu experiencia de belleza está agendada"}
           </p>
@@ -228,6 +230,8 @@ export function SummaryPayment({
           </h1>
         </div>
       </header>
+
+      {!isBarberia && <StepBar current={2} theme={T} />}
 
       <div className="px-5 pt-6 space-y-5">
 
