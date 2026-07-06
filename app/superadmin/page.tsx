@@ -2,9 +2,24 @@ import { redirect } from 'next/navigation';
 import { canSeeBilling } from '@/lib/auth';
 import { getPlatformAdmin } from '@/lib/superadmin-auth';
 import { supabase } from '@/lib/supabase';
-import { SuperadminDashboard, type TenantRow, type LeadRow } from '@/components/superadmin/dashboard';
+import { SuperadminShell } from '@/components/superadmin/shell';
+import { SuperadminOverview } from '@/components/superadmin/overview';
+import { type TenantRow, type PuntoMes } from '@/components/superadmin/types';
 
 export const dynamic = 'force-dynamic';
+
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+// Devuelve los últimos 6 meses como buckets {clave 'YYYY-M', label 'Mes'}.
+function ultimosMeses(n = 6) {
+  const out: { key: string; mes: string }[] = [];
+  const now = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    out.push({ key: `${d.getFullYear()}-${d.getMonth()}`, mes: MESES[d.getMonth()] });
+  }
+  return out;
+}
 
 export default async function SuperAdminPage() {
   const admin = await getPlatformAdmin();
@@ -12,20 +27,23 @@ export default async function SuperAdminPage() {
 
   const billing = canSeeBilling(admin);
 
-  // Inicio del mes (hora Argentina, aprox)
   const now = new Date();
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+  const seisMesesAtras = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
-  const [metricasRes, suscRes, leadsRes, ingresosRes] = await Promise.all([
+  const [metricasRes, suscRes, leadsRes, ingresosRes, tenantsRes, pagosSeisRes] = await Promise.all([
     supabase.from('vista_metricas_tenant').select('*'),
     supabase.from('suscripciones').select('tenant_id, planes(nombre)'),
-    supabase.from('leads').select('id, nombre, email, telefono, estetica, created_at').order('created_at', { ascending: false }),
+    supabase.from('leads').select('id').order('created_at', { ascending: false }),
     billing
       ? supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', monthStart)
       : Promise.resolve({ data: [] as { monto: number }[] }),
+    supabase.from('tenants').select('created_at'),
+    billing
+      ? supabase.from('pagos_suscripcion').select('monto, fecha_pago').eq('estado', 'aprobado').gte('fecha_pago', seisMesesAtras)
+      : Promise.resolve({ data: [] as { monto: number; fecha_pago: string }[] }),
   ]);
 
-  // plan por tenant (supabase devuelve la relación embebida como array)
   const planMap = new Map<string, string>();
   for (const s of (suscRes.data ?? []) as { tenant_id: string; planes: { nombre: string }[] | { nombre: string } | null }[]) {
     const plan = Array.isArray(s.planes) ? s.planes[0] : s.planes;
@@ -47,7 +65,29 @@ export default async function SuperAdminPage() {
     dinero_movido: Number(m.dinero_movido ?? 0),
   }));
 
-  const leads = (leadsRes.data ?? []) as LeadRow[];
+  const porVencer = tenants
+    .filter((t) => !t.bloqueado && t.dias_para_vencer != null && t.dias_para_vencer <= 7)
+    .sort((a, b) => (a.dias_para_vencer ?? 0) - (b.dias_para_vencer ?? 0));
+
+  // Series de los gráficos
+  const buckets = ultimosMeses(6);
+  const idxDeFecha = (iso: string | null) => {
+    if (!iso) return -1;
+    const d = new Date(iso);
+    return buckets.findIndex((b) => b.key === `${d.getFullYear()}-${d.getMonth()}`);
+  };
+
+  const ingresosPorMes: PuntoMes[] = buckets.map((b) => ({ mes: b.mes, valor: 0 }));
+  for (const p of (pagosSeisRes.data ?? []) as { monto: number; fecha_pago: string }[]) {
+    const i = idxDeFecha(p.fecha_pago);
+    if (i >= 0) ingresosPorMes[i].valor += Number(p.monto);
+  }
+
+  const comerciosPorMes: PuntoMes[] = buckets.map((b) => ({ mes: b.mes, valor: 0 }));
+  for (const t of (tenantsRes.data ?? []) as { created_at: string }[]) {
+    const i = idxDeFecha(t.created_at);
+    if (i >= 0) comerciosPorMes[i].valor += 1;
+  }
 
   const stats = {
     total: tenants.length,
@@ -55,17 +95,21 @@ export default async function SuperAdminPage() {
     esteticas: tenants.filter((t) => t.tipo_negocio === 'estetica').length,
     barberias: tenants.filter((t) => t.tipo_negocio === 'barberia').length,
     turnos: tenants.reduce((s, t) => s + t.turnos_total, 0),
-    leads: leads.length,
+    leads: (leadsRes.data ?? []).length,
     ingresosMes: (ingresosRes.data ?? []).reduce((s, p) => s + Number(p.monto), 0),
+    trials: tenants.filter((t) => t.estado_suscripcion === 'trial').length,
+    morosos: tenants.filter((t) => t.bloqueado || t.estado_suscripcion === 'suspendida' || (t.dias_para_vencer != null && t.dias_para_vencer < 0)).length,
   };
 
   return (
-    <SuperadminDashboard
-      rol={admin.rol}
-      canSeeBilling={billing}
-      stats={stats}
-      tenants={tenants}
-      leads={leads}
-    />
+    <SuperadminShell rol={admin.rol} canSeeBilling={billing}>
+      <SuperadminOverview
+        canSeeBilling={billing}
+        stats={stats}
+        porVencer={porVencer}
+        ingresosPorMes={ingresosPorMes}
+        comerciosPorMes={comerciosPorMes}
+      />
+    </SuperadminShell>
   );
 }

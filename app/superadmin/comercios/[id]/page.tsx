@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { canSeeBilling } from '@/lib/auth';
 import { getPlatformAdmin } from '@/lib/superadmin-auth';
 import { supabase } from '@/lib/supabase';
+import { SuperadminShell } from '@/components/superadmin/shell';
 import { ComercioDetail } from '@/components/superadmin/comercio-detail';
 
 export const dynamic = 'force-dynamic';
@@ -34,14 +35,16 @@ export default async function ComercioPage({ params }: { params: Promise<{ id: s
   };
 
   return (
-    <ComercioDetail
-      canSeeBilling={billing}
-      isSuperadmin={admin.rol === 'superadmin'}
-      tenant={tenantRes.data}
-      suscripcion={suscRes.data ?? null}
-      planes={planesRes.data ?? []}
-      pagos={(pagosRes.data ?? []) as never[]}
-      metricas={metricas}
-    />
+    <SuperadminShell rol={admin.rol} canSeeBilling={billing}>
+      <ComercioDetail
+        canSeeBilling={billing}
+        isSuperadmin={admin.rol === 'superadmin'}
+        tenant={tenantRes.data}
+        suscripcion={suscRes.data ?? null}
+        planes={planesRes.data ?? []}
+        pagos={(pagosRes.data ?? []) as never[]}
+        metricas={metricas}
+      />
+    </SuperadminShell>
   );
 }

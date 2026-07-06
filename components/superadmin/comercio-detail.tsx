@@ -151,10 +151,9 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
   const label = 'block text-xs text-zinc-400 mb-1';
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
 
-        <Link href="/superadmin" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white mb-6">
+        <Link href="/superadmin/comercios" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white mb-6">
           <ArrowLeft className="w-4 h-4" /> Volver al panel
         </Link>
 
@@ -334,6 +333,5 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
           </div>
         )}
       </div>
-    </div>
   );
 }
