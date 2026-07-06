@@ -54,8 +54,9 @@ export function ReservationCalendar({
 
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#C9A96E" : "#E8B4BC");
-  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#B8935A" : "#D4919B");
+  // Estéticas usan la paleta Sora fija (negro + dorado); la barbería mantiene sus colores.
+  const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
+  const accentColor  = isBarberia ? (tenantConfig?.color_acento  ?? "#B8935A") : T.accent;
 
   useEffect(() => {
     if (!tenantSlug) return;

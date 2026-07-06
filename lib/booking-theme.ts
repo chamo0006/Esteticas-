@@ -11,19 +11,26 @@ export interface BookingTheme {
   inputBg: string;      // fondo de inputs
   cta: string;
   decoration: string;
+  primary: string;      // color de acción: CTAs y estados seleccionados
+  accent: string;       // acento: precios, líneas, detalles
+  surf2: string;        // superficie sutil (filas/estados seleccionados suaves)
 }
 
+// Estética "Sora" — zen japonés: crema, negro tinta y dorado apagado.
 const ESTETICA: BookingTheme = {
-  bg: '#FCF8F5',
-  bgSticky: 'rgba(252,248,245,0.96)',
-  border: '#F0E4E6',
-  text: '#2C2C2C',
-  muted: '#8C7B75',
-  shadow: 'rgba(0,0,0,0.06)',
+  bg: '#FAFAF8',
+  bgSticky: 'rgba(250,250,248,0.9)',
+  border: '#E8E8E0',
+  text: '#1A1A10',
+  muted: '#888870',
+  shadow: 'rgba(0,0,0,0.05)',
   cardBg: '#FFFFFF',
   inputBg: '#FFFFFF',
-  cta: 'Confirmar Reserva',
-  decoration: '🌸',
+  cta: 'Confirmar reserva',
+  decoration: '美容',
+  primary: '#111108',   // negro tinta
+  accent: '#C8B878',    // dorado apagado
+  surf2: '#F5F4F0',
 };
 
 const BARBERIA: BookingTheme = {
@@ -37,6 +44,9 @@ const BARBERIA: BookingTheme = {
   inputBg: '#252525',
   cta: 'Reservar turno',
   decoration: '✂️',
+  primary: '#C9A96E',
+  accent: '#B8935A',
+  surf2: '#252525',
 };
 
 export function getBookingTheme(tipo: TipoNegocio | undefined): BookingTheme {

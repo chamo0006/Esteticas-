@@ -65,7 +65,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
     return false;
   };
 
-  const bgColor = tenant.tipo_negocio === 'barberia' ? '#F3F2F0' : '#FCF8F5';
+  const bgColor = tenant.tipo_negocio === 'barberia' ? '#F3F2F0' : '#FAFAF8';
 
   return (
     <main className="min-h-screen pb-28" style={{ backgroundColor: bgColor }}>

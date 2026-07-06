@@ -47,8 +47,9 @@ export function ServicesCatalog({
 }: ServicesCatalogProps) {
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = tenantConfig?.color_primario ?? (isBarberia ? "#C9A96E" : "#E8B4BC");
-  const accentColor  = tenantConfig?.color_acento  ?? (isBarberia ? "#B8935A" : "#D4919B");
+  // Estéticas usan la paleta Sora fija (negro + dorado); la barbería mantiene sus colores.
+  const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
+  const accentColor  = isBarberia ? (tenantConfig?.color_acento  ?? "#B8935A") : T.accent;
 
   const wppPhone = telefono?.replace(/\D/g, "") ?? "";
   const wppUrl = wppPhone ? `https://wa.me/${wppPhone}` : undefined;
@@ -70,9 +71,15 @@ export function ServicesCatalog({
               </div>
             )}
             <div className="text-center">
-              <h1 className="font-serif text-2xl leading-tight" style={{ color: T.text }}>
+              {!isBarberia && (
+                <div className="text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: T.muted }}>
+                  {T.decoration} · Estética & bienestar
+                </div>
+              )}
+              <h1 className={`font-serif leading-tight ${isBarberia ? "text-2xl" : "text-2xl font-light"}`} style={{ color: T.text }}>
                 {tenantNombre ?? "Reserve su experiencia"}
               </h1>
+              {!isBarberia && <div className="w-7 h-px mx-auto my-3" style={{ backgroundColor: T.accent }} />}
               <p className="font-serif italic text-sm mt-1" style={{ color: T.muted }}>
                 {isBarberia ? "Reservá tu turno" : "Reserve su experiencia de belleza"}
               </p>
@@ -120,7 +127,10 @@ export function ServicesCatalog({
       </header>
 
       {/* Services list */}
-      <div className="px-5 pb-4 space-y-3 pt-2">
+      <div className="px-5 pb-4 space-y-3 pt-4">
+        {!isBarberia && services.length > 0 && (
+          <div className="text-[10px] uppercase tracking-[0.16em] mb-1" style={{ color: T.muted }}>Servicios</div>
+        )}
         {services.map((service, index) => (
           <ServiceCard
             key={service.id} service={service} isSelected={isInCart(service.id)}
