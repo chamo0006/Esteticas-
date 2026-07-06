@@ -74,9 +74,9 @@ export function SummaryPayment({
   const handleInput = (field: string, value: string) => setFormData(p => ({ ...p, [field]: value }));
 
   const phoneDigits = formData.phone.replace(/\D/g, "");
-  const phoneValid  = phoneDigits.startsWith("11") && phoneDigits.length === 10;
+  const phoneValid  = phoneDigits.length === 10;
   const phoneError  = formData.phone.trim() !== "" && !phoneValid
-    ? "El teléfono debe empezar con 11 y tener 10 dígitos (ej: 1123456789)"
+    ? "El teléfono debe tener 10 dígitos (ej: 1123456789)"
     : null;
 
   const isFormValid = () =>

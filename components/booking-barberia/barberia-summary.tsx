@@ -53,9 +53,9 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
   const setF = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
   const phoneDigits = form.phone.replace(/\D/g, "");
-  const phoneValid  = phoneDigits.startsWith("11") && phoneDigits.length === 10;
+  const phoneValid  = phoneDigits.length === 10;
   const phoneError  = form.phone.trim() !== "" && !phoneValid
-    ? "Debe empezar con 11 y tener 10 dígitos (ej: 1123456789)"
+    ? "Debe tener 10 dígitos (ej: 1123456789)"
     : null;
 
   const valid = form.nombre.trim() && form.apellido.trim() && form.email.trim() && phoneValid;

@@ -30,8 +30,8 @@ export default function RegistrarPage() {
       return;
     }
     const telLimpio = form.telefono.replace(/\D/g, '');
-    if (!/^11\d{8}$/.test(telLimpio)) {
-      setError('El teléfono debe empezar con 11 y tener 10 dígitos (ej: 1123456789)');
+    if (!/^\d{10}$/.test(telLimpio)) {
+      setError('El teléfono debe tener 10 dígitos (ej: 1123456789)');
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -163,7 +163,7 @@ export default function RegistrarPage() {
                 inputMode="numeric"
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
-              <p className="text-xs text-zinc-500 mt-1">Debe empezar con 11 y tener 10 dígitos.</p>
+              <p className="text-xs text-zinc-500 mt-1">Debe tener 10 dígitos.</p>
             </div>
           </div>
 
