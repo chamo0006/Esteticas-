@@ -119,9 +119,9 @@ export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onClick={onClose}>
-      <div className="w-full sm:max-w-md max-h-[88vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
+    <div className="fixed inset-0 z-[100] flex items-stretch sm:items-center justify-center sm:p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={onClose}>
+      <div className="w-full h-full sm:h-auto sm:max-w-md sm:max-h-[88vh] overflow-y-auto sm:rounded-3xl flex flex-col shadow-2xl"
         style={{ backgroundColor: T.bg }} onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
