@@ -83,6 +83,12 @@ export async function POST(
     });
   } catch (err) {
     console.error('[crear-preferencia]', err);
+    // El pago con MercadoPago no se pudo iniciar (token rechazado, etc.).
+    // Liberamos el horario: cancelamos los turnos de esta reserva y marcamos el
+    // pago como rechazado, así el cliente puede reintentar el mismo horario o
+    // elegir otro método sin que quede bloqueado por un turno pendiente.
+    await supabase.from('turnos').update({ estado: 'cancelado' }).eq('pago_id', pagoId).eq('estado', 'pendiente');
+    await supabase.from('pagos').update({ estado: 'rechazado' }).eq('id', pagoId);
     return NextResponse.json({ error: 'Error al crear preferencia de pago' }, { status: 500 });
   }
 }
