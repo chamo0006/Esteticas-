@@ -31,6 +31,7 @@ export const configuracionSchema = z.object({
   nombre:           z.string().min(2).max(255).optional(),
   email_contacto:   z.string().email().nullish(),
   telefono:         z.string().max(30).nullish(),
+  instagram:        z.string().max(200).nullish(),
   exige_sena:       z.boolean().optional(),
   porcentaje_sena:  z.number().min(0).max(100).nullish(),
   // % que se RETIENE al devolver una seña de MP al cancelar (0 = devuelve todo).

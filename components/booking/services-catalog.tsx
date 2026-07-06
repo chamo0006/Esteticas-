@@ -62,6 +62,12 @@ export function ServicesCatalog({
   const wppPhone = telefono?.replace(/\D/g, "") ?? "";
   const wppUrl = wppPhone ? `https://wa.me/${wppPhone}` : undefined;
 
+  // Instagram: acepta handle ("@sora" / "sora") o URL completa. Solo se muestra si está configurado.
+  const igRaw = tenantConfig?.instagram?.trim() ?? "";
+  const igUrl = igRaw
+    ? (/^https?:\/\//i.test(igRaw) ? igRaw : `https://instagram.com/${igRaw.replace(/^@/, "")}`)
+    : undefined;
+
   return (
     <div className="animate-fade-in min-h-screen" style={{ backgroundColor: T.bg }}>
       {/* Header — NO sticky: scrollea junto con el resto para no dejar el título grande pegado */}
@@ -103,11 +109,14 @@ export function ServicesCatalog({
                 <MessageCircle className="w-4 h-4" strokeWidth={1.5} />
               </a>
             )}
-            <button className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-              style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
-              aria-label="Instagram">
-              <Instagram className="w-4 h-4" strokeWidth={1.5} />
-            </button>
+            {igUrl && (
+              <a href={igUrl} target="_blank" rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
+                aria-label="Instagram">
+                <Instagram className="w-4 h-4" strokeWidth={1.5} />
+              </a>
+            )}
           </div>
         </div>
 

@@ -31,7 +31,7 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
 interface Horario { dia_semana: number; hora_apertura: string; hora_cierre: string; activo: boolean }
 interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
 interface TenantConfig {
-  nombre: string; email_contacto: string; telefono: string;
+  nombre: string; email_contacto: string; telefono: string; instagram: string | null;
   exige_sena: boolean; porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
   alias_pago: string | null;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
@@ -313,6 +313,18 @@ export default function ConfiguracionPage() {
                   className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   placeholder="+54 11 xxxx-xxxx"
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  Instagram
+                </label>
+                <input
+                  value={tenant.instagram ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, instagram: e.target.value } : t)}
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="@tu.estetica  (o el link completo)"
+                />
+                <p className="text-xs text-zinc-400 mt-1.5">Aparece como enlace en el ícono de Instagram del sitio de reservas.</p>
               </div>
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

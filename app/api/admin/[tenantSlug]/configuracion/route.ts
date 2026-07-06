@@ -26,7 +26,7 @@ export async function GET(
   const [tenantResult, horariosResult, diasResult] = await Promise.all([
     supabase
       .from('tenants')
-      .select('nombre, email_contacto, telefono, logo_url, exige_sena, porcentaje_sena, porcentaje_retencion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes')
+      .select('nombre, email_contacto, telefono, instagram, logo_url, exige_sena, porcentaje_sena, porcentaje_retencion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes')
       .eq('id', payload.tenantId)
       .single(),
     supabase
@@ -69,7 +69,7 @@ export async function PATCH(
   }
 
   const raw = body as Record<string, unknown>;
-  const { nombre, email_contacto, telefono, exige_sena, porcentaje_sena, porcentaje_retencion, permite_efectivo, alias_pago, stat_rating, stat_barberos, stat_clientes } = parsed.data;
+  const { nombre, email_contacto, telefono, instagram, exige_sena, porcentaje_sena, porcentaje_retencion, permite_efectivo, alias_pago, stat_rating, stat_barberos, stat_clientes } = parsed.data;
   const logo_url       = 'logo_url'       in raw ? (raw.logo_url       as string | null) : undefined;
   const color_primario = 'color_primario' in raw ? (raw.color_primario as string | null) : undefined;
   const color_acento   = 'color_acento'   in raw ? (raw.color_acento   as string | null) : undefined;
@@ -80,6 +80,7 @@ export async function PATCH(
   if (nombre           !== undefined) updateData.nombre            = nombre;
   if (email_contacto   !== undefined) updateData.email_contacto    = email_contacto;
   if (telefono         !== undefined) updateData.telefono          = telefono;
+  if (instagram        !== undefined) updateData.instagram         = instagram;
   if (exige_sena       !== undefined) updateData.exige_sena        = exige_sena;
   if (porcentaje_sena  !== undefined) updateData.porcentaje_sena   = porcentaje_sena;
   if (porcentaje_retencion !== undefined) updateData.porcentaje_retencion = porcentaje_retencion ?? 0;

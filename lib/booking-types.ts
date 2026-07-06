@@ -29,6 +29,7 @@ export interface TenantConfig {
   color_primario: string | null;   // hex, ej: "#FFD1DC"
   color_acento: string | null;     // hex, ej: "#D4A0A7"
   telefono: string | null;
+  instagram: string | null;        // handle "@sora" o URL completa
   tipo_negocio: TipoNegocio;
   alias_pago: string | null;       // alias/CBU para transferencias
 }
