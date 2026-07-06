@@ -64,8 +64,8 @@ export function ServicesCatalog({
 
   return (
     <div className="animate-fade-in min-h-screen" style={{ backgroundColor: T.bg }}>
-      {/* Header */}
-      <header className="sticky top-0 z-10 backdrop-blur-sm px-5 pt-8 pb-5"
+      {/* Header — NO sticky: scrollea junto con el resto para no dejar el título grande pegado */}
+      <header className="px-5 pt-8 pb-5"
         style={{ backgroundColor: T.bgSticky }}>
         {/* Top row */}
         <div className="flex items-center justify-between mb-6">
