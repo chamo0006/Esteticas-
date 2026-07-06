@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment, PaymentRefund } from 'mercadopago';
 import { supabase } from './supabase';
 import { refreshAccessToken } from './mp-oauth';
 
@@ -58,6 +58,22 @@ export async function getTenantMPToken(tenantId: string): Promise<string | null>
 // el de la plataforma. Devuelve null si no hay ninguno configurado.
 export async function resolveMPToken(tenantId: string): Promise<string | null> {
   return (await getTenantMPToken(tenantId)) ?? process.env.MP_ACCESS_TOKEN ?? null;
+}
+
+// Devuelve (total o parcialmente) un pago ya acreditado en MercadoPago.
+// Si se pasa `amount`, es una devolución parcial; si se omite, devuelve el total.
+// Usa la cuenta del tenant que cobró la seña (el mismo token con el que se creó).
+export async function refundMPPayment(
+  accessToken: string,
+  paymentId: string,
+  amount?: number
+) {
+  const client = getMPClient(accessToken);
+  const refundClient = new PaymentRefund(client);
+  return refundClient.create({
+    payment_id: paymentId,
+    ...(amount != null ? { body: { amount } } : {}),
+  });
 }
 
 export { Preference, Payment };

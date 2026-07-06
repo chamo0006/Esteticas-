@@ -465,15 +465,36 @@ export default function TurnosPage() {
 
   const refetch = () => fetchDayTurnos();
 
+  // Traduce el resultado de la devolución de seña (que devuelve el PATCH al cancelar)
+  // en un mensaje para el admin. Devuelve null si no hubo seña que devolver.
+  type Devolucion =
+    | { estado: 'devuelto'; monto: number; retencion: number }
+    | { estado: 'retenido'; retencion: number }
+    | { estado: 'error'; motivo: string }
+    | null;
+  const avisarDevolucion = (d: Devolucion) => {
+    if (!d) return;
+    if (d.estado === 'devuelto') {
+      const ret = d.retencion > 0 ? ` (se retuvo ${d.retencion}%)` : '';
+      alert(`Seña devuelta: se le reintegró $${d.monto} al cliente${ret}.`);
+    } else if (d.estado === 'retenido') {
+      alert('La seña quedó retenida al 100%: no se devolvió nada.');
+    } else if (d.estado === 'error') {
+      alert(`El turno se canceló, pero la devolución falló: ${d.motivo}. Revisá MercadoPago manualmente.`);
+    }
+  };
+
   const changeEstado = async (id: string, estado: Estado) => {
     setUpdating(id);
-    await fetch(`/api/admin/${tenantSlug}/turnos`, {
+    const res = await fetch(`/api/admin/${tenantSlug}/turnos`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, estado }),
     });
+    const data = await res.json().catch(() => ({}));
     await fetchDayTurnos();
     setUpdating(null);
+    if (estado === 'cancelado') avisarDevolucion(data?.devolucion ?? null);
   };
 
   const prevDay = () => { const d = new Date(selectedDate); d.setDate(d.getDate()-1); setSelectedDate(d); };
@@ -484,14 +505,16 @@ export default function TurnosPage() {
   const handleCancelarModal = async () => {
     if (!modalTurno) return;
     setCanceling(true);
-    await fetch(`/api/admin/${tenantSlug}/turnos`, {
+    const res = await fetch(`/api/admin/${tenantSlug}/turnos`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: modalTurno.id, estado: 'cancelado' }),
     });
+    const data = await res.json().catch(() => ({}));
     await fetchDayTurnos();
     setModalTurno(prev => prev ? { ...prev, estado: 'cancelado' } : null);
     setCanceling(false);
+    avisarDevolucion(data?.devolucion ?? null);
   };
 
   // ── Color lookup + filtro por empleado ─────────────────────────────────────

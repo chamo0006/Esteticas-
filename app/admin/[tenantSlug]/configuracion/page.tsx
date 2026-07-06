@@ -32,7 +32,7 @@ interface Horario { dia_semana: number; hora_apertura: string; hora_cierre: stri
 interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
 interface TenantConfig {
   nombre: string; email_contacto: string; telefono: string;
-  exige_sena: boolean; porcentaje_sena: number | null; permite_efectivo: boolean;
+  exige_sena: boolean; porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
   alias_pago: string | null;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
@@ -394,6 +394,27 @@ export default function ConfiguracionPage() {
                     />
                     <span className="text-zinc-500 text-sm font-medium">%</span>
                   </div>
+                </div>
+              )}
+
+              {/* Retención al devolver la seña */}
+              {tenant.exige_sena && (
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                    Retención al cancelar
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number" min={0} max={100}
+                      value={tenant.porcentaje_retencion ?? 0}
+                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_retencion: Number(e.target.value) } : t)}
+                      className="w-24 px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    />
+                    <span className="text-zinc-500 text-sm font-medium">%</span>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-1.5">
+                    Al cancelar un turno con seña pagada por MercadoPago, se le devuelve al cliente el resto automáticamente. 0% = se devuelve todo.
+                  </p>
                 </div>
               )}
 
