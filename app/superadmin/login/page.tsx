@@ -42,42 +42,44 @@ function SuperadminLoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
-      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl p-8 w-full max-w-sm">
-        <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center mb-6">
-          <Shield className="w-5 h-5 text-white" />
+    <div className="min-h-screen bg-[#141210] flex items-center justify-center px-4">
+      <div className="bg-[#1c1a15] rounded-2xl border border-[#2c261d] shadow-xl p-8 w-full max-w-sm">
+        <div className="w-12 h-12 rounded-2xl bg-[#b3543f] flex items-center justify-center mb-6">
+          <Shield className="w-5 h-5 text-[#f2ede1]" />
         </div>
-        <h1 className="text-xl font-bold text-white mb-1">Super Admin</h1>
-        <p className="text-sm text-zinc-400 mb-6">Panel de gestión de la plataforma</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-[#c9a86a] mb-1.5">Plataforma</p>
+        <h1 className="text-2xl font-serif font-medium tracking-tight text-[#f2ede1] mb-1">Super Admin</h1>
+        <div className="w-8 h-px bg-[#c9a86a] mb-4" />
+        <p className="text-sm text-[#a89d86] mb-6">Panel de gestión de la plataforma</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-[#cabfa8] mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+              className="w-full px-4 py-3 bg-[#241f18] border border-[#3a3327] rounded-xl text-sm text-[#f2ede1] focus:outline-none focus:ring-2 focus:ring-[#c9a86a] transition-all"
               placeholder="tu@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Contraseña</label>
+            <label className="block text-sm font-medium text-[#cabfa8] mb-1.5">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+              className="w-full px-4 py-3 bg-[#241f18] border border-[#3a3327] rounded-xl text-sm text-[#f2ede1] focus:outline-none focus:ring-2 focus:ring-[#c9a86a] transition-all"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-400 bg-red-950/50 border border-red-900 rounded-xl px-4 py-3">
+            <p className="text-sm text-[#d1806b] bg-[#241310] border border-[#4a281f] rounded-xl px-4 py-3">
               {error}
             </p>
           )}
@@ -85,7 +87,7 @@ function SuperadminLoginForm() {
           <button
             type="submit"
             disabled={loading || !email || !password}
-            className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[#c9a86a] hover:bg-[#d8b877] disabled:bg-[#241f18] disabled:text-[#7c745f] text-[#1a1710] font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Entrar

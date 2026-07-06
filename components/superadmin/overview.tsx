@@ -38,32 +38,32 @@ export function SuperadminOverview({ canSeeBilling, stats, porVencer, ingresosPo
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Dashboard</h1>
+      <h1 className="text-3xl font-serif font-medium tracking-tight text-[#f2ede1] mb-6">Dashboard</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {statCards.map((s) => (
-          <div key={s.label} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-            <s.icon className="w-4 h-4 text-zinc-500 mb-2" />
-            <p className="text-2xl font-bold text-white">{s.value}</p>
-            <p className="text-xs text-zinc-400 mt-0.5">{s.label}</p>
+          <div key={s.label} className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-4">
+            <s.icon className="w-4 h-4 text-[#7c745f] mb-2" />
+            <p className="text-2xl font-serif font-semibold text-[#f2ede1]">{s.value}</p>
+            <p className="text-xs text-[#a89d86] mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {canSeeBilling && (
         <div className="grid sm:grid-cols-3 gap-3 mb-6">
-          <div className="bg-gradient-to-br from-violet-900/40 to-zinc-900 border border-violet-800/40 rounded-2xl p-5">
-            <p className="text-xs text-violet-300 mb-1">Cobrado este mes</p>
-            <p className="text-3xl font-bold text-white">{formatARS(stats.ingresosMes)}</p>
+          <div className="bg-[#221d14] border border-[#4b3f24]/40 rounded-2xl p-5">
+            <p className="text-xs text-[#dcc48a] mb-1">Cobrado este mes</p>
+            <p className="text-3xl font-serif font-semibold text-[#f2ede1]">{formatARS(stats.ingresosMes)}</p>
           </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <p className="text-xs text-zinc-400 mb-1">En prueba (trial)</p>
-            <p className="text-3xl font-bold text-white">{stats.trials}</p>
+          <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-5">
+            <p className="text-xs text-[#a89d86] mb-1">En prueba (trial)</p>
+            <p className="text-3xl font-serif font-semibold text-[#f2ede1]">{stats.trials}</p>
           </div>
-          <div className="bg-zinc-900 border border-red-900/40 rounded-2xl p-5">
-            <p className="text-xs text-red-300 mb-1">Morosos / bloqueados</p>
-            <p className="text-3xl font-bold text-white">{stats.morosos}</p>
+          <div className="bg-[#1c1a15] border border-[#4a281f]/40 rounded-2xl p-5">
+            <p className="text-xs text-[#d99a86] mb-1">Morosos / bloqueados</p>
+            <p className="text-3xl font-serif font-semibold text-[#f2ede1]">{stats.morosos}</p>
           </div>
         </div>
       )}
@@ -71,9 +71,9 @@ export function SuperadminOverview({ canSeeBilling, stats, porVencer, ingresosPo
       {/* Gráficos */}
       <div className="grid lg:grid-cols-2 gap-4 mb-6">
         {canSeeBilling && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-emerald-400" /> Ingresos por mes
+          <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-5">
+            <h2 className="text-sm font-semibold text-[#f2ede1] mb-4 flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-[#94ab73]" /> Ingresos por mes
             </h2>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={ingresosPorMes} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
@@ -89,9 +89,9 @@ export function SuperadminOverview({ canSeeBilling, stats, porVencer, ingresosPo
           </div>
         )}
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-            <Users className="w-4 h-4 text-violet-400" /> Comercios nuevos por mes
+        <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-[#f2ede1] mb-4 flex items-center gap-2">
+            <Users className="w-4 h-4 text-[#c9a86a]" /> Comercios nuevos por mes
           </h2>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={comerciosPorMes} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
@@ -114,10 +114,10 @@ export function SuperadminOverview({ canSeeBilling, stats, porVencer, ingresosPo
 
       {/* Próximos vencimientos */}
       {canSeeBilling && porVencer.length > 0 && (
-        <div className="bg-amber-950/30 border border-amber-900/50 rounded-2xl p-4">
+        <div className="bg-[#241d10]/30 border border-[#443318]/50 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-semibold text-amber-200">Próximos vencimientos</h2>
+            <AlertTriangle className="w-4 h-4 text-[#cf9a45]" />
+            <h2 className="text-sm font-semibold text-[#e0b45f]">Próximos vencimientos</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {porVencer.map((t) => {

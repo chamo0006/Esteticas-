@@ -37,13 +37,13 @@ export function formatFecha(dt: string) {
 
 // Semáforo de vencimiento de la suscripción de un comercio.
 export function semaforo(t: Pick<TenantRow, 'bloqueado' | 'estado_suscripcion' | 'dias_para_vencer'>): { label: string; cls: string } {
-  if (t.bloqueado || t.estado_suscripcion === 'suspendida') return { label: 'Bloqueado', cls: 'bg-red-500/15 text-red-400 border-red-500/30' };
-  if (t.estado_suscripcion === 'cancelada') return { label: 'Cancelada', cls: 'bg-zinc-700 text-zinc-300 border-zinc-600' };
-  if (t.estado_suscripcion === 'trial') return { label: 'Trial', cls: 'bg-violet-500/15 text-violet-300 border-violet-500/30' };
+  if (t.bloqueado || t.estado_suscripcion === 'suspendida') return { label: 'Bloqueado', cls: 'bg-[#c26350]/15 text-[#d1806b] border-[#c26350]/30' };
+  if (t.estado_suscripcion === 'cancelada') return { label: 'Cancelada', cls: 'bg-[#2f2a20] text-[#cabfa8] border-[#3a3327]' };
+  if (t.estado_suscripcion === 'trial') return { label: 'Trial', cls: 'bg-[#d8b877]/15 text-[#dcc48a] border-[#c9a86a]/30' };
   const d = t.dias_para_vencer;
-  if (d == null) return { label: 'Sin límite', cls: 'bg-zinc-700 text-zinc-300 border-zinc-600' };
-  if (d < 0) return { label: `Vencida (${Math.abs(d)}d)`, cls: 'bg-red-500/15 text-red-400 border-red-500/30' };
-  if (d <= 3) return { label: `Vence en ${d}d`, cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' };
-  if (d <= 7) return { label: `Vence en ${d}d`, cls: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' };
-  return { label: `${d}d`, cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' };
+  if (d == null) return { label: 'Sin límite', cls: 'bg-[#2f2a20] text-[#cabfa8] border-[#3a3327]' };
+  if (d < 0) return { label: `Vencida (${Math.abs(d)}d)`, cls: 'bg-[#c26350]/15 text-[#d1806b] border-[#c26350]/30' };
+  if (d <= 3) return { label: `Vence en ${d}d`, cls: 'bg-[#cf9a45]/15 text-[#cf9a45] border-[#cf9a45]/30' };
+  if (d <= 7) return { label: `Vence en ${d}d`, cls: 'bg-[#cf9a45]/15 text-[#e0b45f] border-[#cf9a45]/30' };
+  return { label: `${d}d`, cls: 'bg-[#6b8c52]/15 text-[#94ab73] border-[#8aa06a]/30' };
 }
