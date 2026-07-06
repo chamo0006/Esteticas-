@@ -33,6 +33,7 @@ interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
 interface TenantConfig {
   nombre: string; email_contacto: string; telefono: string; instagram: string | null;
   exige_sena: boolean; porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
+  horas_limite_cancelacion: number | null;
   alias_pago: string | null;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
@@ -425,10 +426,31 @@ export default function ConfiguracionPage() {
                     <span className="text-zinc-500 text-sm font-medium">%</span>
                   </div>
                   <p className="text-xs text-zinc-400 mt-1.5">
-                    Al cancelar un turno con seña pagada por MercadoPago, se le devuelve al cliente el resto automáticamente. 0% = se devuelve todo.
+                    Al cancelar un turno con seña pagada por MercadoPago, se retiene este % y se le devuelve
+                    el resto al cliente automáticamente. Ej: 20% = se devuelve el 80%. 0% = se devuelve todo.
                   </p>
                 </div>
               )}
+
+              {/* Ventana de cancelación del cliente */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  Cancelación del cliente
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number" min={0} max={168}
+                    value={tenant.horas_limite_cancelacion ?? 0}
+                    onChange={(e) => setTenant(t => t ? { ...t, horas_limite_cancelacion: Number(e.target.value) } : t)}
+                    className="w-24 px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                  <span className="text-zinc-500 text-sm font-medium">horas antes</span>
+                </div>
+                <p className="text-xs text-zinc-400 mt-1.5">
+                  Desde &quot;Mis reservas&quot;, el cliente puede cancelar hasta esta cantidad de horas antes del turno.
+                  0 = puede cancelar en cualquier momento.
+                </p>
+              </div>
 
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

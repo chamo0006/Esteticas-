@@ -32,6 +32,7 @@ export interface TenantConfig {
   instagram: string | null;        // handle "@sora" o URL completa
   tipo_negocio: TipoNegocio;
   alias_pago: string | null;       // alias/CBU para transferencias
+  horas_limite_cancelacion: number; // horas antes del turno hasta las que el cliente puede cancelar (0 = siempre)
 }
 
 export interface TimeSlot {

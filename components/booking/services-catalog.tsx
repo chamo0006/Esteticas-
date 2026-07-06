@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Instagram, Search, MessageCircle } from "lucide-react";
+import { Instagram, Search, MessageCircle, CalendarCheck } from "lucide-react";
 import Image from "next/image";
 import type { Service, TenantConfig } from "@/lib/booking-types";
 import { getBookingTheme } from "@/lib/booking-theme";
 import { ServiceCard } from "./service-card";
 import { StepBar } from "./step-bar";
+import { MisReservas } from "./mis-reservas";
 
 interface ServicesCatalogProps {
   services: Service[];
@@ -52,6 +53,8 @@ export function ServicesCatalog({
   // Estéticas usan la paleta Sora fija (negro + dorado); la barbería mantiene sus colores.
   const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
   const accentColor  = isBarberia ? (tenantConfig?.color_acento  ?? "#B8935A") : T.accent;
+
+  const [misReservasOpen, setMisReservasOpen] = useState(false);
 
   // Chips de categoría (Sora). Se derivan de los servicios; filtran junto al buscador.
   const [activeCat, setActiveCat] = useState("Todo");
@@ -142,6 +145,24 @@ export function ServicesCatalog({
           />
         </div>
       </header>
+
+      {/* Acceso a "Mis reservas" — entre el buscador y la barra de pasos */}
+      <div className="px-5">
+        <button onClick={() => setMisReservasOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors"
+          style={{ backgroundColor: T.cardBg, color: T.text, border: `1px solid ${T.border}`, borderRadius: "9999px", boxShadow: `0 2px 20px ${T.shadow}` }}>
+          <CalendarCheck className="w-4 h-4" style={{ color: accentColor }} strokeWidth={1.6} />
+          Mis reservas
+        </button>
+      </div>
+
+      {misReservasOpen && (
+        <MisReservas
+          tenantSlug={tenantConfig?.slug ?? ""}
+          tenantConfig={tenantConfig}
+          onClose={() => setMisReservasOpen(false)}
+        />
+      )}
 
       {!isBarberia && <StepBar current={0} theme={T} />}
 
