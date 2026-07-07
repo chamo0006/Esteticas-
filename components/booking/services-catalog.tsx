@@ -23,7 +23,7 @@ interface ServicesCatalogProps {
 
 function BotanicalLeaf({ color = "#D4919B" }: { color?: string }) {
   return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true" className="opacity-20">
+    <svg width="28" height="28" viewBox="0 0 48 48" fill="none" aria-hidden="true" className="opacity-20">
       <path d="M24 44 C24 44 8 32 8 18 C8 10 14 4 24 4 C34 4 40 10 40 18 C40 32 24 44 24 44Z"
         stroke={color} strokeWidth="1.2" fill="none" />
       <path d="M24 44 L24 8" stroke={color} strokeWidth="1" strokeDasharray="2 3" />
@@ -35,7 +35,7 @@ function BotanicalLeaf({ color = "#D4919B" }: { color?: string }) {
 
 function BarberDecoration({ color = "#4A5240" }: { color?: string }) {
   return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true" className="opacity-20">
+    <svg width="28" height="28" viewBox="0 0 48 48" fill="none" aria-hidden="true" className="opacity-20">
       <path d="M16 8 L32 40" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
       <path d="M32 8 L16 40" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
       <circle cx="14" cy="38" r="4" stroke={color} strokeWidth="1.2" fill="none" />
@@ -74,39 +74,39 @@ export function ServicesCatalog({
   return (
     <div className="animate-fade-in min-h-screen" style={{ backgroundColor: T.bg }}>
       {/* Header — NO sticky: scrollea junto con el resto para no dejar el título grande pegado */}
-      <header className="px-5 pt-8 pb-5"
+      <header className="px-5 pt-5 pb-4"
         style={{ backgroundColor: T.bgSticky }}>
         {/* Top row */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-10" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="w-8" />
 
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             {logoUrl && (
-              <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0"
+              <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0"
                 style={{ border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
                 <Image src={logoUrl} alt={tenantNombre ?? "Logo"} fill className="object-cover" unoptimized />
               </div>
             )}
             <div className="text-center">
               {!isBarberia && (
-                <div className="text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: T.muted }}>
+                <div className="text-[9px] uppercase tracking-[0.18em] mb-1" style={{ color: T.muted }}>
                   {T.decoration} · Estética & bienestar
                 </div>
               )}
-              <h1 className={`font-serif leading-tight ${isBarberia ? "text-2xl" : "text-2xl font-light"}`} style={{ color: T.text }}>
+              <h1 className={`font-serif leading-tight ${isBarberia ? "text-xl" : "text-xl font-light"}`} style={{ color: T.text }}>
                 {tenantNombre ?? "Reserve su experiencia"}
               </h1>
-              {!isBarberia && <div className="w-7 h-px mx-auto my-3" style={{ backgroundColor: T.accent }} />}
-              <p className="font-serif italic text-sm mt-1" style={{ color: T.muted }}>
+              {!isBarberia && <div className="w-6 h-px mx-auto my-1.5" style={{ backgroundColor: T.accent }} />}
+              <p className="font-serif italic text-xs mt-0.5" style={{ color: T.muted }}>
                 {isBarberia ? "Reservá tu turno" : "Reserve su experiencia de belleza"}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {wppUrl && (
               <a href={wppUrl} target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                 style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
                 aria-label="WhatsApp">
                 <MessageCircle className="w-4 h-4" strokeWidth={1.5} />
@@ -114,7 +114,7 @@ export function ServicesCatalog({
             )}
             {igUrl && (
               <a href={igUrl} target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                 style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
                 aria-label="Instagram">
                 <Instagram className="w-4 h-4" strokeWidth={1.5} />
@@ -124,7 +124,7 @@ export function ServicesCatalog({
         </div>
 
         {/* Decorative divider */}
-        <div className="flex items-center justify-center gap-3 mb-5">
+        <div className="flex items-center justify-center gap-3 mb-3">
           <div className="h-px flex-1" style={{ backgroundColor: T.border }} />
           {isBarberia
             ? <BarberDecoration color={accentColor} />
@@ -138,7 +138,7 @@ export function ServicesCatalog({
           <input
             type="text" placeholder="Buscar servicio..." value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
-            className="w-full pl-11 pr-5 py-3.5 text-sm transition-all focus:outline-none"
+            className="w-full pl-11 pr-5 py-3 text-sm transition-all focus:outline-none"
             style={{ backgroundColor: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "9999px", color: T.text, boxShadow: `0 2px 20px ${T.shadow}` }}
             onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
             onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = `0 2px 20px ${T.shadow}`; }}

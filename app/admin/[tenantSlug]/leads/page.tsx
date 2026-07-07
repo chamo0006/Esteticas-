@@ -63,8 +63,8 @@ export default function LeadsPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Leads</h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+          <p className="text-gray-400 text-sm mt-1">
             {leads.length} contacto{leads.length !== 1 ? 's' : ''} desde el formulario de la landing
           </p>
         </div>
@@ -81,46 +81,46 @@ export default function LeadsPage() {
 
       {/* Buscador */}
       <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por nombre, email, teléfono o estética..."
-          className="w-full pl-11 pr-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 shadow-sm"
+          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 shadow-sm"
         />
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-zinc-400">
+        <div className="flex items-center justify-center py-20 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-          <Inbox className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+          <Inbox className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-400 font-medium">
             {search ? 'Sin resultados para esa búsqueda' : 'Aún no hay leads registrados'}
           </p>
           {!search && (
-            <p className="text-zinc-300 text-sm mt-1">
+            <p className="text-gray-300 text-sm mt-1">
               Cuando alguien complete el formulario de contacto aparecerá aquí
             </p>
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[600px]">
               <thead>
-                <tr className="border-b border-zinc-100 text-left">
-                  <th className="px-6 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Nombre</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Contacto</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Estética</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Fecha</th>
+                <tr className="border-b border-gray-100 text-left">
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nombre</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Contacto</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estética</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Fecha</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-50">
+              <tbody className="divide-y divide-gray-50">
                 {filtered.map((l) => (
-                  <tr key={l.id} className="hover:bg-zinc-50 transition-colors">
+                  <tr key={l.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
@@ -128,34 +128,34 @@ export default function LeadsPage() {
                             {l.nombre.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <p className="font-medium text-zinc-900">{l.nombre}</p>
+                        <p className="font-medium text-gray-900">{l.nombre}</p>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-zinc-600 text-xs">
-                          <Mail className="w-3 h-3 text-zinc-400 flex-shrink-0" />
+                        <div className="flex items-center gap-1.5 text-gray-600 text-xs">
+                          <Mail className="w-3 h-3 text-gray-400 flex-shrink-0" />
                           <a href={`mailto:${l.email}`} className="hover:text-violet-600 transition-colors">
                             {l.email}
                           </a>
                         </div>
                         {l.telefono && (
-                          <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
-                            <Phone className="w-3 h-3 text-zinc-400 flex-shrink-0" /> {l.telefono}
+                          <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                            <Phone className="w-3 h-3 text-gray-400 flex-shrink-0" /> {l.telefono}
                           </div>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       {l.estetica ? (
-                        <div className="flex items-center gap-1.5 text-zinc-600 text-xs">
-                          <Store className="w-3 h-3 text-zinc-400 flex-shrink-0" /> {l.estetica}
+                        <div className="flex items-center gap-1.5 text-gray-600 text-xs">
+                          <Store className="w-3 h-3 text-gray-400 flex-shrink-0" /> {l.estetica}
                         </div>
                       ) : (
-                        <span className="text-zinc-300 text-xs">—</span>
+                        <span className="text-gray-300 text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-zinc-400 text-xs whitespace-nowrap">
+                    <td className="px-4 py-4 text-gray-400 text-xs whitespace-nowrap">
                       {formatFecha(l.created_at)}
                     </td>
                   </tr>

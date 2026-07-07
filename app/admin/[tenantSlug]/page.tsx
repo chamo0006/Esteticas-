@@ -145,29 +145,29 @@ export default async function AdminDashboard({ params }: Props) {
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
 
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">Dashboard</h1>
-        <p className="text-zinc-400 text-sm mt-1 capitalize">{fechaHoy}</p>
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-400 text-sm mt-1 capitalize">{fechaHoy}</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl p-5 border border-zinc-100 shadow-sm">
+          <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
               <s.icon className="w-5 h-5" />
             </div>
-            <p className="text-2xl font-bold text-zinc-900">{s.value}</p>
-            <p className="text-xs text-zinc-400 mt-0.5 font-medium">{s.label}</p>
+            <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Próximos turnos */}
-      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-zinc-400" />
-            <h2 className="font-semibold text-zinc-900">Próximos turnos</h2>
+            <Calendar className="w-4 h-4 text-gray-400" />
+            <h2 className="font-semibold text-gray-900">Próximos turnos</h2>
           </div>
           <a href={`/admin/${payload.tenantSlug}/turnos`} className="text-xs text-violet-600 hover:underline font-medium">
             Ver todos →
@@ -175,14 +175,14 @@ export default async function AdminDashboard({ params }: Props) {
         </div>
 
         {proximos.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
-            <CheckCircle2 className="w-8 h-8 mb-2 text-zinc-200" />
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+            <CheckCircle2 className="w-8 h-8 mb-2 text-gray-200" />
             <p className="text-sm">No hay turnos próximos</p>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-50">
+          <div className="divide-y divide-gray-50">
             {proximos.map((t) => (
-              <div key={t.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-50 transition-colors">
+              <div key={t.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-bold text-violet-600">
@@ -190,12 +190,12 @@ export default async function AdminDashboard({ params }: Props) {
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-zinc-900 text-sm">{t.cliente}</p>
-                    <p className="text-xs text-zinc-400">{t.servicio} · {formatFecha(t.fecha_hora)}</p>
+                    <p className="font-medium text-gray-900 text-sm">{t.cliente}</p>
+                    <p className="text-xs text-gray-400">{t.servicio} · {formatFecha(t.fecha_hora)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-sm font-semibold text-zinc-700">{formatARS(Number(t.precio))}</span>
+                  <span className="text-sm font-semibold text-gray-700">{formatARS(Number(t.precio))}</span>
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${ESTADO_STYLES[t.estado]}`}>
                     {t.estado}
                   </span>

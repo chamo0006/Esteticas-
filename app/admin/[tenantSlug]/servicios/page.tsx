@@ -27,14 +27,22 @@ const CAT_STYLES: Record<string, string> = {
   corte:   'bg-blue-100 text-blue-700',
   barba:   'bg-slate-100 text-slate-700',
   combo:   'bg-indigo-100 text-indigo-700',
-  general: 'bg-zinc-100 text-zinc-600',
+  general: 'bg-gray-100 text-gray-600',
 };
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
 }
 
-const EMPTY = { nombre: '', descripcion: '', duracion_minutos: 60, precio: 0, categoria: 'general' };
+interface ServicioForm {
+  nombre: string;
+  descripcion: string;
+  duracion_minutos: number | '';
+  precio: number | '';
+  categoria: string;
+}
+
+const EMPTY: ServicioForm = { nombre: '', descripcion: '', duracion_minutos: 60, precio: 0, categoria: 'general' };
 
 export default function ServiciosPage() {
   const params = useParams();
@@ -120,10 +128,15 @@ export default function ServiciosPage() {
     setSaving(true);
     setSaveError(null);
     try {
+      const payload = {
+        ...form,
+        duracion_minutos: Number(form.duracion_minutos) || 0,
+        precio: Number(form.precio) || 0,
+      };
       const res = await fetch(`/api/admin/${tenantSlug}/servicios`, {
         method: editing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
+        body: JSON.stringify(editing ? { id: editing.id, ...payload } : payload),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -182,8 +195,8 @@ export default function ServiciosPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Servicios</h1>
-          <p className="text-zinc-400 text-sm mt-1">{servicios.length} servicio{servicios.length !== 1 ? 's' : ''} en el catálogo</p>
+          <h1 className="text-2xl font-bold text-gray-900">Servicios</h1>
+          <p className="text-gray-400 text-sm mt-1">{servicios.length} servicio{servicios.length !== 1 ? 's' : ''} en el catálogo</p>
         </div>
         <button
           onClick={openNew}
@@ -194,12 +207,12 @@ export default function ServiciosPage() {
       </div>
 
       {/* ── Categorías ─────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-zinc-400" />
-            <h2 className="font-semibold text-zinc-900 text-sm">Categorías</h2>
-            <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">{categorias.length}</span>
+            <Tag className="w-4 h-4 text-gray-400" />
+            <h2 className="font-semibold text-gray-900 text-sm">Categorías</h2>
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{categorias.length}</span>
           </div>
           {!showCatInput && (
             <button onClick={() => { setShowCatInput(true); setCatError(null); setNewCat(''); }}
@@ -218,13 +231,13 @@ export default function ServiciosPage() {
               onChange={e => setNewCat(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleAddCat(); if (e.key === 'Escape') setShowCatInput(false); }}
               placeholder={tipoNegocio === 'barberia' ? 'ej: corte, barba, combo...' : 'ej: nails, lashes, skin...'}
-              className="flex-1 px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
             />
             <button onClick={handleAddCat} disabled={addingCat || !newCat.trim()}
-              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white text-sm font-semibold rounded-xl transition-colors">
+              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-semibold rounded-xl transition-colors">
               {addingCat ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             </button>
-            <button onClick={() => setShowCatInput(false)} className="text-zinc-400 hover:text-zinc-600 transition-colors">
+            <button onClick={() => setShowCatInput(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -233,7 +246,7 @@ export default function ServiciosPage() {
 
         {/* Lista de categorías */}
         {categorias.length === 0 ? (
-          <p className="text-sm text-zinc-400 text-center py-4">
+          <p className="text-sm text-gray-400 text-center py-4">
             Sin categorías todavía. Creá la primera para organizar tus servicios.
           </p>
         ) : (
@@ -258,47 +271,47 @@ export default function ServiciosPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-zinc-400">
+        <div className="flex items-center justify-center py-20 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[540px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-6 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Servicio</th>
-                <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Categoría</th>
-                <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Duración</th>
-                <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Precio</th>
-                <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Estado</th>
+              <tr className="border-b border-gray-100 text-left">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Servicio</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Categoría</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Duración</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Precio</th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-50">
+            <tbody className="divide-y divide-gray-50">
               {servicios.map((s) => (
-                <tr key={s.id} className={cn('hover:bg-zinc-50 transition-colors', !s.activo && 'opacity-40')}>
+                <tr key={s.id} className={cn('hover:bg-gray-50 transition-colors', !s.activo && 'opacity-40')}>
                   <td className="px-6 py-4">
-                    <p className="font-medium text-zinc-900">{s.nombre}</p>
-                    {s.descripcion && <p className="text-xs text-zinc-400 mt-0.5 truncate max-w-xs">{s.descripcion}</p>}
+                    <p className="font-medium text-gray-900">{s.nombre}</p>
+                    {s.descripcion && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-xs">{s.descripcion}</p>}
                   </td>
                   <td className="px-4 py-4">
                     <span className={cn('px-2.5 py-1 rounded-lg text-xs font-semibold', CAT_STYLES[s.categoria] ?? CAT_STYLES.general)}>
                       {s.categoria}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-zinc-600">{s.duracion_minutos} min</td>
-                  <td className="px-4 py-4 font-semibold text-zinc-900">{formatARS(Number(s.precio))}</td>
+                  <td className="px-4 py-4 text-gray-600">{s.duracion_minutos} min</td>
+                  <td className="px-4 py-4 font-semibold text-gray-900">{formatARS(Number(s.precio))}</td>
                   <td className="px-4 py-4">
                     <button onClick={() => toggleActivo(s)} className="transition-colors">
                       {s.activo
                         ? <ToggleRight className="w-6 h-6 text-emerald-500" />
-                        : <ToggleLeft className="w-6 h-6 text-zinc-300" />
+                        : <ToggleLeft className="w-6 h-6 text-gray-300" />
                       }
                     </button>
                   </td>
                   <td className="px-4 py-4">
-                    <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
+                    <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
                       <Edit2 className="w-4 h-4" />
                     </button>
                   </td>
@@ -314,54 +327,54 @@ export default function ServiciosPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-[60] md:p-4">
           <div className="bg-white rounded-t-3xl md:rounded-2xl shadow-xl w-full md:max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-              <h2 className="font-semibold text-zinc-900">{editing ? 'Editar servicio' : 'Nuevo servicio'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-zinc-400 hover:text-zinc-600">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="font-semibold text-gray-900">{editing ? 'Editar servicio' : 'Nuevo servicio'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Nombre *</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nombre *</label>
                 <input
                   value={form.nombre}
                   onChange={(e) => setForm(f => ({ ...f, nombre: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   placeholder={tipoNegocio === 'barberia' ? 'Corte clásico' : 'Lifting de pestañas'}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Descripción</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Descripción</label>
                 <textarea
                   value={form.descripcion}
                   onChange={(e) => setForm(f => ({ ...f, descripcion: e.target.value }))}
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
                   placeholder="Descripción opcional..."
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Duración (min) *</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Duración (min) *</label>
                   <input
                     type="number" min={5}
                     value={form.duracion_minutos}
-                    onChange={(e) => setForm(f => ({ ...f, duracion_minutos: Number(e.target.value) }))}
-                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    onChange={(e) => setForm(f => ({ ...f, duracion_minutos: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Precio (ARS) *</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Precio (ARS) *</label>
                   <input
                     type="number" min={0}
                     value={form.precio}
-                    onChange={(e) => setForm(f => ({ ...f, precio: Number(e.target.value) }))}
-                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    onChange={(e) => setForm(f => ({ ...f, precio: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Categoría</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Categoría</label>
                 {categorias.length === 0 ? (
                   <p className="text-sm text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
                     Primero creá una categoría con &quot;Nueva categoría&quot; arriba.
@@ -370,7 +383,7 @@ export default function ServiciosPage() {
                   <select
                     value={form.categoria}
                     onChange={(e) => setForm(f => ({ ...f, categoria: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
                   >
                     {/* Categoría actual del servicio si ya no existe en la lista (servicios viejos) */}
                     {form.categoria && !categorias.some(c => c.nombre === form.categoria) && (
@@ -379,7 +392,7 @@ export default function ServiciosPage() {
                     {categorias.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
                   </select>
                 )}
-                <p className="text-xs text-zinc-400 mt-1">Solo aparecen tus categorías. Para crear una nueva, usá &quot;Nueva categoría&quot; arriba.</p>
+                <p className="text-xs text-gray-400 mt-1">Solo aparecen tus categorías. Para crear una nueva, usá &quot;Nueva categoría&quot; arriba.</p>
               </div>
             </div>
             {(saveError || deleteError) && (
@@ -389,7 +402,7 @@ export default function ServiciosPage() {
                 </p>
               </div>
             )}
-            <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between gap-3">
+            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
               {/* Botón eliminar — solo al editar */}
               <div>
                 {editing && !confirmDelete && (
@@ -412,7 +425,7 @@ export default function ServiciosPage() {
                       {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                       Sí, eliminar
                     </button>
-                    <button onClick={() => setConfirmDelete(false)} className="text-xs text-zinc-500 hover:text-zinc-700">
+                    <button onClick={() => setConfirmDelete(false)} className="text-xs text-gray-500 hover:text-gray-700">
                       No
                     </button>
                   </div>
@@ -420,13 +433,13 @@ export default function ServiciosPage() {
               </div>
 
               <div className="flex gap-3">
-                <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl text-sm text-zinc-600 hover:bg-zinc-100 transition-colors">
+                <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors">
                   Cancelar
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving || !formValid}
-                  className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-200 disabled:text-zinc-400 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
+                  className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                   {editing ? 'Guardar cambios' : 'Crear servicio'}

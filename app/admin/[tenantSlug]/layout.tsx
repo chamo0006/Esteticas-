@@ -30,7 +30,7 @@ export default async function AdminLayout({ children, params }: Props) {
   const aviso = await getAvisoSuscripcion(tenant.id);
 
   return (
-    <div className="flex h-screen bg-zinc-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar — solo desktop */}
       <div className="hidden md:flex">
         <AdminSidebar

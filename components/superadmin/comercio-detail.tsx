@@ -59,8 +59,8 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     estado: suscripcion?.estado ?? 'trial',
     ciclo: suscripcion?.ciclo ?? 'mensual',
     fecha_fin: suscripcion?.fecha_fin ?? '',
-    dias_gracia: suscripcion?.dias_gracia ?? 5,
-    descuento_porcentaje: suscripcion?.descuento_porcentaje ?? 0,
+    dias_gracia: (suscripcion?.dias_gracia ?? 5) as number | null,
+    descuento_porcentaje: (suscripcion?.descuento_porcentaje ?? 0) as number | null,
     descuento_motivo: suscripcion?.descuento_motivo ?? '',
     precio_acordado: suscripcion?.precio_acordado ?? '',
     notas: suscripcion?.notas ?? '',
@@ -85,7 +85,12 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     setSaving(true); setMsg(null);
     const res = await fetch(`/api/superadmin/tenants/${tenant.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, plan_id: form.plan_id || null }),
+      body: JSON.stringify({
+        ...form,
+        plan_id: form.plan_id || null,
+        dias_gracia: form.dias_gracia ?? 5,
+        descuento_porcentaje: form.descuento_porcentaje ?? 0,
+      }),
     });
     setSaving(false);
     if (res.ok) { setMsg('Suscripción guardada ✓'); router.refresh(); }
@@ -236,13 +241,13 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
                   </div>
                   <div>
                     <label className={label}>Días de gracia</label>
-                    <input type="number" className={input} value={form.dias_gracia} onChange={(e) => setForm({ ...form, dias_gracia: Number(e.target.value) })} />
+                    <input type="number" className={input} value={form.dias_gracia ?? ''} onChange={(e) => setForm({ ...form, dias_gracia: e.target.value === '' ? null : Number(e.target.value) })} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={label}>Descuento %</label>
-                    <input type="number" className={input} value={form.descuento_porcentaje} onChange={(e) => setForm({ ...form, descuento_porcentaje: Number(e.target.value) })} />
+                    <input type="number" className={input} value={form.descuento_porcentaje ?? ''} onChange={(e) => setForm({ ...form, descuento_porcentaje: e.target.value === '' ? null : Number(e.target.value) })} />
                   </div>
                   <div>
                     <label className={label}>Precio acordado</label>

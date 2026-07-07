@@ -23,7 +23,7 @@ export function MobileNav({ tenantSlug, tipoNegocio }: MobileNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-zinc-100 safe-area-pb md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 safe-area-pb md:hidden">
       <div className="flex items-stretch h-16">
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
@@ -33,11 +33,11 @@ export function MobileNav({ tenantSlug, tipoNegocio }: MobileNavProps) {
               href={href}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors',
-                active ? 'text-violet-600' : 'text-zinc-400'
+                active ? 'text-violet-600' : 'text-gray-400'
               )}
             >
               <Icon className={cn('w-5 h-5', active && 'stroke-[2.5px]')} />
-              <span className={cn('text-[10px] font-medium', active ? 'text-violet-600' : 'text-zinc-400')}>
+              <span className={cn('text-[10px] font-medium', active ? 'text-violet-600' : 'text-gray-400')}>
                 {label}
               </span>
             </Link>

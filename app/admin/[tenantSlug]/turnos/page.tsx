@@ -45,7 +45,7 @@ const ESTADO_STYLES: Record<Estado, string> = {
   pendiente:  'bg-amber-100 text-amber-700 border-amber-200',
   confirmado: 'bg-blue-100 text-blue-700 border-blue-200',
   completado: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  cancelado:  'bg-zinc-100 text-zinc-500 border-zinc-200',
+  cancelado:  'bg-gray-100 text-gray-500 border-gray-200',
 };
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -70,7 +70,7 @@ const TURNO_COLORS: Record<Estado, { bg: string; border: string; text: string; d
   pendiente:  { bg: 'bg-amber-50',   border: 'border-l-amber-400',   text: 'text-amber-900',   dot: 'bg-amber-400'   },
   confirmado: { bg: 'bg-violet-50',  border: 'border-l-violet-500',  text: 'text-violet-900',  dot: 'bg-violet-500'  },
   completado: { bg: 'bg-emerald-50', border: 'border-l-emerald-500', text: 'text-emerald-900', dot: 'bg-emerald-500' },
-  cancelado:  { bg: 'bg-zinc-50',    border: 'border-l-zinc-300',    text: 'text-zinc-400',    dot: 'bg-zinc-300'    },
+  cancelado:  { bg: 'bg-gray-50',    border: 'border-l-gray-300',    text: 'text-gray-400',    dot: 'bg-gray-300'    },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -148,10 +148,10 @@ function TurnoModal({
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-4 border-b border-zinc-100">
+        <div className="relative px-6 pt-6 pb-4 border-b border-gray-100">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -163,8 +163,8 @@ function TurnoModal({
               {clientInitials}
             </div>
             <div>
-              <p className="font-bold text-zinc-900 text-base leading-tight">{turno.cliente_nombre}</p>
-              <p className="text-sm text-zinc-400 mt-0.5">{turno.profesional_nombre ?? 'Sin asignar'}</p>
+              <p className="font-bold text-gray-900 text-base leading-tight">{turno.cliente_nombre}</p>
+              <p className="text-sm text-gray-400 mt-0.5">{turno.profesional_nombre ?? 'Sin asignar'}</p>
             </div>
           </div>
         </div>
@@ -185,19 +185,19 @@ function TurnoModal({
             }] : []),
           ].map(({ Icon, label, value }, idx) => (
             <div key={idx} className="flex items-start gap-3">
-              <div className="mt-0.5 w-5 h-5 flex-shrink-0 text-zinc-400">
+              <div className="mt-0.5 w-5 h-5 flex-shrink-0 text-gray-400">
                 <Icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-xs font-bold text-zinc-500 uppercase tracking-wide">{label}</span>
-                <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</span>
+                <p className="text-sm text-gray-800 mt-0.5">{value}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6 pt-2 border-t border-zinc-100">
+        <div className="px-6 pb-6 pt-2 border-t border-gray-100">
           {turno.estado !== 'cancelado' ? (
             <button
               onClick={onCancelar}
@@ -208,7 +208,7 @@ function TurnoModal({
               Cancelar turno
             </button>
           ) : (
-            <p className="text-center text-sm text-zinc-400 font-medium">Turno cancelado</p>
+            <p className="text-center text-sm text-gray-400 font-medium">Turno cancelado</p>
           )}
         </div>
       </div>
@@ -279,14 +279,14 @@ function DailyCalendar({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header: columna por empleada */}
-      <div className="flex border-b border-zinc-200 sticky top-0 bg-white z-20">
-        <div className="w-16 flex-shrink-0 border-r border-zinc-100" />
+      <div className="flex border-b border-gray-200 sticky top-0 bg-white z-20">
+        <div className="w-16 flex-shrink-0 border-r border-gray-100" />
         {columns.map((col) => (
           <div
             key={col.id ?? 'unassigned'}
-            className="flex-1 min-w-0 flex flex-col items-center justify-center py-3 px-2 gap-1.5 border-r border-zinc-100 last:border-r-0"
+            className="flex-1 min-w-0 flex flex-col items-center justify-center py-3 px-2 gap-1.5 border-r border-gray-100 last:border-r-0"
           >
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
@@ -294,7 +294,7 @@ function DailyCalendar({
             >
               {getInitials(col.nombre)}
             </div>
-            <span className="text-xs font-semibold text-zinc-600 truncate w-full text-center" title={col.nombre}>
+            <span className="text-xs font-semibold text-gray-600 truncate w-full text-center" title={col.nombre}>
               {col.nombre}
             </span>
           </div>
@@ -306,14 +306,14 @@ function DailyCalendar({
         <div className="flex" style={{ height: totalGridHeight }}>
 
           {/* Horas */}
-          <div className="w-16 flex-shrink-0 relative border-r border-zinc-100">
+          <div className="w-16 flex-shrink-0 relative border-r border-gray-100">
             {TIME_SLOTS.map((label, i) => (
               <div
                 key={label}
                 className="absolute inset-x-0 flex items-start justify-end pr-2 pt-1"
                 style={{ top: i * SLOT_HEIGHT, height: SLOT_HEIGHT }}
               >
-                <span className={cn('text-xs font-medium', label.endsWith(':00') ? 'text-zinc-500' : 'text-zinc-300')}>
+                <span className={cn('text-xs font-medium', label.endsWith(':00') ? 'text-gray-500' : 'text-gray-300')}>
                   {label}
                 </span>
               </div>
@@ -326,13 +326,13 @@ function DailyCalendar({
               (a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()
             );
             return (
-              <div key={col.id ?? 'unassigned'} className="flex-1 min-w-0 relative border-r border-zinc-100 last:border-r-0 overflow-hidden">
+              <div key={col.id ?? 'unassigned'} className="flex-1 min-w-0 relative border-r border-gray-100 last:border-r-0 overflow-hidden">
 
                 {/* Grid lines */}
                 {TIME_SLOTS.map((label, i) => (
                   <div
                     key={label}
-                    className={cn('absolute left-0 right-0', label.endsWith(':00') ? 'border-t border-zinc-200' : 'border-t border-zinc-100 border-dashed')}
+                    className={cn('absolute left-0 right-0', label.endsWith(':00') ? 'border-t border-gray-200' : 'border-t border-gray-100 border-dashed')}
                     style={{ top: i * SLOT_HEIGHT }}
                   />
                 ))}
@@ -550,32 +550,32 @@ export default function TurnosPage() {
     )}>
       <div className="p-4 flex items-start gap-3 md:gap-4">
               <div className="text-center min-w-[52px]">
-                <p className="text-lg font-bold text-zinc-900">{formatHora(t.fecha_hora)}</p>
-                <p className="text-xs text-zinc-400">{t.duracion_minutos} min</p>
+                <p className="text-lg font-bold text-gray-900">{formatHora(t.fecha_hora)}</p>
+                <p className="text-xs text-gray-400">{t.duracion_minutos} min</p>
               </div>
-              <div className="w-px bg-zinc-100 self-stretch" />
+              <div className="w-px bg-gray-100 self-stretch" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-semibold text-zinc-900">{t.cliente_nombre}</p>
+                  <p className="font-semibold text-gray-900">{t.cliente_nombre}</p>
                   <span className={cn('px-2 py-0.5 rounded-lg text-xs font-semibold border', ESTADO_STYLES[t.estado])}>
                     {t.estado}
                   </span>
                 </div>
-                <p className="text-sm text-zinc-500">{t.servicio_nombre}</p>
+                <p className="text-sm text-gray-500">{t.servicio_nombre}</p>
                 {t.profesional_nombre && (
                   <p className="text-xs text-violet-500 mt-0.5">💆 {t.profesional_nombre}</p>
                 )}
                 {t.cliente_telefono && (
-                  <p className="text-xs text-zinc-400 mt-1">📱 {t.cliente_telefono}</p>
+                  <p className="text-xs text-gray-400 mt-1">📱 {t.cliente_telefono}</p>
                 )}
                 {t.pago_monto && (
-                  <p className="text-xs text-zinc-400 mt-0.5">
+                  <p className="text-xs text-gray-400 mt-0.5">
                     💳 {t.pago_metodo} · {t.pago_tipo === 'sena' ? `Seña ${formatARS(Number(t.pago_monto))}` : formatARS(Number(t.pago_monto))} · <span className={t.pago_estado === 'acreditado' ? 'text-emerald-500' : 'text-amber-500'}>{t.pago_estado}</span>
                   </p>
                 )}
               </div>
               <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                <p className="font-bold text-zinc-900">{formatARS(Number(t.precio))}</p>
+                <p className="font-bold text-gray-900">{formatARS(Number(t.precio))}</p>
                 {t.estado !== 'completado' && t.estado !== 'cancelado' && (
                   <div className="flex gap-1.5 flex-wrap justify-end">
                     {t.estado === 'pendiente' && (
@@ -614,9 +614,9 @@ export default function TurnosPage() {
 
   const renderAgenda = () => (
     turnosFiltrados.length === 0 ? (
-      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-        <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
-        <p className="text-zinc-400 font-medium">Sin turnos para este día</p>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+        <Clock className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+        <p className="text-gray-400 font-medium">Sin turnos para este día</p>
       </div>
     ) : (
       <div className="space-y-3">
@@ -629,9 +629,9 @@ export default function TurnosPage() {
   const renderTodos = () => {
     if (turnosFiltrados.length === 0) {
       return (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-          <Clock className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">No hay turnos cargados</p>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+          <Clock className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-400 font-medium">No hay turnos cargados</p>
         </div>
       );
     }
@@ -660,11 +660,11 @@ export default function TurnosPage() {
           return (
             <div key={date}>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-sm font-bold text-zinc-700">{headerLabel(date)}</h3>
+                <h3 className="text-sm font-bold text-gray-700">{headerLabel(date)}</h3>
                 {date === todayStr && (
                   <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">Hoy</span>
                 )}
-                <span className="text-xs text-zinc-400">{activos} turno{activos !== 1 ? 's' : ''}</span>
+                <span className="text-xs text-gray-400">{activos} turno{activos !== 1 ? 's' : ''}</span>
               </div>
               <div className="space-y-3">
                 {ts.map(turnoCard)}
@@ -684,38 +684,38 @@ export default function TurnosPage() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Agenda de Turnos</h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Agenda de Turnos</h1>
+          <p className="text-gray-400 text-sm mt-1">
             {turnosFiltrados.filter(t => t.estado !== 'cancelado').length} turno
             {turnosFiltrados.filter(t => t.estado !== 'cancelado').length !== 1 ? 's' : ''} {vista === 'todos' ? 'en total' : 'para este día'}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
-          <div className="flex bg-zinc-100 rounded-xl p-1">
+          <div className="flex bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => setVista('calendario')}
-              className={cn('p-2 rounded-lg transition-colors', vista === 'calendario' ? 'bg-white shadow-sm text-violet-600' : 'text-zinc-400 hover:text-zinc-600')}
+              className={cn('p-2 rounded-lg transition-colors', vista === 'calendario' ? 'bg-white shadow-sm text-violet-600' : 'text-gray-400 hover:text-gray-600')}
               title="Vista semanal"
             >
               <CalendarDays className="w-4 h-4" />
             </button>
             <button
               onClick={() => setVista('agenda')}
-              className={cn('p-2 rounded-lg transition-colors', vista === 'agenda' ? 'bg-white shadow-sm text-violet-600' : 'text-zinc-400 hover:text-zinc-600')}
+              className={cn('p-2 rounded-lg transition-colors', vista === 'agenda' ? 'bg-white shadow-sm text-violet-600' : 'text-gray-400 hover:text-gray-600')}
               title="Vista lista"
             >
               <List className="w-4 h-4" />
             </button>
             <button
               onClick={() => setVista('todos')}
-              className={cn('p-2 rounded-lg transition-colors', vista === 'todos' ? 'bg-white shadow-sm text-violet-600' : 'text-zinc-400 hover:text-zinc-600')}
+              className={cn('p-2 rounded-lg transition-colors', vista === 'todos' ? 'bg-white shadow-sm text-violet-600' : 'text-gray-400 hover:text-gray-600')}
               title="Todos los turnos"
             >
               <CalendarRange className="w-4 h-4" />
             </button>
           </div>
-          <button onClick={refetch} className="p-2 rounded-xl hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
+          <button onClick={refetch} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -723,12 +723,12 @@ export default function TurnosPage() {
 
       {/* Navegación diaria — se oculta en la vista "Todos" */}
       {vista !== 'todos' && (
-      <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4 mb-6 flex items-center justify-between">
-        <button onClick={prevDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-          <ChevronLeft className="w-5 h-5 text-zinc-600" />
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 flex items-center justify-between">
+        <button onClick={prevDay} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <ChevronLeft className="w-5 h-5 text-gray-600" />
         </button>
         <div className="text-center">
-          <p className="font-semibold text-zinc-900">
+          <p className="font-semibold text-gray-900">
             {selectedDate.getDate()} de {MONTHS[selectedDate.getMonth()]} de {selectedDate.getFullYear()}
           </p>
           {isToday
@@ -736,8 +736,8 @@ export default function TurnosPage() {
             : <button onClick={goToday} className="text-xs text-violet-500 hover:underline">Ir a hoy</button>
           }
         </div>
-        <button onClick={nextDay} className="p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-          <ChevronRight className="w-5 h-5 text-zinc-600" />
+        <button onClick={nextDay} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <ChevronRight className="w-5 h-5 text-gray-600" />
         </button>
       </div>
       )}
@@ -750,8 +750,8 @@ export default function TurnosPage() {
             className={cn(
               'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors border',
               filtroActivo === null
-                ? 'bg-zinc-900 text-white border-zinc-900'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
             )}
           >
             Todos
@@ -764,7 +764,7 @@ export default function TurnosPage() {
                 onClick={() => setFiltroProfesional(p.id)}
                 className={cn(
                   'flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors border',
-                  sel ? 'text-white border-transparent' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                  sel ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                 )}
                 style={sel ? { backgroundColor: colorFor(p.id) } : undefined}
               >
@@ -781,12 +781,12 @@ export default function TurnosPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-zinc-400">
+        <div className="flex items-center justify-center py-20 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
       ) : fetchError ? (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-          <p className="text-zinc-400 font-medium mb-3">No se pudieron cargar los turnos</p>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+          <p className="text-gray-400 font-medium mb-3">No se pudieron cargar los turnos</p>
           <button onClick={refetch} className="text-sm text-violet-600 hover:underline">Reintentar</button>
         </div>
       ) : vista === 'todos' ? (

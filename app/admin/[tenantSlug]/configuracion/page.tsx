@@ -19,7 +19,7 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-1.5 border border-zinc-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 text-zinc-800 cursor-pointer"
+      className="px-3 py-1.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 text-gray-800 cursor-pointer"
     >
       {TIME_OPTIONS.map(t => (
         <option key={t} value={t}>{t}</option>
@@ -161,13 +161,19 @@ export default function ConfiguracionPage() {
   }, []);
 
   const saveTenant = async () => {
+    if (!tenant) return;
     setSaving(true);
     setSaveError(null);
     try {
       const res = await fetch(`/api/admin/${tenantSlug}/configuracion`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tenant),
+        body: JSON.stringify({
+          ...tenant,
+          porcentaje_sena: tenant.porcentaje_sena ?? 30,
+          porcentaje_retencion: tenant.porcentaje_retencion ?? 0,
+          horas_limite_cancelacion: tenant.horas_limite_cancelacion ?? 0,
+        }),
       });
       if (res.ok) {
         setSaved(true);
@@ -239,7 +245,7 @@ export default function ConfiguracionPage() {
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center py-20 text-zinc-400">
+    <div className="flex items-center justify-center py-20 text-gray-400">
       <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
     </div>
   );
@@ -257,19 +263,19 @@ export default function ConfiguracionPage() {
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900">Configuración</h1>
-        <p className="text-zinc-400 text-sm mt-1">Ajustá los datos de tu estética</p>
+        <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+        <p className="text-gray-400 text-sm mt-1">Ajustá los datos de tu estética</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-zinc-100 p-1 rounded-xl mb-6">
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
             className={cn(
               'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all',
-              tab === id ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+              tab === id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             )}
           >
             <Icon className="w-4 h-4" />
@@ -282,50 +288,50 @@ export default function ConfiguracionPage() {
         <>
           {/* ── GENERAL ─────────────────────────────────────── */}
           {tab === 'general' && (
-            <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Nombre de la estética
                 </label>
                 <input
                   value={tenant.nombre}
                   onChange={(e) => setTenant(t => t ? { ...t, nombre: e.target.value } : t)}
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Email de contacto
                 </label>
                 <input
                   type="email"
                   value={tenant.email_contacto}
                   onChange={(e) => setTenant(t => t ? { ...t, email_contacto: e.target.value } : t)}
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Teléfono
                 </label>
                 <input
                   value={tenant.telefono ?? ''}
                   onChange={(e) => setTenant(t => t ? { ...t, telefono: e.target.value } : t)}
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   placeholder="+54 11 xxxx-xxxx"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Instagram
                 </label>
                 <input
                   value={tenant.instagram ?? ''}
                   onChange={(e) => setTenant(t => t ? { ...t, instagram: e.target.value } : t)}
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   placeholder="@tu.estetica  (o el link completo)"
                 />
-                <p className="text-xs text-zinc-400 mt-1.5">Aparece como enlace en el ícono de Instagram del sitio de reservas.</p>
+                <p className="text-xs text-gray-400 mt-1.5">Aparece como enlace en el ícono de Instagram del sitio de reservas.</p>
               </div>
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -336,18 +342,18 @@ export default function ConfiguracionPage() {
 
           {/* ── PAGOS ──────────────────────────────────────── */}
           {tab === 'pagos' && (
-            <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
               {/* Efectivo toggle */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-zinc-900 text-sm">Aceptar efectivo</p>
-                  <p className="text-xs text-zinc-400 mt-0.5">Mostrar opción de pago en efectivo al cliente</p>
+                  <p className="font-medium text-gray-900 text-sm">Aceptar efectivo</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Mostrar opción de pago en efectivo al cliente</p>
                 </div>
                 <button
                   onClick={() => setTenant(t => t ? { ...t, permite_efectivo: !t.permite_efectivo } : t)}
                   className={cn(
                     'w-12 h-6 rounded-full transition-colors relative overflow-hidden',
-                    tenant.permite_efectivo ? 'bg-violet-600' : 'bg-zinc-200'
+                    tenant.permite_efectivo ? 'bg-violet-600' : 'bg-gray-200'
                   )}
                 >
                   <span className={cn(
@@ -359,7 +365,7 @@ export default function ConfiguracionPage() {
 
               {/* Alias / CBU para transferencias */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Alias / CBU para transferencias
                 </label>
                 <input
@@ -367,22 +373,22 @@ export default function ConfiguracionPage() {
                   value={tenant.alias_pago ?? ''}
                   onChange={(e) => setTenant(t => t ? { ...t, alias_pago: e.target.value || null } : t)}
                   placeholder="tu.alias.mp"
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
-                <p className="text-xs text-zinc-400 mt-1.5">Se le muestra al cliente cuando elige pagar por transferencia.</p>
+                <p className="text-xs text-gray-400 mt-1.5">Se le muestra al cliente cuando elige pagar por transferencia.</p>
               </div>
 
               {/* Seña toggle */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-zinc-900 text-sm">Exigir seña</p>
-                  <p className="text-xs text-zinc-400 mt-0.5">El cliente paga un % al reservar</p>
+                  <p className="font-medium text-gray-900 text-sm">Exigir seña</p>
+                  <p className="text-xs text-gray-400 mt-0.5">El cliente paga un % al reservar</p>
                 </div>
                 <button
                   onClick={() => setTenant(t => t ? { ...t, exige_sena: !t.exige_sena } : t)}
                   className={cn(
                     'w-12 h-6 rounded-full transition-colors relative overflow-hidden',
-                    tenant.exige_sena ? 'bg-violet-600' : 'bg-zinc-200'
+                    tenant.exige_sena ? 'bg-violet-600' : 'bg-gray-200'
                   )}
                 >
                   <span className={cn(
@@ -395,17 +401,17 @@ export default function ConfiguracionPage() {
               {/* Porcentaje seña */}
               {tenant.exige_sena && (
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                     Porcentaje de seña
                   </label>
                   <div className="flex items-center gap-3">
                     <input
                       type="number" min={1} max={100}
-                      value={tenant.porcentaje_sena ?? 30}
-                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_sena: Number(e.target.value) } : t)}
-                      className="w-24 px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      value={tenant.porcentaje_sena ?? ''}
+                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_sena: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                      className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
-                    <span className="text-zinc-500 text-sm font-medium">%</span>
+                    <span className="text-gray-500 text-sm font-medium">%</span>
                   </div>
                 </div>
               )}
@@ -413,19 +419,19 @@ export default function ConfiguracionPage() {
               {/* Retención al devolver la seña */}
               {tenant.exige_sena && (
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                     Retención al cancelar
                   </label>
                   <div className="flex items-center gap-3">
                     <input
                       type="number" min={0} max={100}
-                      value={tenant.porcentaje_retencion ?? 0}
-                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_retencion: Number(e.target.value) } : t)}
-                      className="w-24 px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      value={tenant.porcentaje_retencion ?? ''}
+                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_retencion: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                      className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
-                    <span className="text-zinc-500 text-sm font-medium">%</span>
+                    <span className="text-gray-500 text-sm font-medium">%</span>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-1.5">
+                  <p className="text-xs text-gray-400 mt-1.5">
                     Al cancelar un turno con seña pagada por MercadoPago, se retiene este % y se le devuelve
                     el resto al cliente automáticamente. Ej: 20% = se devuelve el 80%. 0% = se devuelve todo.
                   </p>
@@ -434,19 +440,19 @@ export default function ConfiguracionPage() {
 
               {/* Ventana de cancelación del cliente */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Cancelación del cliente
                 </label>
                 <div className="flex items-center gap-3">
                   <input
                     type="number" min={0} max={168}
-                    value={tenant.horas_limite_cancelacion ?? 0}
-                    onChange={(e) => setTenant(t => t ? { ...t, horas_limite_cancelacion: Number(e.target.value) } : t)}
-                    className="w-24 px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    value={tenant.horas_limite_cancelacion ?? ''}
+                    onChange={(e) => setTenant(t => t ? { ...t, horas_limite_cancelacion: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                    className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
-                  <span className="text-zinc-500 text-sm font-medium">horas antes</span>
+                  <span className="text-gray-500 text-sm font-medium">horas antes</span>
                 </div>
-                <p className="text-xs text-zinc-400 mt-1.5">
+                <p className="text-xs text-gray-400 mt-1.5">
                   Desde &quot;Mis reservas&quot;, el cliente puede cancelar hasta esta cantidad de horas antes del turno.
                   0 = puede cancelar en cualquier momento.
                 </p>
@@ -458,10 +464,10 @@ export default function ConfiguracionPage() {
               </button>
 
               {/* ── MercadoPago: cuenta del comercio ───────────── */}
-              <div className="pt-5 border-t border-zinc-100 space-y-4">
+              <div className="pt-5 border-t border-gray-100 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-zinc-900 text-sm flex items-center gap-2">
+                    <p className="font-medium text-gray-900 text-sm flex items-center gap-2">
                       Cuenta de MercadoPago
                       {mpStatus.conectado && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -469,7 +475,7 @@ export default function ConfiguracionPage() {
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-zinc-400 mt-0.5">
+                    <p className="text-xs text-gray-400 mt-0.5">
                       Las señas se cobran directamente a tu cuenta de MercadoPago.
                     </p>
                   </div>
@@ -488,14 +494,14 @@ export default function ConfiguracionPage() {
                 )}
 
                 {mpStatus.conectado ? (
-                  <div className="flex items-center justify-between bg-zinc-50 rounded-xl px-4 py-3">
-                    <span className="text-sm text-zinc-600">
+                  <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                    <span className="text-sm text-gray-600">
                       {mpStatus.via_oauth ? 'Vinculada con MercadoPago' : <>Token: <span className="font-mono">{mpStatus.preview}</span></>}
                     </span>
                     <button
                       onClick={desconectarMP}
                       disabled={mpSaving}
-                      className="text-xs font-medium text-zinc-400 hover:text-red-500 transition-colors"
+                      className="text-xs font-medium text-gray-400 hover:text-red-500 transition-colors"
                     >
                       Desconectar
                     </button>
@@ -517,14 +523,14 @@ export default function ConfiguracionPage() {
                     {!mpManual ? (
                       <button
                         onClick={() => setMpManual(true)}
-                        className="w-full text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                        className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         {mpStatus.oauth_disponible ? '¿Preferís pegar el token manualmente?' : 'Conectar con tu Access Token'}
                       </button>
                     ) : (
                       <div className="space-y-3 pt-1">
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                             Access Token
                           </label>
                           <input
@@ -532,28 +538,28 @@ export default function ConfiguracionPage() {
                             value={mpToken}
                             onChange={(e) => setMpToken(e.target.value)}
                             placeholder="APP_USR-..."
-                            className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
                           />
-                          <p className="text-xs text-zinc-400 mt-1.5">
+                          <p className="text-xs text-gray-400 mt-1.5">
                             Lo obtenés en MercadoPago → Tus integraciones → Credenciales de producción.
                           </p>
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-                            Public Key <span className="text-zinc-300 normal-case">(opcional)</span>
+                          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                            Public Key <span className="text-gray-300 normal-case">(opcional)</span>
                           </label>
                           <input
                             type="text"
                             value={mpPublicKey}
                             onChange={(e) => setMpPublicKey(e.target.value)}
                             placeholder="APP_USR-..."
-                            className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
                           />
                         </div>
                         <button
                           onClick={conectarMP}
                           disabled={mpSaving || !mpToken}
-                          className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                          className="w-full py-3 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
                         >
                           {mpSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
                           Conectar con token
@@ -574,7 +580,7 @@ export default function ConfiguracionPage() {
           {tab === 'horarios' && (
             <div className="space-y-4">
               {/* Días de la semana */}
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm divide-y divide-zinc-50">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
                 {horarios.map((h, i) => (
                   <div key={h.dia_semana} className="px-5 py-4 flex items-center gap-4">
                     {/* Toggle — mismo estilo que Pagos */}
@@ -584,13 +590,13 @@ export default function ConfiguracionPage() {
                         next[i] = { ...next[i], activo: !next[i].activo };
                         setHorarios(next);
                       }}
-                      className={cn('w-12 h-6 rounded-full transition-colors relative flex-shrink-0 overflow-hidden', h.activo ? 'bg-violet-600' : 'bg-zinc-200')}
+                      className={cn('w-12 h-6 rounded-full transition-colors relative flex-shrink-0 overflow-hidden', h.activo ? 'bg-violet-600' : 'bg-gray-200')}
                     >
                       <span className={cn('absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', h.activo ? 'translate-x-6' : 'translate-x-0')} />
                     </button>
 
                     {/* Día */}
-                    <span className={cn('text-sm font-medium w-24 flex-shrink-0 select-none', h.activo ? 'text-zinc-900' : 'text-zinc-400')}>
+                    <span className={cn('text-sm font-medium w-24 flex-shrink-0 select-none', h.activo ? 'text-gray-900' : 'text-gray-400')}>
                       {DIAS[h.dia_semana]}
                     </span>
 
@@ -602,14 +608,14 @@ export default function ConfiguracionPage() {
                             value={h.hora_apertura}
                             onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_apertura:v}; setHorarios(n); }}
                           />
-                          <span className="text-zinc-300 text-sm flex-shrink-0">—</span>
+                          <span className="text-gray-300 text-sm flex-shrink-0">—</span>
                           <TimeSelect
                             value={h.hora_cierre}
                             onChange={(v) => { const n=[...horarios]; n[i]={...n[i],hora_cierre:v}; setHorarios(n); }}
                           />
                         </>
                       ) : (
-                        <span className="text-xs font-semibold text-zinc-400 bg-zinc-100 px-3 py-1.5 rounded-full">
+                        <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full">
                           Cerrado
                         </span>
                       )}
@@ -627,30 +633,30 @@ export default function ConfiguracionPage() {
               </button>
 
               {/* Días bloqueados */}
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5">
-                <h3 className="font-semibold text-zinc-900 mb-4">Días bloqueados / Vacaciones</h3>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h3 className="font-semibold text-gray-900 mb-4">Días bloqueados / Vacaciones</h3>
                 <div className="flex gap-2 mb-4">
                   <input type="date" value={nuevaFecha} onChange={(e) => setNuevaFecha(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                   <input placeholder="Motivo (opcional)" value={nuevoMotivo} onChange={(e) => setNuevoMotivo(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                   <button onClick={agregarDiaBloqueado} className="p-2 bg-violet-600 text-white rounded-xl hover:bg-violet-500 transition-colors flex-shrink-0">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
                 {diasBloqueados.length === 0 ? (
-                  <p className="text-zinc-400 text-sm text-center py-2">Sin días bloqueados</p>
+                  <p className="text-gray-400 text-sm text-center py-2">Sin días bloqueados</p>
                 ) : (
                   <div className="space-y-2">
                     {diasBloqueados.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between bg-zinc-50 rounded-xl px-3 py-2">
+                      <div key={d.id} className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
                         <div>
-                          <span className="text-sm font-medium text-zinc-900">{d.fecha}</span>
-                          {d.motivo && <span className="text-xs text-zinc-400 ml-2">{d.motivo}</span>}
+                          <span className="text-sm font-medium text-gray-900">{d.fecha}</span>
+                          {d.motivo && <span className="text-xs text-gray-400 ml-2">{d.motivo}</span>}
                         </div>
-                        <button onClick={() => eliminarDiaBloqueado(d.id)} className="text-zinc-400 hover:text-red-500 transition-colors">
+                        <button onClick={() => eliminarDiaBloqueado(d.id)} className="text-gray-400 hover:text-red-500 transition-colors">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
@@ -666,19 +672,19 @@ export default function ConfiguracionPage() {
             <div className="space-y-4">
 
               {/* Logo */}
-              <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
-                <h3 className="font-semibold text-zinc-900">Logo</h3>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+                <h3 className="font-semibold text-gray-900">Logo</h3>
 
                 <div className="flex items-center gap-4">
                   {/* Preview */}
-                  <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden flex-shrink-0 bg-zinc-50">
+                  <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 bg-gray-50">
                     {logoUploading ? (
-                      <Loader2 className="w-6 h-6 animate-spin text-zinc-300" />
+                      <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
                     ) : tenant.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={tenant.logo_url} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon className="w-8 h-8 text-zinc-300" />
+                      <ImageIcon className="w-8 h-8 text-gray-300" />
                     )}
                   </div>
 
@@ -703,7 +709,7 @@ export default function ConfiguracionPage() {
                       <button
                         type="button"
                         onClick={() => setTenant(t => t ? { ...t, logo_url: null } : t)}
-                        className="w-full text-xs text-zinc-400 hover:text-red-500 transition-colors"
+                        className="w-full text-xs text-gray-400 hover:text-red-500 transition-colors"
                       >
                         Quitar logo
                       </button>
@@ -721,14 +727,14 @@ export default function ConfiguracionPage() {
 
           {/* ── BARBERÍA (stats de la landing) ─────────────────── */}
           {tab === 'barberia' && (
-            <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-6 space-y-5">
-              <p className="text-sm text-zinc-500">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+              <p className="text-sm text-gray-500">
                 Estos números aparecen en la portada de tu barbería. Dejá un campo
                 vacío para que se calcule automáticamente.
               </p>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Rating
                 </label>
                 <input
@@ -736,12 +742,12 @@ export default function ConfiguracionPage() {
                   value={tenant.stat_rating ?? ''}
                   onChange={(e) => setTenant(t => t ? { ...t, stat_rating: e.target.value === '' ? null : Number(e.target.value) } : t)}
                   placeholder="Automático (promedio de reseñas)"
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Barberos
                 </label>
                 <input
@@ -749,12 +755,12 @@ export default function ConfiguracionPage() {
                   value={tenant.stat_barberos ?? ''}
                   onChange={(e) => setTenant(t => t ? { ...t, stat_barberos: e.target.value === '' ? null : Math.floor(Number(e.target.value)) } : t)}
                   placeholder="Automático (cantidad de profesionales)"
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Clientes
                 </label>
                 <input
@@ -762,9 +768,9 @@ export default function ConfiguracionPage() {
                   value={tenant.stat_clientes ?? ''}
                   onChange={(e) => setTenant(t => t ? { ...t, stat_clientes: e.target.value === '' ? null : Math.floor(Number(e.target.value)) } : t)}
                   placeholder="Automático (cantidad de clientes)"
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
-                <p className="text-xs text-zinc-400 mt-1.5">Se muestra con un “+” adelante (ej: +120).</p>
+                <p className="text-xs text-gray-400 mt-1.5">Se muestra con un “+” adelante (ej: +120).</p>
               </div>
 
               {saveError && (

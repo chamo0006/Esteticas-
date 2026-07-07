@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Check,
+  MessageCircle,
   Sparkles,
   Star,
 } from 'lucide-react';
@@ -501,6 +502,18 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      {/* ── Botón flotante de WhatsApp ────────────────────────── */}
+      <a
+        href="https://wa.me/5491121615661"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chatear por WhatsApp"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg shadow-black/20 hover:-translate-y-0.5 hover:shadow-xl transition-all duration-200"
+        style={{ backgroundColor: '#25D366' }}
+      >
+        <MessageCircle className="w-7 h-7 text-white" fill="white" />
+      </a>
 
     </div>
   );

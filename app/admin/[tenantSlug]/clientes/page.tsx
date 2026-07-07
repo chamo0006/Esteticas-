@@ -71,8 +71,8 @@ export default function ClientesPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Clientes</h1>
-          <p className="text-zinc-400 text-sm mt-1">{clientes.length} cliente{clientes.length !== 1 ? 's' : ''} registrados</p>
+          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+          <p className="text-gray-400 text-sm mt-1">{clientes.length} cliente{clientes.length !== 1 ? 's' : ''} registrados</p>
         </div>
         {clientes.length > 0 && (
           <button
@@ -87,43 +87,43 @@ export default function ClientesPage() {
 
       {/* Buscador */}
       <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por nombre, email o teléfono..."
-          className="w-full pl-11 pr-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 shadow-sm"
+          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 shadow-sm"
         />
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-zinc-400">
+        <div className="flex items-center justify-center py-20 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm py-16 text-center">
-          <Users className="w-10 h-10 text-zinc-200 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+          <Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-400 font-medium">
             {search ? 'Sin resultados para esa búsqueda' : 'Aún no hay clientes registrados'}
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[540px]">
               <thead>
-                <tr className="border-b border-zinc-100 text-left">
-                  <th className="px-6 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Cliente</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Contacto</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Turnos</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Último turno</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Desde</th>
+                <tr className="border-b border-gray-100 text-left">
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliente</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Contacto</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Turnos</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Último turno</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Desde</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-50">
+              <tbody className="divide-y divide-gray-50">
                 {filtered.map((c) => (
-                  <tr key={c.id} className="hover:bg-zinc-50 transition-colors group">
+                  <tr key={c.id} className="hover:bg-gray-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
@@ -131,18 +131,18 @@ export default function ClientesPage() {
                             {c.nombre.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <p className="font-medium text-zinc-900">{c.nombre}</p>
+                        <p className="font-medium text-gray-900">{c.nombre}</p>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="space-y-0.5">
                         {c.email && (
-                          <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
+                          <div className="flex items-center gap-1.5 text-gray-500 text-xs">
                             <Mail className="w-3 h-3" /> {c.email}
                           </div>
                         )}
                         {c.telefono && (
-                          <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
+                          <div className="flex items-center gap-1.5 text-gray-500 text-xs">
                             <Phone className="w-3 h-3" /> {c.telefono}
                           </div>
                         )}
@@ -153,12 +153,12 @@ export default function ClientesPage() {
                         <Calendar className="w-3 h-3" /> {c.total_turnos}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-zinc-500 text-xs">{formatFecha(c.ultimo_turno)}</td>
-                    <td className="px-4 py-4 text-zinc-400 text-xs">{formatFecha(c.created_at)}</td>
+                    <td className="px-4 py-4 text-gray-500 text-xs">{formatFecha(c.ultimo_turno)}</td>
+                    <td className="px-4 py-4 text-gray-400 text-xs">{formatFecha(c.created_at)}</td>
                     <td className="px-4 py-4">
                       <button
                         onClick={() => setConfirmDelete(c)}
-                        className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 text-zinc-300 hover:text-red-500 transition-all"
+                        className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all"
                         title="Eliminar cliente"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -182,31 +182,31 @@ export default function ClientesPage() {
                   <AlertTriangle className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-zinc-900">Eliminar cliente</p>
-                  <p className="text-sm text-zinc-500 mt-0.5">Esta acción no se puede deshacer</p>
+                  <p className="font-semibold text-gray-900">Eliminar cliente</p>
+                  <p className="text-sm text-gray-500 mt-0.5">Esta acción no se puede deshacer</p>
                 </div>
               </div>
-              <button onClick={() => setConfirmDelete(null)} className="text-zinc-400 hover:text-zinc-600">
+              <button onClick={() => setConfirmDelete(null)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="bg-zinc-50 rounded-xl p-3 mb-5">
-              <p className="font-medium text-zinc-900 text-sm">{confirmDelete.nombre}</p>
-              {confirmDelete.email && <p className="text-xs text-zinc-400 mt-0.5">{confirmDelete.email}</p>}
-              <p className="text-xs text-zinc-400 mt-0.5">
+            <div className="bg-gray-50 rounded-xl p-3 mb-5">
+              <p className="font-medium text-gray-900 text-sm">{confirmDelete.nombre}</p>
+              {confirmDelete.email && <p className="text-xs text-gray-400 mt-0.5">{confirmDelete.email}</p>}
+              <p className="text-xs text-gray-400 mt-0.5">
                 {confirmDelete.total_turnos} turno{confirmDelete.total_turnos !== 1 ? 's' : ''} en el historial
               </p>
             </div>
 
-            <p className="text-sm text-zinc-600 mb-5">
+            <p className="text-sm text-gray-600 mb-5">
               Se borrará el cliente y todo su historial de turnos y pagos.
             </p>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
@@ -233,24 +233,24 @@ export default function ClientesPage() {
                   <AlertTriangle className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-zinc-900">Reiniciar todo</p>
-                  <p className="text-sm text-zinc-500 mt-0.5">Esta acción no se puede deshacer</p>
+                  <p className="font-semibold text-gray-900">Reiniciar todo</p>
+                  <p className="text-sm text-gray-500 mt-0.5">Esta acción no se puede deshacer</p>
                 </div>
               </div>
-              <button onClick={() => setConfirmReset(false)} className="text-zinc-400 hover:text-zinc-600">
+              <button onClick={() => setConfirmReset(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-sm text-zinc-600 mb-5">
-              Se borrarán <strong className="text-zinc-900">los {clientes.length} clientes</strong> del comercio
+            <p className="text-sm text-gray-600 mb-5">
+              Se borrarán <strong className="text-gray-900">los {clientes.length} clientes</strong> del comercio
               junto con todo su historial de turnos y pagos. La lista quedará vacía.
             </p>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmReset(false)}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>

@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
 
         {/* Header */}
@@ -52,13 +52,13 @@ export default function AdminLoginPage() {
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Panel de Gestión</h1>
-          <p className="text-zinc-500 text-sm mt-2">Acceso exclusivo para administradores</p>
+          <p className="text-gray-500 text-sm mt-2">Acceso exclusivo para administradores</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Slug de la estética
             </label>
             <input
@@ -67,12 +67,12 @@ export default function AdminLoginPage() {
               onChange={(e) => setTenantSlug(e.target.value.toLowerCase().replace(/\s/g, '-'))}
               placeholder="estetica-bella"
               required
-              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Email
             </label>
             <input
@@ -81,12 +81,12 @@ export default function AdminLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@estetica.com"
               required
-              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Contraseña
             </label>
             <div className="relative">
@@ -96,12 +96,12 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-3 pr-12 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 pr-12 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
               >
                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -117,7 +117,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 mt-2 shadow-lg shadow-violet-900/30"
+            className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 mt-2 shadow-lg shadow-violet-900/30"
           >
             {loading ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Ingresando...</>
@@ -127,7 +127,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-zinc-600 text-xs mt-8">
+        <p className="text-center text-gray-600 text-xs mt-8">
           ¿No tenés acceso? Contactá al administrador de la plataforma.
         </p>
       </div>

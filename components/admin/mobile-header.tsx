@@ -39,16 +39,16 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
   return (
     <>
       {/* Header top bar — solo mobile */}
-      <header className="md:hidden sticky top-0 z-40 bg-white border-b border-zinc-100 px-4 h-14 flex items-center justify-between shadow-sm">
+      <header className="md:hidden sticky top-0 z-40 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="font-semibold text-zinc-900 text-sm">{currentLabel}</span>
+          <span className="font-semibold text-gray-900 text-sm">{currentLabel}</span>
         </div>
         <button
           onClick={() => setOpen(true)}
-          className="p-2 -mr-2 text-zinc-500"
+          className="p-2 -mr-2 text-gray-500"
           aria-label="Abrir menú"
         >
           <Menu className="w-5 h-5" />
@@ -63,12 +63,12 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
             onClick={() => setOpen(false)}
           />
           <div className="fixed right-0 top-0 bottom-0 z-50 w-64 bg-white shadow-2xl flex flex-col md:hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div>
-                <p className="font-semibold text-zinc-900 text-sm">{tenantNombre}</p>
-                <p className="text-xs text-zinc-400">{adminNombre}</p>
+                <p className="font-semibold text-gray-900 text-sm">{tenantNombre}</p>
+                <p className="text-xs text-gray-400">{adminNombre}</p>
               </div>
-              <button onClick={() => setOpen(false)} className="text-zinc-400 p-1">
+              <button onClick={() => setOpen(false)} className="text-gray-400 p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -83,7 +83,7 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
                     'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                     pathname === href
                       ? 'bg-violet-600 text-white'
-                      : 'text-zinc-600 hover:bg-zinc-100'
+                      : 'text-gray-600 hover:bg-gray-100'
                   )}
                 >
                   <Icon className="w-4 h-4" /> {label}
@@ -91,10 +91,10 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
               ))}
             </nav>
 
-            <div className="p-4 border-t border-zinc-100">
+            <div className="p-4 border-t border-gray-100">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-zinc-500 hover:bg-zinc-100 transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-100 transition-colors"
               >
                 <LogOut className="w-4 h-4" /> Cerrar sesión
               </button>
