@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2 } from 'lucide-react';
+import { digitsOnly } from '@/lib/utils';
 
 interface Plan { id: string; nombre: string; precio_mensual: number; precio_anual: number | null; }
 interface Suscripcion {
@@ -241,13 +242,13 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
                   </div>
                   <div>
                     <label className={label}>Días de gracia</label>
-                    <input type="number" className={input} value={form.dias_gracia ?? ''} onChange={(e) => setForm({ ...form, dias_gracia: e.target.value === '' ? null : Number(e.target.value) })} />
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" className={input} value={form.dias_gracia?.toString() ?? ''} onChange={(e) => { const d = digitsOnly(e.target.value); setForm({ ...form, dias_gracia: d === '' ? null : Number(d) }); }} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={label}>Descuento %</label>
-                    <input type="number" className={input} value={form.descuento_porcentaje ?? ''} onChange={(e) => setForm({ ...form, descuento_porcentaje: e.target.value === '' ? null : Number(e.target.value) })} />
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" className={input} value={form.descuento_porcentaje?.toString() ?? ''} onChange={(e) => { const d = digitsOnly(e.target.value); setForm({ ...form, descuento_porcentaje: d === '' ? null : Number(d) }); }} />
                   </div>
                   <div>
                     <label className={label}>Precio acordado</label>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Plus, Edit2, ToggleLeft, ToggleRight, Loader2, X, Check, Trash2, AlertTriangle, Tag } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, digitsOnly } from '@/lib/utils';
 
 interface Categoria { id: string; nombre: string }
 
@@ -37,12 +37,12 @@ function formatARS(n: number) {
 interface ServicioForm {
   nombre: string;
   descripcion: string;
-  duracion_minutos: number | '';
-  precio: number | '';
+  duracion_minutos: string;
+  precio: string;
   categoria: string;
 }
 
-const EMPTY: ServicioForm = { nombre: '', descripcion: '', duracion_minutos: 60, precio: 0, categoria: 'general' };
+const EMPTY: ServicioForm = { nombre: '', descripcion: '', duracion_minutos: '60', precio: '0', categoria: 'general' };
 
 export default function ServiciosPage() {
   const params = useParams();
@@ -117,7 +117,7 @@ export default function ServiciosPage() {
   const openNew = () => { setEditing(null); setForm({ ...EMPTY, categoria: categorias[0]?.nombre ?? '' }); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setShowModal(true); };
   const openEdit = (s: Servicio) => {
     setEditing(s);
-    setForm({ nombre: s.nombre, descripcion: s.descripcion ?? '', duracion_minutos: s.duracion_minutos, precio: Number(s.precio), categoria: s.categoria });
+    setForm({ nombre: s.nombre, descripcion: s.descripcion ?? '', duracion_minutos: String(s.duracion_minutos), precio: String(Number(s.precio)), categoria: s.categoria });
     setConfirmDelete(false);
     setSaveError(null);
     setDeleteError(null);
@@ -357,18 +357,18 @@ export default function ServiciosPage() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Duración (min) *</label>
                   <input
-                    type="number" min={5}
+                    type="text" inputMode="numeric" pattern="[0-9]*"
                     value={form.duracion_minutos}
-                    onChange={(e) => setForm(f => ({ ...f, duracion_minutos: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    onChange={(e) => setForm(f => ({ ...f, duracion_minutos: digitsOnly(e.target.value) }))}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Precio (ARS) *</label>
                   <input
-                    type="number" min={0}
+                    type="text" inputMode="numeric" pattern="[0-9]*"
                     value={form.precio}
-                    onChange={(e) => setForm(f => ({ ...f, precio: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    onChange={(e) => setForm(f => ({ ...f, precio: digitsOnly(e.target.value) }))}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>

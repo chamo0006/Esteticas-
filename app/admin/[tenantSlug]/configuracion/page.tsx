@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Save, Loader2, Plus, X, Settings, Clock, CreditCard, Palette, Upload, ImageIcon, BarChart3 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, digitsOnly } from '@/lib/utils';
 
 const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
@@ -406,9 +406,9 @@ export default function ConfiguracionPage() {
                   </label>
                   <div className="flex items-center gap-3">
                     <input
-                      type="number" min={1} max={100}
-                      value={tenant.porcentaje_sena ?? ''}
-                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_sena: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                      type="text" inputMode="numeric" pattern="[0-9]*"
+                      value={tenant.porcentaje_sena?.toString() ?? ''}
+                      onChange={(e) => { const d = digitsOnly(e.target.value); setTenant(t => t ? { ...t, porcentaje_sena: d === '' ? null : Number(d) } : t); }}
                       className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
                     <span className="text-gray-500 text-sm font-medium">%</span>
@@ -424,9 +424,9 @@ export default function ConfiguracionPage() {
                   </label>
                   <div className="flex items-center gap-3">
                     <input
-                      type="number" min={0} max={100}
-                      value={tenant.porcentaje_retencion ?? ''}
-                      onChange={(e) => setTenant(t => t ? { ...t, porcentaje_retencion: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                      type="text" inputMode="numeric" pattern="[0-9]*"
+                      value={tenant.porcentaje_retencion?.toString() ?? ''}
+                      onChange={(e) => { const d = digitsOnly(e.target.value); setTenant(t => t ? { ...t, porcentaje_retencion: d === '' ? null : Number(d) } : t); }}
                       className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
                     <span className="text-gray-500 text-sm font-medium">%</span>
@@ -445,9 +445,9 @@ export default function ConfiguracionPage() {
                 </label>
                 <div className="flex items-center gap-3">
                   <input
-                    type="number" min={0} max={168}
-                    value={tenant.horas_limite_cancelacion ?? ''}
-                    onChange={(e) => setTenant(t => t ? { ...t, horas_limite_cancelacion: e.target.value === '' ? null : Number(e.target.value) } : t)}
+                    type="text" inputMode="numeric" pattern="[0-9]*"
+                    value={tenant.horas_limite_cancelacion?.toString() ?? ''}
+                    onChange={(e) => { const d = digitsOnly(e.target.value); setTenant(t => t ? { ...t, horas_limite_cancelacion: d === '' ? null : Number(d) } : t); }}
                     className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                   <span className="text-gray-500 text-sm font-medium">horas antes</span>
@@ -751,9 +751,9 @@ export default function ConfiguracionPage() {
                   Barberos
                 </label>
                 <input
-                  type="number" min={0} step={1}
-                  value={tenant.stat_barberos ?? ''}
-                  onChange={(e) => setTenant(t => t ? { ...t, stat_barberos: e.target.value === '' ? null : Math.floor(Number(e.target.value)) } : t)}
+                  type="text" inputMode="numeric" pattern="[0-9]*"
+                  value={tenant.stat_barberos?.toString() ?? ''}
+                  onChange={(e) => { const d = digitsOnly(e.target.value); setTenant(t => t ? { ...t, stat_barberos: d === '' ? null : Number(d) } : t); }}
                   placeholder="Automático (cantidad de profesionales)"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
@@ -764,9 +764,9 @@ export default function ConfiguracionPage() {
                   Clientes
                 </label>
                 <input
-                  type="number" min={0} step={1}
-                  value={tenant.stat_clientes ?? ''}
-                  onChange={(e) => setTenant(t => t ? { ...t, stat_clientes: e.target.value === '' ? null : Math.floor(Number(e.target.value)) } : t)}
+                  type="text" inputMode="numeric" pattern="[0-9]*"
+                  value={tenant.stat_clientes?.toString() ?? ''}
+                  onChange={(e) => { const d = digitsOnly(e.target.value); setTenant(t => t ? { ...t, stat_clientes: d === '' ? null : Number(d) } : t); }}
                   placeholder="Automático (cantidad de clientes)"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
