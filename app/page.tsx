@@ -505,7 +505,7 @@ export default function LandingPage() {
 
       {/* ── Botón flotante de WhatsApp ────────────────────────── */}
       <a
-        href="https://wa.me/5491121615661"
+        href="https://wa.me/5491121615661?text=%C2%A1Hola%21%20Estoy%20interesado%2Fa%20en%20contratar%20una%20p%C3%A1gina%20web%20con%20sistema%20de%20turnos%20para%20mi%20centro%20de%20belleza.%20%C2%BFPodr%C3%ADamos%20conversar%3F"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chatear por WhatsApp"
