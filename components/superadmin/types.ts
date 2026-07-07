@@ -37,13 +37,13 @@ export function formatFecha(dt: string) {
 
 // Semáforo de vencimiento de la suscripción de un comercio.
 export function semaforo(t: Pick<TenantRow, 'bloqueado' | 'estado_suscripcion' | 'dias_para_vencer'>): { label: string; cls: string } {
-  if (t.bloqueado || t.estado_suscripcion === 'suspendida') return { label: 'Bloqueado', cls: 'bg-[#c26350]/15 text-[#d1806b] border-[#c26350]/30' };
-  if (t.estado_suscripcion === 'cancelada') return { label: 'Cancelada', cls: 'bg-[#2f2a20] text-[#cabfa8] border-[#3a3327]' };
-  if (t.estado_suscripcion === 'trial') return { label: 'Trial', cls: 'bg-[#d8b877]/15 text-[#dcc48a] border-[#c9a86a]/30' };
+  if (t.bloqueado || t.estado_suscripcion === 'suspendida') return { label: 'Bloqueado', cls: 'bg-red-50 text-red-700 border-red-200' };
+  if (t.estado_suscripcion === 'cancelada') return { label: 'Cancelada', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+  if (t.estado_suscripcion === 'trial') return { label: 'Trial', cls: 'bg-violet-50 text-violet-700 border-violet-200' };
   const d = t.dias_para_vencer;
-  if (d == null) return { label: 'Sin límite', cls: 'bg-[#2f2a20] text-[#cabfa8] border-[#3a3327]' };
-  if (d < 0) return { label: `Vencida (${Math.abs(d)}d)`, cls: 'bg-[#c26350]/15 text-[#d1806b] border-[#c26350]/30' };
-  if (d <= 3) return { label: `Vence en ${d}d`, cls: 'bg-[#cf9a45]/15 text-[#cf9a45] border-[#cf9a45]/30' };
-  if (d <= 7) return { label: `Vence en ${d}d`, cls: 'bg-[#cf9a45]/15 text-[#e0b45f] border-[#cf9a45]/30' };
-  return { label: `${d}d`, cls: 'bg-[#6b8c52]/15 text-[#94ab73] border-[#8aa06a]/30' };
+  if (d == null) return { label: 'Sin límite', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+  if (d < 0) return { label: `Vencida (${Math.abs(d)}d)`, cls: 'bg-red-50 text-red-700 border-red-200' };
+  if (d <= 3) return { label: `Vence en ${d}d`, cls: 'bg-amber-50 text-amber-700 border-amber-200' };
+  if (d <= 7) return { label: `Vence en ${d}d`, cls: 'bg-amber-50 text-amber-600 border-amber-200' };
+  return { label: `${d}d`, cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
 }

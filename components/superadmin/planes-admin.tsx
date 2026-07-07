@@ -18,8 +18,8 @@ export interface Plan {
   orden: number;
 }
 
-const input = 'w-full px-3 py-2 bg-[#241f18] border border-[#3a3327] rounded-lg text-sm text-[#f2ede1] focus:outline-none focus:ring-2 focus:ring-[#c9a86a]';
-const label = 'block text-xs text-[#a89d86] mb-1';
+const input = 'w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-400';
+const label = 'block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5';
 
 function PlanCard({ plan, isSuperadmin, onChanged }: { plan: Plan; isSuperadmin: boolean; onChanged: () => void }) {
   const [f, setF] = useState({
@@ -59,13 +59,13 @@ function PlanCard({ plan, isSuperadmin, onChanged }: { plan: Plan; isSuperadmin:
   };
 
   return (
-    <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-5">
+    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-[#c9a86a]" />
-          <span className="text-xs text-[#7c745f] font-mono">/{plan.slug}</span>
+          <Package className="w-4 h-4 text-violet-500" />
+          <span className="text-xs text-gray-400 font-mono">/{plan.slug}</span>
         </div>
-        <label className="flex items-center gap-2 text-xs text-[#a89d86] cursor-pointer">
+        <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
           <input type="checkbox" checked={f.activo} onChange={(e) => setF({ ...f, activo: e.target.checked })} />
           Activo
         </label>
@@ -80,7 +80,7 @@ function PlanCard({ plan, isSuperadmin, onChanged }: { plan: Plan; isSuperadmin:
           <div>
             <label className={label}>Precio mensual</label>
             <input type="number" className={input} value={f.precio_mensual} onChange={(e) => setF({ ...f, precio_mensual: e.target.value })} />
-            <p className="text-[11px] text-[#7c745f] mt-1">{formatARS(Number(f.precio_mensual) || 0)}/mes</p>
+            <p className="text-[11px] text-gray-400 mt-1">{formatARS(Number(f.precio_mensual) || 0)}/mes</p>
           </div>
           <div>
             <label className={label}>Precio anual</label>
@@ -107,16 +107,16 @@ function PlanCard({ plan, isSuperadmin, onChanged }: { plan: Plan; isSuperadmin:
         </div>
       </div>
 
-      {msg && <p className="text-xs text-[#dcc48a] mt-3">{msg}</p>}
+      {msg && <p className="text-xs text-violet-600 mt-3">{msg}</p>}
 
       <div className="flex gap-2 mt-4">
         <button onClick={save} disabled={busy}
-          className="flex-1 flex items-center justify-center gap-2 bg-[#c9a86a] hover:bg-[#d8b877] text-[#1a1710] py-2 rounded-lg text-sm font-semibold">
+          className="flex-1 flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white py-2 rounded-xl text-sm font-semibold transition-colors">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Guardar
         </button>
         {isSuperadmin && (
           <button onClick={eliminar} disabled={busy} title="Eliminar plan"
-            className="px-3 py-2 rounded-lg text-[#d1806b] hover:bg-[#c26350]/10 border border-[#4a281f]/40">
+            className="px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 border border-red-100">
             <Trash2 className="w-4 h-4" />
           </button>
         )}
@@ -148,16 +148,16 @@ export function PlanesAdmin({ planes, isSuperadmin }: { planes: Plan[]; isSupera
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-serif font-medium tracking-tight text-[#f2ede1]">Planes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Planes</h1>
         <button onClick={() => setCreando((v) => !v)}
-          className="flex items-center gap-2 text-sm bg-[#c9a86a] hover:bg-[#d8b877] text-[#1a1710] px-3 py-2 rounded-xl">
+          className="flex items-center gap-2 text-sm bg-violet-600 hover:bg-violet-500 text-white px-3 py-2 rounded-xl transition-colors shadow-sm">
           <Plus className="w-4 h-4" /> Nuevo plan
         </button>
       </div>
 
       {creando && (
-        <div className="bg-[#1c1a15] border border-[#4b3f24]/40 rounded-2xl p-5 mb-6">
-          <h2 className="text-sm font-semibold text-[#f2ede1] mb-3">Nuevo plan</h2>
+        <div className="bg-violet-50 border border-violet-100 rounded-2xl p-5 mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">Nuevo plan</h2>
           <div className="grid sm:grid-cols-3 gap-3">
             <div>
               <label className={label}>Slug (ej: premium)</label>
@@ -172,9 +172,9 @@ export function PlanesAdmin({ planes, isSuperadmin }: { planes: Plan[]; isSupera
               <input type="number" className={input} value={nuevo.precio_mensual} onChange={(e) => setNuevo({ ...nuevo, precio_mensual: e.target.value })} />
             </div>
           </div>
-          {err && <p className="text-xs text-[#d1806b] mt-2">{err}</p>}
+          {err && <p className="text-xs text-red-500 mt-2">{err}</p>}
           <button onClick={crear} disabled={busy || !nuevo.slug || !nuevo.nombre}
-            className="mt-3 flex items-center gap-2 bg-[#5c7a46] hover:bg-[#6b8c52] disabled:opacity-50 text-[#f2ede1] px-4 py-2 rounded-lg text-sm font-semibold">
+            className="mt-3 flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Crear plan
           </button>
         </div>
@@ -182,7 +182,7 @@ export function PlanesAdmin({ planes, isSuperadmin }: { planes: Plan[]; isSupera
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         {planes.map((p) => <PlanCard key={p.id} plan={p} isSuperadmin={isSuperadmin} onChanged={onChanged} />)}
-        {planes.length === 0 && <p className="text-[#7c745f] text-sm">No hay planes cargados.</p>}
+        {planes.length === 0 && <p className="text-gray-400 text-sm">No hay planes cargados.</p>}
       </div>
     </div>
   );

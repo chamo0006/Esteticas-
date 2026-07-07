@@ -46,7 +46,7 @@ function formatARS(n: number) {
 }
 
 const ESTADO_PAGO: Record<string, string> = {
-  aprobado: 'text-[#94ab73]', pendiente: 'text-[#cf9a45]', vencido: 'text-[#d1806b]', rechazado: 'text-[#7c745f]',
+  aprobado: 'text-emerald-600', pendiente: 'text-amber-600', vencido: 'text-red-500', rechazado: 'text-gray-400',
 };
 
 export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcion, planes, pagos, metricas }: Props) {
@@ -153,33 +153,33 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     else { setSaving(false); alert('No se pudo impersonar.'); }
   };
 
-  const input = 'w-full px-3 py-2 bg-[#241f18] border border-[#3a3327] rounded-lg text-sm text-[#f2ede1] focus:outline-none focus:ring-2 focus:ring-[#c9a86a]';
-  const label = 'block text-xs text-[#a89d86] mb-1';
+  const input = 'w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-400';
+  const label = 'block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5';
 
   return (
       <div className="max-w-4xl mx-auto">
 
-        <Link href="/superadmin/comercios" className="inline-flex items-center gap-2 text-sm text-[#a89d86] hover:text-[#f2ede1] mb-6">
+        <Link href="/superadmin/comercios" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-900 mb-6">
           <ArrowLeft className="w-4 h-4" /> Volver al panel
         </Link>
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#f2ede1]">{tenant.nombre}</h1>
-            <p className="text-sm text-[#a89d86]">/{tenant.slug} · <span className="capitalize">{tenant.tipo_negocio}</span></p>
-            <p className="text-xs text-[#7c745f] mt-1">{tenant.email_contacto}{tenant.telefono ? ` · ${tenant.telefono}` : ''}</p>
+            <h1 className="text-2xl font-bold text-gray-900">{tenant.nombre}</h1>
+            <p className="text-sm text-gray-500">/{tenant.slug} · <span className="capitalize">{tenant.tipo_negocio}</span></p>
+            <p className="text-xs text-gray-400 mt-1">{tenant.email_contacto}{tenant.telefono ? ` · ${tenant.telefono}` : ''}</p>
           </div>
           <div className="flex gap-2">
             {isSuperadmin && (
               <button onClick={impersonar} disabled={saving}
-                className="flex items-center gap-2 text-sm bg-[#241f18] hover:bg-[#2f2a20] text-[#f2ede1] px-3 py-2 rounded-lg">
+                className="flex items-center gap-2 text-sm bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-3 py-2 rounded-xl shadow-sm">
                 <Eye className="w-4 h-4" /> Entrar como comercio
               </button>
             )}
             {canSeeBilling && (
               <button onClick={toggleBloqueo} disabled={saving}
-                className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg ${suscripcion?.bloqueado ? 'bg-[#5c7a46] hover:bg-[#6b8c52] text-[#f2ede1]' : 'bg-[#b3543f] hover:bg-[#c26350] text-[#f2ede1]'}`}>
+                className={`flex items-center gap-2 text-sm px-3 py-2 rounded-xl text-white ${suscripcion?.bloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-500 hover:bg-red-600'}`}>
                 {suscripcion?.bloqueado ? <><CheckCircle className="w-4 h-4" /> Reactivar</> : <><Ban className="w-4 h-4" /> Bloquear</>}
               </button>
             )}
@@ -194,24 +194,24 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
             { label: 'Cancelados', value: metricas.turnos_cancelados },
             ...(canSeeBilling ? [{ label: 'Dinero movido', value: formatARS(metricas.dinero_movido) }] : []),
           ].map((s) => (
-            <div key={s.label} className="bg-[#1c1a15] border border-[#2c261d] rounded-xl p-4">
-              <p className="text-xl font-bold text-[#f2ede1]">{s.value}</p>
-              <p className="text-xs text-[#a89d86] mt-0.5">{s.label}</p>
+            <div key={s.label} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+              <p className="text-xl font-bold text-gray-900">{s.value}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
 
-        {msg && <p className="text-sm text-[#dcc48a] bg-[#221d14]/40 border border-[#4b3f24] rounded-lg px-4 py-2 mb-4">{msg}</p>}
+        {msg && <p className="text-sm text-violet-700 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2 mb-4">{msg}</p>}
 
         {!canSeeBilling ? (
-          <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-6 text-center text-[#a89d86] text-sm">
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 text-center text-gray-400 text-sm shadow-sm">
             Tu rol (soporte) no tiene acceso a la facturación de este comercio.
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {/* Suscripción */}
-            <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-5">
-              <h2 className="font-semibold text-[#f2ede1] mb-4">Suscripción</h2>
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-4">Suscripción</h2>
               <div className="space-y-3">
                 <div>
                   <label className={label}>Plan</label>
@@ -260,7 +260,7 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
                   <textarea className={input} rows={2} value={form.descuento_motivo} onChange={(e) => setForm({ ...form, descuento_motivo: e.target.value })} />
                 </div>
                 <button onClick={guardarSuscripcion} disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 bg-[#c9a86a] hover:bg-[#d8b877] text-[#1a1710] py-2.5 rounded-lg text-sm font-semibold">
+                  className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Guardar suscripción
                 </button>
               </div>
@@ -268,8 +268,8 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
 
             {/* Registrar pago + historial */}
             <div className="space-y-6">
-              <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl p-5">
-                <h2 className="font-semibold text-[#f2ede1] mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4 text-[#94ab73]" /> Registrar pago</h2>
+              <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4 text-emerald-500" /> Registrar pago</h2>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -295,27 +295,27 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
                       <input type="date" className={input} value={pago.periodo_fin} onChange={(e) => setPago({ ...pago, periodo_fin: e.target.value })} />
                     </div>
                   </div>
-                  <p className="text-xs text-[#7c745f]">Si está aprobado y ponés &quot;cubre hasta&quot;, se renueva la suscripción automáticamente.</p>
+                  <p className="text-xs text-gray-400">Si está aprobado y ponés &quot;cubre hasta&quot;, se renueva la suscripción automáticamente.</p>
                   <button onClick={registrarPago} disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 bg-[#5c7a46] hover:bg-[#6b8c52] text-[#f2ede1] py-2.5 rounded-lg text-sm font-semibold">
+                    className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors">
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />} Registrar pago
                   </button>
                 </div>
               </div>
 
-              <div className="bg-[#1c1a15] border border-[#2c261d] rounded-2xl overflow-hidden">
-                <div className="px-5 py-3 border-b border-[#2c261d]"><h2 className="font-semibold text-[#f2ede1] text-sm">Historial de pagos</h2></div>
+              <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                <div className="px-5 py-3 border-b border-gray-100"><h2 className="font-semibold text-gray-900 text-sm">Historial de pagos</h2></div>
                 {pagos.length === 0 ? (
-                  <div className="py-8 text-center text-[#7c745f] text-sm">Sin pagos registrados</div>
+                  <div className="py-8 text-center text-gray-400 text-sm">Sin pagos registrados</div>
                 ) : (
-                  <div className="divide-y divide-[#2c261d]/50">
+                  <div className="divide-y divide-gray-50">
                     {pagos.map((p) => (
                       <div key={p.id} className="px-5 py-3 flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-[#f2ede1] font-medium">{formatARS(Number(p.monto))}</p>
-                          <p className="text-xs text-[#7c745f] capitalize">{p.metodo} · {new Date(p.created_at).toLocaleDateString('es-AR')}</p>
+                          <p className="text-sm text-gray-900 font-medium">{formatARS(Number(p.monto))}</p>
+                          <p className="text-xs text-gray-400 capitalize">{p.metodo} · {new Date(p.created_at).toLocaleDateString('es-AR')}</p>
                         </div>
-                        <span className={`text-xs font-semibold capitalize ${ESTADO_PAGO[p.estado] ?? 'text-[#a89d86]'}`}>{p.estado}</span>
+                        <span className={`text-xs font-semibold capitalize ${ESTADO_PAGO[p.estado] ?? 'text-gray-400'}`}>{p.estado}</span>
                       </div>
                     ))}
                   </div>
@@ -327,13 +327,13 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
 
         {/* Zona de peligro */}
         {isSuperadmin && (
-          <div className="mt-8 bg-[#241310]/20 border border-[#4a281f]/40 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="mt-8 bg-red-50 border border-red-100 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="font-semibold text-[#d99a86] text-sm">Eliminar comercio</h2>
-              <p className="text-xs text-[#7c745f] mt-0.5">Borra el comercio y todos sus turnos, clientes y servicios. No se puede deshacer.</p>
+              <h2 className="font-semibold text-red-700 text-sm">Eliminar comercio</h2>
+              <p className="text-xs text-red-400 mt-0.5">Borra el comercio y todos sus turnos, clientes y servicios. No se puede deshacer.</p>
             </div>
             <button onClick={eliminar} disabled={saving}
-              className="flex items-center justify-center gap-2 text-sm bg-[#b3543f] hover:bg-[#c26350] text-[#f2ede1] px-4 py-2.5 rounded-lg flex-shrink-0">
+              className="flex items-center justify-center gap-2 text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl flex-shrink-0 transition-colors">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Eliminar comercio
             </button>
           </div>

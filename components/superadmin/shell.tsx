@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Shield, LayoutDashboard, Users, DollarSign, Package, Inbox, LogOut, Menu, X,
+  Sparkles, LayoutDashboard, Users, DollarSign, Package, Inbox, LogOut, Menu, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -56,7 +56,7 @@ export function SuperadminShell({ rol, canSeeBilling, children }: Props) {
           <Link key={n.href} href={n.href} onClick={onClick}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
-              active ? 'bg-[#c9a86a] text-[#1a1710]' : 'text-[#a89d86] hover:text-[#f2ede1] hover:bg-[#241f18]'
+              active ? 'bg-violet-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-gray-800'
             )}>
             <n.icon className="w-4 h-4 flex-shrink-0" />
             {n.label}
@@ -67,36 +67,36 @@ export function SuperadminShell({ rol, canSeeBilling, children }: Props) {
   );
 
   return (
-    <div className="min-h-screen bg-[#141210] text-[#f2ede1]">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Sidebar desktop */}
-      <aside className="hidden md:flex fixed inset-y-0 left-0 w-60 flex-col border-r border-[#2c261d] bg-[#1c1a15]/60 p-4">
+      <aside className="hidden md:flex fixed inset-y-0 left-0 w-60 flex-col bg-gray-900 p-4">
         <div className="flex items-center gap-2.5 px-2 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-[#b3543f] flex items-center justify-center flex-shrink-0">
-            <Shield className="w-5 h-5 text-[#f2ede1]" />
+          <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-900/50">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-[#f2ede1] leading-tight">Super Admin</p>
-            <p className="text-xs text-[#7c745f] capitalize truncate">Rol: {rol}</p>
+            <p className="text-sm font-bold text-white leading-tight">Super Admin</p>
+            <p className="text-xs text-gray-500 capitalize truncate">Rol: {rol}</p>
           </div>
         </div>
         <nav className="flex flex-col gap-1 flex-1">
           <NavLinks />
         </nav>
         <button onClick={logout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#a89d86] hover:text-[#f2ede1] hover:bg-[#241f18] transition-colors">
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
           <LogOut className="w-4 h-4" /> Salir
         </button>
       </aside>
 
       {/* Topbar mobile */}
-      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-[#2c261d] bg-[#141210]/90 backdrop-blur">
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-900/95 backdrop-blur">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#b3543f] flex items-center justify-center">
-            <Shield className="w-4 h-4 text-[#f2ede1]" />
+          <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className="text-sm font-bold text-[#f2ede1]">Super Admin</span>
+          <span className="text-sm font-bold text-white">Super Admin</span>
         </div>
-        <button onClick={() => setMobileOpen(true)} className="p-2 text-[#cabfa8] hover:text-[#f2ede1]">
+        <button onClick={() => setMobileOpen(true)} className="p-2 text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
         </button>
       </header>
@@ -104,11 +104,11 @@ export function SuperadminShell({ rol, canSeeBilling, children }: Props) {
       {/* Drawer mobile */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMobileOpen(false)}>
-          <div className="absolute inset-y-0 left-0 w-64 bg-[#1c1a15] border-r border-[#2c261d] p-4 flex flex-col"
+          <div className="absolute inset-y-0 left-0 w-64 bg-gray-900 p-4 flex flex-col"
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <span className="text-sm font-bold text-[#f2ede1] capitalize">Rol: {rol}</span>
-              <button onClick={() => setMobileOpen(false)} className="p-1.5 text-[#a89d86] hover:text-[#f2ede1]">
+              <span className="text-sm font-bold text-white capitalize">Rol: {rol}</span>
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -116,7 +116,7 @@ export function SuperadminShell({ rol, canSeeBilling, children }: Props) {
               <NavLinks onClick={() => setMobileOpen(false)} />
             </nav>
             <button onClick={logout}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#a89d86] hover:text-[#f2ede1] hover:bg-[#241f18]">
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-gray-800">
               <LogOut className="w-4 h-4" /> Salir
             </button>
           </div>

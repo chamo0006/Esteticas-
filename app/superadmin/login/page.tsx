@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Shield } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 
 function SuperadminLoginForm() {
   const router = useRouter();
@@ -42,52 +42,54 @@ function SuperadminLoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#141210] flex items-center justify-center px-4">
-      <div className="bg-[#1c1a15] rounded-2xl border border-[#2c261d] shadow-xl p-8 w-full max-w-sm">
-        <div className="w-12 h-12 rounded-2xl bg-[#b3543f] flex items-center justify-center mb-6">
-          <Shield className="w-5 h-5 text-[#f2ede1]" />
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-violet-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-900/50">
+            <Sparkles className="w-7 h-7 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Super Admin</h1>
+          <p className="text-gray-500 text-sm mt-2">Panel de gestión de la plataforma</p>
         </div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-[#c9a86a] mb-1.5">Plataforma</p>
-        <h1 className="text-2xl font-serif font-medium tracking-tight text-[#f2ede1] mb-1">Super Admin</h1>
-        <div className="w-8 h-px bg-[#c9a86a] mb-4" />
-        <p className="text-sm text-[#a89d86] mb-6">Panel de gestión de la plataforma</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#cabfa8] mb-1.5">Email</label>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full px-4 py-3 bg-[#241f18] border border-[#3a3327] rounded-xl text-sm text-[#f2ede1] focus:outline-none focus:ring-2 focus:ring-[#c9a86a] transition-all"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
               placeholder="tu@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#cabfa8] mb-1.5">Contraseña</label>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-[#241f18] border border-[#3a3327] rounded-xl text-sm text-[#f2ede1] focus:outline-none focus:ring-2 focus:ring-[#c9a86a] transition-all"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-sm"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-[#d1806b] bg-[#241310] border border-[#4a281f] rounded-xl px-4 py-3">
+            <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">
               {error}
-            </p>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading || !email || !password}
-            className="w-full py-3 bg-[#c9a86a] hover:bg-[#d8b877] disabled:bg-[#241f18] disabled:text-[#7c745f] text-[#1a1710] font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 mt-2 shadow-lg shadow-violet-900/30"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Entrar
