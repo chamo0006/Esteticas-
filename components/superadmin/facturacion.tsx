@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, DollarSign, AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type TenantRow, formatARS, formatFecha, semaforo } from './types';
+import { NotasMes } from './notas-mes';
 
 export interface PagoRow {
   id: string;
@@ -74,6 +75,8 @@ export function Facturacion({ stats, pagos, morosos, proximos }: Props) {
           <p className="text-2xl font-bold text-gray-900">{stats.morosos}</p>
         </div>
       </div>
+
+      <NotasMes />
 
       {/* Morosos + próximos a vencer */}
       <div className="grid lg:grid-cols-2 gap-4 mb-6">
