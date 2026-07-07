@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Sparkles, LayoutDashboard, Users, DollarSign, Package, Inbox, LogOut, Menu, X,
+  Sparkles, LayoutDashboard, Users, DollarSign, Receipt, Package, Inbox, LogOut, Menu, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,7 @@ const NAV: NavItem[] = [
   { href: '/superadmin',             label: 'Dashboard',   icon: LayoutDashboard },
   { href: '/superadmin/comercios',   label: 'Comercios',   icon: Users },
   { href: '/superadmin/facturacion', label: 'Facturación', icon: DollarSign, billing: true },
+  { href: '/superadmin/ventas',      label: 'Ventas',      icon: Receipt, billing: true },
   { href: '/superadmin/planes',      label: 'Planes',      icon: Package, billing: true },
   { href: '/superadmin/leads',       label: 'Leads',       icon: Inbox },
 ];

@@ -116,13 +116,14 @@ export function VentasMes({ clientesSugeridos = [], planesSugeridos = [] }: Prop
   const total = ventas.reduce((s, v) => s + v.monto, 0);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm mb-6">
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <Receipt className="w-4 h-4 text-violet-500" />
-          <h2 className="font-semibold text-gray-900 text-sm">Ventas de planes</h2>
-        </div>
+    <div>
+      <div className="flex items-center gap-2 mb-6">
+        <Receipt className="w-5 h-5 text-violet-500" />
+        <h1 className="text-2xl font-bold text-gray-900">Ventas de planes</h1>
+      </div>
 
+      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm mb-6">
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-1">
           <button onClick={() => setMes((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100" aria-label="Mes anterior">
@@ -252,6 +253,7 @@ export function VentasMes({ clientesSugeridos = [], planesSugeridos = [] }: Prop
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
