@@ -17,7 +17,7 @@ export default async function FacturacionPage() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
-  const [pagosRes, metricasRes, mesRes, mesPasadoRes] = await Promise.all([
+  const [pagosRes, metricasRes, mesRes, mesPasadoRes, tenantsRes, planesRes] = await Promise.all([
     supabase
       .from('pagos_suscripcion')
       .select('id, tenant_id, monto, metodo, estado, periodo_fin, fecha_pago, created_at, tenants!inner(nombre, slug)')
@@ -26,6 +26,8 @@ export default async function FacturacionPage() {
     supabase.from('vista_metricas_tenant').select('*'),
     supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', monthStart),
     supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', prevMonthStart).lt('fecha_pago', monthStart),
+    supabase.from('tenants').select('nombre').order('nombre'),
+    supabase.from('planes').select('nombre').order('orden'),
   ]);
 
   const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
@@ -71,9 +73,15 @@ export default async function FacturacionPage() {
     morosos: morosos.length,
   };
 
+  const clientesSugeridos = ((tenantsRes.data ?? []) as { nombre: string }[]).map((t) => t.nombre);
+  const planesSugeridos = ((planesRes.data ?? []) as { nombre: string }[]).map((p) => p.nombre);
+
   return (
     <SuperadminShell rol={admin.rol} canSeeBilling>
-      <Facturacion stats={stats} pagos={pagos} morosos={morosos} proximos={proximos} />
+      <Facturacion
+        stats={stats} pagos={pagos} morosos={morosos} proximos={proximos}
+        clientesSugeridos={clientesSugeridos} planesSugeridos={planesSugeridos}
+      />
     </SuperadminShell>
   );
 }

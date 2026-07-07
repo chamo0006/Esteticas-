@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Search, DollarSign, AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type TenantRow, formatARS, formatFecha, semaforo } from './types';
-import { NotasMes } from './notas-mes';
+import { VentasMes } from './ventas-mes';
 
 export interface PagoRow {
   id: string;
@@ -25,6 +25,8 @@ interface Props {
   pagos: PagoRow[];
   morosos: TenantRow[];
   proximos: TenantRow[];
+  clientesSugeridos?: string[];
+  planesSugeridos?: string[];
 }
 
 const ESTADO_CLS: Record<string, string> = {
@@ -33,7 +35,7 @@ const ESTADO_CLS: Record<string, string> = {
 
 const FILTROS = ['todos', 'aprobado', 'pendiente', 'vencido', 'rechazado'] as const;
 
-export function Facturacion({ stats, pagos, morosos, proximos }: Props) {
+export function Facturacion({ stats, pagos, morosos, proximos, clientesSugeridos, planesSugeridos }: Props) {
   const [filtro, setFiltro] = useState<string>('todos');
   const [search, setSearch] = useState('');
 
@@ -76,7 +78,7 @@ export function Facturacion({ stats, pagos, morosos, proximos }: Props) {
         </div>
       </div>
 
-      <NotasMes />
+      <VentasMes clientesSugeridos={clientesSugeridos} planesSugeridos={planesSugeridos} />
 
       {/* Morosos + próximos a vencer */}
       <div className="grid lg:grid-cols-2 gap-4 mb-6">
