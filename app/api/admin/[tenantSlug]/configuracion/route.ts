@@ -26,7 +26,7 @@ export async function GET(
   const [tenantResult, horariosResult, diasResult] = await Promise.all([
     supabase
       .from('tenants')
-      .select('nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion, logo_url, banner_url, exige_sena, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes')
+      .select('nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion, logo_url, exige_sena, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes')
       .eq('id', payload.tenantId)
       .single(),
     supabase
@@ -74,10 +74,9 @@ export async function PATCH(
     exige_sena, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago,
     stat_rating, stat_barberos, stat_clientes,
   } = parsed.data;
-  // logo_url/banner_url quedan fuera del schema (raw passthrough): los tenants
-  // viejos tienen base64 gigante ahí, no le queremos poner un max() que rompa.
+  // logo_url queda fuera del schema (raw passthrough): los tenants viejos
+  // tienen base64 gigante ahí, no le queremos poner un max() que rompa.
   const logo_url       = 'logo_url'       in raw ? (raw.logo_url       as string | null) : undefined;
-  const banner_url     = 'banner_url'     in raw ? (raw.banner_url     as string | null) : undefined;
   const color_primario = 'color_primario' in raw ? (raw.color_primario as string | null) : undefined;
   const color_acento   = 'color_acento'   in raw ? (raw.color_acento   as string | null) : undefined;
   const tipo_negocio   = 'tipo_negocio'   in raw ? (raw.tipo_negocio   as string)        : undefined;
@@ -104,7 +103,6 @@ export async function PATCH(
   if (stat_barberos    !== undefined) updateData.stat_barberos     = stat_barberos;
   if (stat_clientes    !== undefined) updateData.stat_clientes     = stat_clientes;
   if (logo_url         !== undefined) updateData.logo_url          = logo_url;
-  if (banner_url       !== undefined) updateData.banner_url        = banner_url;
   if (color_primario   !== undefined) updateData.color_primario    = color_primario;
   if (color_acento     !== undefined) updateData.color_acento      = color_acento;
   if (tipo_negocio     !== undefined && ['estetica', 'barberia'].includes(tipo_negocio))

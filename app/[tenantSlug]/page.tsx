@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { BookingClient }  from './booking-client';
 import { BarberiaClient } from './barberia-client';
 import type { Service } from '@/lib/booking-types';
-import type { Barber, Review, BarberiaStats, Foto } from './barberia-client';
+import type { Barber, Review, BarberiaStats } from './barberia-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,40 +34,22 @@ export default async function TenantBookingPage({ params }: Props) {
     category: s.categoria ?? 'general',
   }));
 
-  // ── Reseñas y galería: para ambos rubros ──────────────────────────────
-  const [reviewsRes, galeriaRes] = await Promise.all([
-    supabase
-      .from('resenias')
-      .select('id, nombre, texto, rating')
-      .eq('tenant_id', tenant.id)
-      .eq('activo', true)
-      .order('created_at', { ascending: false })
-      .limit(6),
-    supabase
-      .from('tenant_galeria')
-      .select('id, url')
-      .eq('tenant_id', tenant.id)
-      .order('orden'),
-  ]);
-
-  const reviews: Review[] = (reviewsRes.data ?? []).map((r) => ({
-    id: r.id,
-    nombre: r.nombre,
-    texto: r.texto,
-    rating: Number(r.rating),
-  }));
-
-  const galeria: Foto[] = (galeriaRes.data ?? []).map((f) => ({ id: f.id, url: f.url }));
-
   if (tenant.tipo_negocio === 'barberia') {
     // ── Datos extra para la landing de barbería ──────────────────────────
-    const [barbersRes, clientesRes, overridesRes] = await Promise.all([
+    const [barbersRes, reviewsRes, clientesRes, overridesRes] = await Promise.all([
       supabase
         .from('profesionales')
         .select('id, nombre, rol, rating')
         .eq('tenant_id', tenant.id)
         .eq('activo', true)
         .order('created_at'),
+      supabase
+        .from('resenias')
+        .select('id, nombre, texto, rating')
+        .eq('tenant_id', tenant.id)
+        .eq('activo', true)
+        .order('created_at', { ascending: false })
+        .limit(6),
       supabase
         .from('clientes')
         .select('id', { count: 'exact', head: true })
@@ -100,6 +82,13 @@ export default async function TenantBookingPage({ params }: Props) {
       rating: b.rating != null ? Number(b.rating) : null,
     }));
 
+    const reviews: Review[] = (reviewsRes.data ?? []).map((r) => ({
+      id: r.id,
+      nombre: r.nombre,
+      texto: r.texto,
+      rating: Number(r.rating),
+    }));
+
     const ratings = reviews.map((r) => r.rating).filter((n) => n > 0);
     const avgRating = ratings.length
       ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
@@ -124,10 +113,9 @@ export default async function TenantBookingPage({ params }: Props) {
         barbers={barbers}
         reviews={reviews}
         stats={stats}
-        galeria={galeria}
       />
     );
   }
 
-  return <BookingClient tenant={tenant} services={services} reviews={reviews} galeria={galeria} />;
+  return <BookingClient tenant={tenant} services={services} />;
 }

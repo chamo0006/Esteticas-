@@ -22,9 +22,7 @@ export async function generateMetadata({
     openGraph: {
       title: tenant.nombre,
       description: `Reservá tu turno en ${tenant.nombre}`,
-      ...(tenant.banner_url || tenant.logo_url
-        ? { images: [{ url: tenant.banner_url ?? tenant.logo_url! }] }
-        : {}),
+      ...(tenant.logo_url ? { images: [{ url: tenant.logo_url }] } : {}),
     },
   };
 }

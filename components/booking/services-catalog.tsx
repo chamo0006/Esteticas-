@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Instagram, Search, MessageCircle, CalendarCheck, Facebook, Globe, MapPin, Star } from "lucide-react";
+import { Instagram, Search, MessageCircle, CalendarCheck, Facebook, Globe, MapPin } from "lucide-react";
 import Image from "next/image";
 import type { Service, TenantConfig } from "@/lib/booking-types";
 import { getBookingTheme } from "@/lib/booking-theme";
 import { ServiceCard } from "./service-card";
 import { StepBar } from "./step-bar";
 import { MisReservas } from "./mis-reservas";
-import type { Review, Foto } from "@/app/[tenantSlug]/barberia-client";
 
 interface ServicesCatalogProps {
   services: Service[];
@@ -20,8 +19,6 @@ interface ServicesCatalogProps {
   logoUrl?: string | null;
   telefono?: string | null;
   tenantConfig?: TenantConfig;
-  reviews?: Review[];
-  galeria?: Foto[];
 }
 
 // TikTok no tiene ícono en lucide-react; una nota musical simple alcanza como badge.
@@ -58,7 +55,7 @@ function BarberDecoration({ color = "#4A5240" }: { color?: string }) {
 
 export function ServicesCatalog({
   services, searchQuery, onSearchChange, onToggleService, isInCart,
-  tenantNombre, logoUrl, telefono, tenantConfig, reviews = [], galeria = [],
+  tenantNombre, logoUrl, telefono, tenantConfig,
 }: ServicesCatalogProps) {
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
@@ -96,13 +93,6 @@ export function ServicesCatalog({
 
   return (
     <div className="animate-fade-in min-h-screen" style={{ backgroundColor: T.bg }}>
-      {/* Banner / portada */}
-      {tenantConfig?.banner_url && (
-        <div className="relative w-full aspect-[21/9] overflow-hidden">
-          <Image src={tenantConfig.banner_url} alt="" fill className="object-cover" unoptimized />
-        </div>
-      )}
-
       {/* Header — NO sticky: scrollea junto con el resto para no dejar el título grande pegado */}
       <header className="px-5 pt-5 pb-4"
         style={{ backgroundColor: T.bgSticky }}>
@@ -266,53 +256,6 @@ export function ServicesCatalog({
           </div>
         )}
       </div>
-
-      {/* Galería */}
-      {galeria.length > 0 && (
-        <div className="px-5 pb-6">
-          <div className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: T.muted }}>Fotos</div>
-          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {galeria.map((f) => (
-              <div key={f.id} className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0"
-                style={{ border: `1px solid ${T.border}` }}>
-                <Image src={f.url} alt="" fill className="object-cover" unoptimized />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Testimonios */}
-      {reviews.length > 0 && (
-        <div className="px-5 pb-6">
-          <div className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: T.muted }}>
-            Lo que dicen nuestros clientes
-          </div>
-          <div className="space-y-2">
-            {reviews.slice(0, 3).map((r) => (
-              <div key={r.id} className="p-3.5 rounded-xl"
-                style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}` }}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-                    style={{ backgroundColor: T.surf2, color: T.muted }}>
-                    {r.nombre.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("")}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: T.text }}>{r.nombre}</p>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3" strokeWidth={0}
-                          fill={i < r.rating ? accentColor : T.border} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs leading-relaxed" style={{ color: T.muted }}>{r.texto}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

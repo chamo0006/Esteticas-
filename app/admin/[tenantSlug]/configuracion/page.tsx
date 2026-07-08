@@ -37,7 +37,7 @@ interface TenantConfig {
   exige_sena: boolean; porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
   horas_limite_cancelacion: number | null;
   alias_pago: string | null;
-  logo_url: string | null; banner_url: string | null; color_primario: string | null; color_acento: string | null;
+  logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
   stat_rating: number | null; stat_barberos: number | null; stat_clientes: number | null;
 }
@@ -61,10 +61,8 @@ export default function ConfiguracionPage() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
-  const [bannerUploading, setBannerUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // Para agregar día bloqueado
   const [nuevaFecha, setNuevaFecha] = useState('');
@@ -228,41 +226,23 @@ export default function ConfiguracionPage() {
     fetch_();
   };
 
-  const subirImagen = async (file: File, kind: 'logo' | 'banner') => {
-    if (file.size > 3 * 1024 * 1024) {
-      setUploadError('La imagen no puede superar 3MB');
-      return null;
-    }
-    setUploadError(null);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('kind', kind);
-    const res = await fetch(`/api/admin/${tenantSlug}/upload`, { method: 'POST', body: formData });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setUploadError(data.error ?? 'Error al subir la imagen');
-      return null;
-    }
-    return data.url as string;
-  };
-
   const handleLogoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setUploadError('La imagen no puede superar 3MB');
+      return;
+    }
+    setUploadError(null);
     setLogoUploading(true);
-    const url = await subirImagen(file, 'logo');
-    if (url) setTenant(t => t ? { ...t, logo_url: url } : t);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('kind', 'logo');
+    const res = await fetch(`/api/admin/${tenantSlug}/upload`, { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) setTenant(t => t ? { ...t, logo_url: data.url } : t);
+    else setUploadError(data.error ?? 'Error al subir la imagen');
     setLogoUploading(false);
-    e.target.value = '';
-  };
-
-  const handleBannerFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setBannerUploading(true);
-    const url = await subirImagen(file, 'banner');
-    if (url) setTenant(t => t ? { ...t, banner_url: url } : t);
-    setBannerUploading(false);
     e.target.value = '';
   };
 
@@ -817,43 +797,6 @@ export default function ConfiguracionPage() {
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Banner */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-                <h3 className="font-semibold text-gray-900">Banner / portada</h3>
-                <p className="text-xs text-gray-400 -mt-2">Se muestra como imagen de fondo arriba de todo en el sitio de reservas.</p>
-
-                <div className="w-full aspect-[21/9] rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
-                  {bannerUploading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
-                  ) : tenant.banner_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={tenant.banner_url} alt="Banner" className="w-full h-full object-cover" />
-                  ) : (
-                    <ImageIcon className="w-8 h-8 text-gray-300" />
-                  )}
-                </div>
-
-                <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
-                <button
-                  type="button"
-                  onClick={() => bannerInputRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-violet-300 rounded-xl text-sm font-medium text-violet-600 hover:bg-violet-50 transition-colors"
-                >
-                  <Upload className="w-4 h-4" />
-                  Subir desde tu dispositivo
-                </button>
-                {tenant.banner_url && (
-                  <button
-                    type="button"
-                    onClick={() => setTenant(t => t ? { ...t, banner_url: null } : t)}
-                    className="w-full text-xs text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    Quitar banner
-                  </button>
-                )}
-
                 {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
               </div>
 

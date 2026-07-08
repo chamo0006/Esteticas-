@@ -22,18 +22,12 @@ export interface BarberiaStats {
   clientes: number;
   reseñas: number;
 }
-export interface Foto {
-  id: string;
-  url: string;
-}
-
 interface Props {
   tenant: TenantConfig;
   services: Service[];
   barbers: Barber[];
   reviews: Review[];
   stats: BarberiaStats;
-  galeria: Foto[];
 }
 
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -86,7 +80,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function BarberiaClient({ tenant, services, barbers, reviews, stats, galeria }: Props) {
+export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Props) {
   const today = new Date();
   const hasBarbers = barbers.length > 0;
 
@@ -366,12 +360,6 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats, gale
         <span style={navBadge}>● Abierto</span>
       </nav>
 
-      {/* BANNER */}
-      {tenant.banner_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={tenant.banner_url} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
-      )}
-
       {/* PROGRESS */}
       <div style={{ display: 'flex', gap: 4, padding: '12px 20px', borderBottom: `0.5px solid ${border}`, alignItems: 'center' }}>
         {STEPS.map((_, i) => (
@@ -416,19 +404,6 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats, gale
               </div>
             ))}
           </div>
-
-          {/* GALERÍA */}
-          {galeria.length > 0 && (
-            <div style={{ padding: '0 20px 20px' }}>
-              <div style={{ ...sectionTitle, marginBottom: 12, marginTop: 8 }}>Fotos</div>
-              <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
-                {galeria.map((f) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={f.id} src={f.url} alt="" style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10, flexShrink: 0, border: `0.5px solid ${border}` }} />
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* RESEÑAS */}
           {reviews.length > 0 && (

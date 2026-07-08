@@ -23,7 +23,6 @@ export interface TenantConfig {
   slug: string;
   nombre: string;
   logo_url: string | null;
-  banner_url: string | null;       // imagen de portada/hero
   bio: string | null;              // descripción corta del negocio
   direccion: string | null;        // dirección en texto libre
   exige_sena: boolean;
