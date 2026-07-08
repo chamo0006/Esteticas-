@@ -12,13 +12,16 @@ import type {
   SchedulingMode,
   TenantConfig,
 } from '@/lib/booking-types';
+import type { Review, Foto } from './barberia-client';
 
 interface BookingClientProps {
   tenant: TenantConfig;
   services: Service[];
+  reviews: Review[];
+  galeria: Foto[];
 }
 
-export function BookingClient({ tenant, services }: BookingClientProps) {
+export function BookingClient({ tenant, services, reviews, galeria }: BookingClientProps) {
   const [currentStep, setCurrentStep] = useState<BookingStep>('services');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,6 +83,8 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           logoUrl={tenant.logo_url}
           telefono={tenant.telefono}
           tenantConfig={tenant}
+          reviews={reviews}
+          galeria={galeria}
         />
       )}
 

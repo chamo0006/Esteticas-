@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Menu, X, Sparkles, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Scissors, Users, UserCog, Settings } from 'lucide-react';
+import { LayoutDashboard, Calendar, Scissors, Users, UserCog, Settings, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileHeaderProps {
@@ -24,6 +24,7 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
     { href: `${base}/turnos`,    label: 'Turnos',     icon: Calendar        },
     { href: `${base}/servicios`, label: 'Servicios',  icon: Scissors        },
     { href: `${base}/profesionales`, label: tipoNegocio === 'barberia' ? 'Barberos' : 'Empleados', icon: UserCog },
+    { href: `${base}/contenido`,     label: 'Contenido',     icon: ImageIcon },
     { href: `${base}/clientes`,       label: 'Clientes',      icon: Users     },
     { href: `${base}/configuracion`, label: 'Configuración', icon: Settings  },
   ];

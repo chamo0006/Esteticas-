@@ -22,6 +22,10 @@ export interface BarberiaStats {
   clientes: number;
   reseñas: number;
 }
+export interface Foto {
+  id: string;
+  url: string;
+}
 
 interface Props {
   tenant: TenantConfig;
@@ -29,6 +33,7 @@ interface Props {
   barbers: Barber[];
   reviews: Review[];
   stats: BarberiaStats;
+  galeria: Foto[];
 }
 
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -81,7 +86,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Props) {
+export function BarberiaClient({ tenant, services, barbers, reviews, stats, galeria }: Props) {
   const today = new Date();
   const hasBarbers = barbers.length > 0;
 
@@ -228,9 +233,19 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
   const border = '#1e1e1e', border2 = '#2a2a2a';
   const textPrimary = '#e8e8e8', textSecondary = '#4a4a4a', textMuted = '#2e2e2e', accent = '#ffffff';
 
-  const wppDigits = tenant.telefono?.replace(/\D/g, '') ?? '';
+  const wppDigits = (tenant.whatsapp || tenant.telefono)?.replace(/\D/g, '') ?? '';
   const wppUrl = wppDigits ? `https://wa.me/${wppDigits}` : undefined;
   const brand = tenant.nombre || 'Barbería';
+
+  const fbUrl = tenant.facebook?.trim()
+    ? (/^https?:\/\//i.test(tenant.facebook) ? tenant.facebook : `https://facebook.com/${tenant.facebook.replace(/^@/, '')}`)
+    : undefined;
+  const ttUrl = tenant.tiktok?.trim()
+    ? (/^https?:\/\//i.test(tenant.tiktok) ? tenant.tiktok : `https://tiktok.com/@${tenant.tiktok.replace(/^@/, '')}`)
+    : undefined;
+  const webUrl = tenant.sitio_web?.trim()
+    ? (/^https?:\/\//i.test(tenant.sitio_web) ? tenant.sitio_web : `https://${tenant.sitio_web}`)
+    : undefined;
 
   const wrap: React.CSSProperties = {
     background: bg, width: '100%', maxWidth: 430, margin: '0 auto',
@@ -286,6 +301,9 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
       <span style={{ fontSize: 13, fontWeight: 500, color: accent }}>✂ {brand}</span>
       <div style={{ display: 'flex', gap: 14 }}>
         {wppUrl && <a href={wppUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: textSecondary, cursor: 'pointer', textDecoration: 'none' }}>WhatsApp</a>}
+        {fbUrl && <a href={fbUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: textSecondary, cursor: 'pointer', textDecoration: 'none' }}>Facebook</a>}
+        {ttUrl && <a href={ttUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: textSecondary, cursor: 'pointer', textDecoration: 'none' }}>TikTok</a>}
+        {webUrl && <a href={webUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: textSecondary, cursor: 'pointer', textDecoration: 'none' }}>Sitio web</a>}
       </div>
     </div>
   );
@@ -348,6 +366,12 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
         <span style={navBadge}>● Abierto</span>
       </nav>
 
+      {/* BANNER */}
+      {tenant.banner_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={tenant.banner_url} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
+      )}
+
       {/* PROGRESS */}
       <div style={{ display: 'flex', gap: 4, padding: '12px 20px', borderBottom: `0.5px solid ${border}`, alignItems: 'center' }}>
         {STEPS.map((_, i) => (
@@ -362,6 +386,8 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
           <div style={section}>
             <div style={pageTitle}>¿Qué servicio querés?</div>
             <div style={pageSub}>Elegí uno para continuar</div>
+            {tenant.bio && <div style={{ fontSize: 12, color: textSecondary, lineHeight: 1.6, marginBottom: 14, marginTop: -8 }}>{tenant.bio}</div>}
+            {tenant.direccion && <div style={{ fontSize: 11, color: textSecondary, marginBottom: 14, marginTop: -8 }}>📍 {tenant.direccion}</div>}
             {services.length === 0 && <div style={{ fontSize: 13, color: textSecondary, padding: '2rem 0', textAlign: 'center' }}>No hay servicios disponibles</div>}
             {services.map((svc) => (
               <div key={svc.id} style={svcRow(service?.id === svc.id)} onClick={() => setService(svc)}>
@@ -390,6 +416,19 @@ export function BarberiaClient({ tenant, services, barbers, reviews, stats }: Pr
               </div>
             ))}
           </div>
+
+          {/* GALERÍA */}
+          {galeria.length > 0 && (
+            <div style={{ padding: '0 20px 20px' }}>
+              <div style={{ ...sectionTitle, marginBottom: 12, marginTop: 8 }}>Fotos</div>
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+                {galeria.map((f) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={f.id} src={f.url} alt="" style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10, flexShrink: 0, border: `0.5px solid ${border}` }} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* RESEÑAS */}
           {reviews.length > 0 && (

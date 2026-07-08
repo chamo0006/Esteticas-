@@ -23,6 +23,9 @@ export interface TenantConfig {
   slug: string;
   nombre: string;
   logo_url: string | null;
+  banner_url: string | null;       // imagen de portada/hero
+  bio: string | null;              // descripción corta del negocio
+  direccion: string | null;        // dirección en texto libre
   exige_sena: boolean;
   porcentaje_sena: number | null;
   permite_efectivo: boolean;
@@ -30,6 +33,10 @@ export interface TenantConfig {
   color_acento: string | null;     // hex, ej: "#D4A0A7"
   telefono: string | null;
   instagram: string | null;        // handle "@sora" o URL completa
+  facebook: string | null;         // handle o URL completa
+  tiktok: string | null;           // handle o URL completa
+  sitio_web: string | null;        // URL completa
+  whatsapp: string | null;         // número público; null = usa `telefono`
   tipo_negocio: TipoNegocio;
   alias_pago: string | null;       // alias/CBU para transferencias
   horas_limite_cancelacion: number; // horas antes del turno hasta las que el cliente puede cancelar (0 = siempre)

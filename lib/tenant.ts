@@ -5,7 +5,7 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
   try {
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, slug, nombre, logo_url, telefono, instagram, exige_sena, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio, alias_pago, horas_limite_cancelacion')
+      .select('id, slug, nombre, logo_url, banner_url, bio, direccion, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, exige_sena, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio, alias_pago, horas_limite_cancelacion')
       .eq('slug', slug)
       .eq('activo', true)
       .single();
@@ -17,6 +17,9 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
       slug: data.slug,
       nombre: data.nombre,
       logo_url: data.logo_url,
+      banner_url: data.banner_url ?? null,
+      bio: data.bio ?? null,
+      direccion: data.direccion ?? null,
       exige_sena: data.exige_sena,
       porcentaje_sena: data.porcentaje_sena != null ? Number(data.porcentaje_sena) : null,
       permite_efectivo: data.permite_efectivo,
@@ -24,6 +27,10 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
       color_acento: data.color_acento ?? null,
       telefono: data.telefono ?? null,
       instagram: data.instagram ?? null,
+      facebook: data.facebook ?? null,
+      tiktok: data.tiktok ?? null,
+      sitio_web: data.sitio_web ?? null,
+      whatsapp: data.whatsapp ?? null,
       tipo_negocio: (data.tipo_negocio as 'estetica' | 'barberia') ?? 'estetica',
       alias_pago: data.alias_pago ?? null,
       horas_limite_cancelacion: data.horas_limite_cancelacion != null ? Number(data.horas_limite_cancelacion) : 0,

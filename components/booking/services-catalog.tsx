@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Instagram, Search, MessageCircle, CalendarCheck } from "lucide-react";
+import { Instagram, Search, MessageCircle, CalendarCheck, Facebook, Globe, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import type { Service, TenantConfig } from "@/lib/booking-types";
 import { getBookingTheme } from "@/lib/booking-theme";
 import { ServiceCard } from "./service-card";
 import { StepBar } from "./step-bar";
 import { MisReservas } from "./mis-reservas";
+import type { Review, Foto } from "@/app/[tenantSlug]/barberia-client";
 
 interface ServicesCatalogProps {
   services: Service[];
@@ -19,6 +20,17 @@ interface ServicesCatalogProps {
   logoUrl?: string | null;
   telefono?: string | null;
   tenantConfig?: TenantConfig;
+  reviews?: Review[];
+  galeria?: Foto[];
+}
+
+// TikTok no tiene ícono en lucide-react; una nota musical simple alcanza como badge.
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M16.6 5.82c-.9-.87-1.4-2.05-1.4-3.32h-3.03v14.02c0 1.5-1.22 2.72-2.72 2.72a2.72 2.72 0 0 1 0-5.44c.24 0 .48.03.7.1V10.8a5.7 5.7 0 0 0-.7-.04A5.75 5.75 0 0 0 3.75 22.5 5.75 5.75 0 0 0 15.2 18.72V9.4a8.7 8.7 0 0 0 4.8 1.44V7.8a5.3 5.3 0 0 1-3.4-1.98z" />
+    </svg>
+  );
 }
 
 function BotanicalLeaf({ color = "#D4919B" }: { color?: string }) {
@@ -46,7 +58,7 @@ function BarberDecoration({ color = "#4A5240" }: { color?: string }) {
 
 export function ServicesCatalog({
   services, searchQuery, onSearchChange, onToggleService, isInCart,
-  tenantNombre, logoUrl, telefono, tenantConfig,
+  tenantNombre, logoUrl, telefono, tenantConfig, reviews = [], galeria = [],
 }: ServicesCatalogProps) {
   const T = getBookingTheme(tenantConfig?.tipo_negocio);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
@@ -62,17 +74,35 @@ export function ServicesCatalog({
   const showCats = cats.length > 1;
   const shown = activeCat === "Todo" ? services : services.filter((s) => s.category === activeCat);
 
-  const wppPhone = telefono?.replace(/\D/g, "") ?? "";
+  const wppPhone = (tenantConfig?.whatsapp || telefono)?.replace(/\D/g, "") ?? "";
   const wppUrl = wppPhone ? `https://wa.me/${wppPhone}` : undefined;
 
-  // Instagram: acepta handle ("@sora" / "sora") o URL completa. Solo se muestra si está configurado.
+  // Instagram / Facebook / TikTok / sitio web: aceptan handle o URL completa.
+  // Solo se muestran si están configurados.
   const igRaw = tenantConfig?.instagram?.trim() ?? "";
   const igUrl = igRaw
     ? (/^https?:\/\//i.test(igRaw) ? igRaw : `https://instagram.com/${igRaw.replace(/^@/, "")}`)
     : undefined;
+  const fbRaw = tenantConfig?.facebook?.trim() ?? "";
+  const fbUrl = fbRaw
+    ? (/^https?:\/\//i.test(fbRaw) ? fbRaw : `https://facebook.com/${fbRaw.replace(/^@/, "")}`)
+    : undefined;
+  const ttRaw = tenantConfig?.tiktok?.trim() ?? "";
+  const ttUrl = ttRaw
+    ? (/^https?:\/\//i.test(ttRaw) ? ttRaw : `https://tiktok.com/@${ttRaw.replace(/^@/, "")}`)
+    : undefined;
+  const webRaw = tenantConfig?.sitio_web?.trim() ?? "";
+  const webUrl = webRaw ? (/^https?:\/\//i.test(webRaw) ? webRaw : `https://${webRaw}`) : undefined;
 
   return (
     <div className="animate-fade-in min-h-screen" style={{ backgroundColor: T.bg }}>
+      {/* Banner / portada */}
+      {tenantConfig?.banner_url && (
+        <div className="relative w-full aspect-[21/9] overflow-hidden">
+          <Image src={tenantConfig.banner_url} alt="" fill className="object-cover" unoptimized />
+        </div>
+      )}
+
       {/* Header — NO sticky: scrollea junto con el resto para no dejar el título grande pegado */}
       <header className="px-5 pt-5 pb-4"
         style={{ backgroundColor: T.bgSticky }}>
@@ -100,10 +130,18 @@ export function ServicesCatalog({
               <p className="font-serif italic text-xs mt-0.5" style={{ color: T.muted }}>
                 {isBarberia ? "Reservá tu turno" : "Reserve su experiencia de belleza"}
               </p>
+              {tenantConfig?.bio && (
+                <p className="text-xs mt-2 max-w-xs leading-relaxed" style={{ color: T.muted }}>{tenantConfig.bio}</p>
+              )}
+              {tenantConfig?.direccion && (
+                <p className="text-[11px] mt-1.5 flex items-center justify-center gap-1" style={{ color: T.muted }}>
+                  <MapPin className="w-3 h-3" strokeWidth={1.5} /> {tenantConfig.direccion}
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {wppUrl && (
               <a href={wppUrl} target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
@@ -118,6 +156,30 @@ export function ServicesCatalog({
                 style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
                 aria-label="Instagram">
                 <Instagram className="w-4 h-4" strokeWidth={1.5} />
+              </a>
+            )}
+            {fbUrl && (
+              <a href={fbUrl} target="_blank" rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
+                aria-label="Facebook">
+                <Facebook className="w-4 h-4" strokeWidth={1.5} />
+              </a>
+            )}
+            {ttUrl && (
+              <a href={ttUrl} target="_blank" rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
+                aria-label="TikTok">
+                <TikTokIcon className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {webUrl && (
+              <a href={webUrl} target="_blank" rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: `${primaryColor}15`, color: T.muted }}
+                aria-label="Sitio web">
+                <Globe className="w-4 h-4" strokeWidth={1.5} />
               </a>
             )}
           </div>
@@ -204,6 +266,53 @@ export function ServicesCatalog({
           </div>
         )}
       </div>
+
+      {/* Galería */}
+      {galeria.length > 0 && (
+        <div className="px-5 pb-6">
+          <div className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: T.muted }}>Fotos</div>
+          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {galeria.map((f) => (
+              <div key={f.id} className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ border: `1px solid ${T.border}` }}>
+                <Image src={f.url} alt="" fill className="object-cover" unoptimized />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Testimonios */}
+      {reviews.length > 0 && (
+        <div className="px-5 pb-6">
+          <div className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: T.muted }}>
+            Lo que dicen nuestros clientes
+          </div>
+          <div className="space-y-2">
+            {reviews.slice(0, 3).map((r) => (
+              <div key={r.id} className="p-3.5 rounded-xl"
+                style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}` }}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
+                    style={{ backgroundColor: T.surf2, color: T.muted }}>
+                    {r.nombre.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("")}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: T.text }}>{r.nombre}</p>
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className="w-3 h-3" strokeWidth={0}
+                          fill={i < r.rating ? accentColor : T.border} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: T.muted }}>{r.texto}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

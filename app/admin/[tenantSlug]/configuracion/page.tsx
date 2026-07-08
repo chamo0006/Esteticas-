@@ -32,10 +32,12 @@ interface Horario { dia_semana: number; hora_apertura: string; hora_cierre: stri
 interface DiaBloqueo { id: string; fecha: string; motivo: string | null }
 interface TenantConfig {
   nombre: string; email_contacto: string; telefono: string; instagram: string | null;
+  facebook: string | null; tiktok: string | null; sitio_web: string | null; whatsapp: string | null;
+  bio: string | null; direccion: string | null;
   exige_sena: boolean; porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
   horas_limite_cancelacion: number | null;
   alias_pago: string | null;
-  logo_url: string | null; color_primario: string | null; color_acento: string | null;
+  logo_url: string | null; banner_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
   stat_rating: number | null; stat_barberos: number | null; stat_clientes: number | null;
 }
@@ -59,7 +61,10 @@ export default function ConfiguracionPage() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // Para agregar día bloqueado
   const [nuevaFecha, setNuevaFecha] = useState('');
@@ -223,20 +228,42 @@ export default function ConfiguracionPage() {
     fetch_();
   };
 
-  const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const subirImagen = async (file: File, kind: 'logo' | 'banner') => {
+    if (file.size > 3 * 1024 * 1024) {
+      setUploadError('La imagen no puede superar 3MB');
+      return null;
+    }
+    setUploadError(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('kind', kind);
+    const res = await fetch(`/api/admin/${tenantSlug}/upload`, { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setUploadError(data.error ?? 'Error al subir la imagen');
+      return null;
+    }
+    return data.url as string;
+  };
+
+  const handleLogoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert('La imagen no puede superar 2MB');
-      return;
-    }
     setLogoUploading(true);
-    const reader = new FileReader();
-    reader.onload = () => {
-      setTenant(t => t ? { ...t, logo_url: reader.result as string } : t);
-      setLogoUploading(false);
-    };
-    reader.readAsDataURL(file);
+    const url = await subirImagen(file, 'logo');
+    if (url) setTenant(t => t ? { ...t, logo_url: url } : t);
+    setLogoUploading(false);
+    e.target.value = '';
+  };
+
+  const handleBannerFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBannerUploading(true);
+    const url = await subirImagen(file, 'banner');
+    if (url) setTenant(t => t ? { ...t, banner_url: url } : t);
+    setBannerUploading(false);
+    e.target.value = '';
   };
 
   const eliminarDiaBloqueado = async (id: string) => {
@@ -332,6 +359,80 @@ export default function ConfiguracionPage() {
                   placeholder="@tu.estetica  (o el link completo)"
                 />
                 <p className="text-xs text-gray-400 mt-1.5">Aparece como enlace en el ícono de Instagram del sitio de reservas.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Facebook
+                </label>
+                <input
+                  value={tenant.facebook ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, facebook: e.target.value } : t)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="Nombre de página o link completo"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  TikTok
+                </label>
+                <input
+                  value={tenant.tiktok ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, tiktok: e.target.value } : t)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="@tu.estetica  (o el link completo)"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Sitio web
+                </label>
+                <input
+                  value={tenant.sitio_web ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, sitio_web: e.target.value } : t)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="https://tu-sitio.com"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  WhatsApp público
+                </label>
+                <input
+                  value={tenant.whatsapp ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, whatsapp: e.target.value } : t)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="+54 9 11 xxxx-xxxx"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Opcional. Si no lo cargás, se usa el teléfono de arriba.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Dirección
+                </label>
+                <input
+                  value={tenant.direccion ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, direccion: e.target.value } : t)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="Av. Siempre Viva 742, CABA"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Se muestra con un ícono de ubicación en el sitio de reservas.</p>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Descripción corta
+                  </label>
+                  <span className="text-xs text-gray-400">{(tenant.bio ?? '').length}/500</span>
+                </div>
+                <textarea
+                  value={tenant.bio ?? ''}
+                  onChange={(e) => setTenant(t => t ? { ...t, bio: e.target.value.slice(0, 500) } : t)}
+                  rows={3}
+                  maxLength={500}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
+                  placeholder="Contale a tus clientes de qué se trata tu negocio..."
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Se muestra debajo del nombre en el sitio de reservas.</p>
               </div>
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -718,9 +819,104 @@ export default function ConfiguracionPage() {
                 </div>
               </div>
 
+              {/* Banner */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+                <h3 className="font-semibold text-gray-900">Banner / portada</h3>
+                <p className="text-xs text-gray-400 -mt-2">Se muestra como imagen de fondo arriba de todo en el sitio de reservas.</p>
+
+                <div className="w-full aspect-[21/9] rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+                  {bannerUploading ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+                  ) : tenant.banner_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={tenant.banner_url} alt="Banner" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-gray-300" />
+                  )}
+                </div>
+
+                <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerFile} />
+                <button
+                  type="button"
+                  onClick={() => bannerInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-violet-300 rounded-xl text-sm font-medium text-violet-600 hover:bg-violet-50 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Subir desde tu dispositivo
+                </button>
+                {tenant.banner_url && (
+                  <button
+                    type="button"
+                    onClick={() => setTenant(t => t ? { ...t, banner_url: null } : t)}
+                    className="w-full text-xs text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    Quitar banner
+                  </button>
+                )}
+
+                {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
+              </div>
+
+              {/* Colores */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+                <h3 className="font-semibold text-gray-900">Colores</h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Primario</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={/^#[0-9A-Fa-f]{6}$/.test(tenant.color_primario ?? '') ? tenant.color_primario! : '#7c3aed'}
+                        onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value } : t)}
+                        className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
+                      />
+                      <input
+                        value={tenant.color_primario ?? ''}
+                        onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value || null } : t)}
+                        placeholder="#7c3aed"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Acento</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={/^#[0-9A-Fa-f]{6}$/.test(tenant.color_acento ?? '') ? tenant.color_acento! : '#a78bfa'}
+                        onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value } : t)}
+                        className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
+                      />
+                      <input
+                        value={tenant.color_acento ?? ''}
+                        onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value || null } : t)}
+                        placeholder="#a78bfa"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Vista previa</p>
+                  <div className="flex gap-2 h-10 rounded-xl overflow-hidden border border-gray-100">
+                    <div className="flex-1" style={{ backgroundColor: tenant.color_primario || '#7c3aed' }} />
+                    <div className="flex-1" style={{ backgroundColor: tenant.color_acento || '#a78bfa' }} />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTenant(t => t ? { ...t, color_primario: null, color_acento: null } : t)}
+                  className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  Restaurar colores por defecto
+                </button>
+              </div>
+
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saved ? '¡Guardado!' : 'Guardar logo'}
+                {saved ? '¡Guardado!' : 'Guardar cambios'}
               </button>
             </div>
           )}
