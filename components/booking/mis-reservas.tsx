@@ -43,10 +43,9 @@ function fmtHora(iso: string) {
 }
 
 export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasProps) {
-  const T = getBookingTheme(tenantConfig?.tipo_negocio);
-  const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
-  const accentColor  = isBarberia ? (tenantConfig?.color_acento  ?? "#B8935A") : T.accent;
+  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento);
+  const primaryColor = T.primary;
+  const accentColor  = T.accent;
 
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");

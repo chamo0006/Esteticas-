@@ -48,11 +48,10 @@ export function SummaryPayment({
   const [bookingResult, setBookingResult] = useState<BookingConfirmation | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
-  const T = getBookingTheme(tenantConfig?.tipo_negocio);
+  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  // Estéticas usan la paleta Sora fija (negro + dorado); la barbería mantiene sus colores.
-  const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
-  const accentColor  = isBarberia ? (tenantConfig?.color_acento  ?? "#B8935A") : T.accent;
+  const primaryColor = T.primary;
+  const accentColor  = T.accent;
 
   const exigeSena = tenantConfig?.exige_sena ?? false;
   const porcentajeSena = tenantConfig?.porcentaje_sena ?? 0;

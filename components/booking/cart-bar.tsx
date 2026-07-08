@@ -15,9 +15,9 @@ const formatPrice = (price: number) =>
   new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 0 }).format(price);
 
 export function CartBar({ itemCount, totalAmount, onContinue, disabled, tenantConfig }: CartBarProps) {
-  const T = getBookingTheme(tenantConfig?.tipo_negocio);
+  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
-  const primaryColor = isBarberia ? (tenantConfig?.color_primario ?? "#C9A96E") : T.primary;
+  const primaryColor = T.primary;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 px-5 py-4 z-50"

@@ -68,9 +68,9 @@ export default async function ReservaExitoPage({ params, searchParams }: Props) 
   const { external_reference } = await searchParams;
 
   const tenant = await getTenantBySlug(tenantSlug);
-  const T = getBookingTheme(tenant?.tipo_negocio);
+  const T = getBookingTheme(tenant?.tipo_negocio, tenant?.color_primario, tenant?.color_acento);
   const isBarberia = tenant?.tipo_negocio === 'barberia';
-  const accentColor = isBarberia ? (tenant?.color_acento ?? '#B8935A') : T.accent;
+  const accentColor = T.accent;
 
   const reserva = external_reference ? await getReserva(external_reference) : null;
 

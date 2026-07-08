@@ -49,6 +49,18 @@ const BARBERIA: BookingTheme = {
   surf2: '#252525',
 };
 
-export function getBookingTheme(tipo: TipoNegocio | undefined): BookingTheme {
-  return tipo === 'barberia' ? BARBERIA : ESTETICA;
+// Colores personalizados del tenant (Configuración → Apariencia) pisan el
+// primary/accent del preset fijo (Sora para estética, dorado para barbería);
+// si no están cargados, se usa el preset tal cual.
+export function getBookingTheme(
+  tipo: TipoNegocio | undefined,
+  colorPrimario?: string | null,
+  colorAcento?: string | null,
+): BookingTheme {
+  const base = tipo === 'barberia' ? BARBERIA : ESTETICA;
+  return {
+    ...base,
+    primary: colorPrimario || base.primary,
+    accent: colorAcento || base.accent,
+  };
 }
