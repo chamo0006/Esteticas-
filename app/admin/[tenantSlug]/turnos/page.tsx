@@ -422,6 +422,12 @@ export default function TurnosPage() {
   // Filtro por empleado (null = todos). Se sincroniza solo con el apartado de empleados.
   const [filtroProfesional, setFiltroProfesional] = useState<string | null>(null);
 
+  // Deep-link desde el aviso de turnos vencidos: /turnos?vista=todos
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('vista') === 'todos') setVista('todos');
+  }, []);
+
   // Modal state
   const [modalTurno, setModalTurno] = useState<Turno | null>(null);
   const [canceling, setCanceling] = useState(false);

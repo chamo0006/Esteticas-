@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { getArgentinaRanges } from '@/lib/argentina-time';
 import { Calendar, Users, DollarSign, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
 
 const MONTHS  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -19,23 +20,6 @@ function formatFecha(dt: string | Date) {
   // timezone-agnostic regardless of where the server is running.
   const ar = new Date(utc.getTime() - 3 * 60 * 60 * 1000);
   return `${WEEKDAYS[ar.getUTCDay()]} ${ar.getUTCDate()} ${MONTHS[ar.getUTCMonth()]} · ${ar.getUTCHours().toString().padStart(2,'0')}:${ar.getUTCMinutes().toString().padStart(2,'0')} hs`;
-}
-
-// Fechas en hora Argentina (UTC-3)
-function getArgentinaRanges() {
-  const now = new Date();
-  const offsetMs = 3 * 60 * 60 * 1000; // UTC-3
-
-  const argNow = new Date(now.getTime() - offsetMs);
-  const y = argNow.getUTCFullYear();
-  const m = argNow.getUTCMonth();
-  const d = argNow.getUTCDate();
-
-  const todayStart = new Date(Date.UTC(y, m, d, 3, 0, 0));     // medianoche ARG = 03:00 UTC
-  const todayEnd   = new Date(Date.UTC(y, m, d, 26, 59, 59));   // 23:59 ARG = 02:59 UTC día siguiente
-  const monthStart = new Date(Date.UTC(y, m, 1, 3, 0, 0));
-
-  return { todayStart: todayStart.toISOString(), todayEnd: todayEnd.toISOString(), monthStart: monthStart.toISOString(), nowIso: now.toISOString() };
 }
 
 const ESTADO_STYLES: Record<string, string> = {
