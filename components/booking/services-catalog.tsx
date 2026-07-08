@@ -97,9 +97,7 @@ export function ServicesCatalog({
       <header className="px-5 pt-5 pb-4"
         style={{ backgroundColor: T.bgSticky }}>
         {/* Top row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="w-8" />
-
+        <div className="flex flex-col items-center mb-1">
           <div className="flex flex-col items-center gap-2">
             {logoUrl && (
               <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0"
@@ -130,8 +128,11 @@ export function ServicesCatalog({
               )}
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+        {/* Redes sociales — fila propia, debajo del título/bio para no amontonar el header */}
+        {(wppUrl || igUrl || fbUrl || ttUrl || webUrl) && (
+          <div className="flex items-center justify-center gap-1.5 flex-wrap mb-3">
             {wppUrl && (
               <a href={wppUrl} target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
@@ -173,7 +174,7 @@ export function ServicesCatalog({
               </a>
             )}
           </div>
-        </div>
+        )}
 
         {/* Decorative divider */}
         <div className="flex items-center justify-center gap-3 mb-3">
