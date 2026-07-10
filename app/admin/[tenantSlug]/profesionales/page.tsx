@@ -103,11 +103,16 @@ export default function ProfesionalesPage() {
   };
 
   const toggleActivo = async (p: Profesional) => {
-    await fetch(`/api/admin/${tenantSlug}/profesionales`, {
+    const res = await fetch(`/api/admin/${tenantSlug}/profesionales`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: p.id, activo: !p.activo }),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? 'No se pudo actualizar el estado');
+      return;
+    }
     await fetch_();
   };
 

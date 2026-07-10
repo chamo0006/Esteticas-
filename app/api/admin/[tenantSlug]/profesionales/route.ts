@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { puedeActivarProfesional } from '@/lib/plan-limites';
 
 async function getAdminPayload(tenantSlug: string) {
   const cookieStore = await cookies();
@@ -64,6 +65,12 @@ export async function POST(
     return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 });
   }
 
+  // Se crea activo por defecto, así que cuenta contra el límite del plan.
+  const limite = await puedeActivarProfesional(payload.tenantId);
+  if (!limite.ok) {
+    return NextResponse.json({ error: limite.motivo }, { status: 403 });
+  }
+
   const insertData: Record<string, unknown> = { tenant_id: payload.tenantId, nombre: nombre.trim() };
   if (typeof rol === 'string' && rol.trim()) insertData.rol = rol.trim();
   const ratingNum = rating === '' || rating == null ? null : Number(rating);
@@ -94,6 +101,13 @@ export async function PATCH(
 
   const { id, nombre, activo, rol, rating } = await req.json();
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+
+  if (activo === true) {
+    const limite = await puedeActivarProfesional(payload.tenantId, id);
+    if (!limite.ok) {
+      return NextResponse.json({ error: limite.motivo }, { status: 403 });
+    }
+  }
 
   const updateData: Record<string, unknown> = {};
   if (nombre !== undefined) updateData.nombre = nombre.trim();
