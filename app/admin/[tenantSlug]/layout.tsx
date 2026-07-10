@@ -30,7 +30,7 @@ export default async function AdminLayout({ children, params }: Props) {
   if (!tenant) redirect('/admin/login');
 
   const [aviso, avisoTurnos] = await Promise.all([
-    getAvisoSuscripcion(tenant.id),
+    getAvisoSuscripcion(tenant.id, tenantSlug),
     getAvisoTurnosVencidos(tenant.id),
   ]);
 

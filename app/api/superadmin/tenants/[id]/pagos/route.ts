@@ -42,17 +42,32 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Datos incompletos (monto, método, estado)' }, { status: 400 });
   }
 
-  // Suscripción actual para snapshot de plan
+  // Suscripción actual para snapshot de plan (y para saber si hay un cambio de plan pendiente)
   const { data: susc } = await supabase
     .from('suscripciones')
-    .select('id, plan_id')
+    .select('id, plan_id, plan_pendiente_id')
     .eq('tenant_id', tenantId)
     .single();
+
+  // Si el pago es aprobado y renueva el período, un cambio de plan que el
+  // dueño haya pedido desde su panel se aplica recién ahora.
+  const planEfectivoId = (estado === 'aprobado' && periodo_fin && susc?.plan_pendiente_id)
+    ? susc.plan_pendiente_id
+    : (susc?.plan_id ?? null);
+
+  // Snapshot histórico del plan al momento del pago (no se ve afectado si
+  // más adelante se editan precios/features del plan).
+  const { data: planSnapshot } = planEfectivoId
+    ? await supabase.from('planes').select('nombre, precio_mensual, precio_anual, features').eq('id', planEfectivoId).maybeSingle()
+    : { data: null };
 
   const { error } = await supabase.from('pagos_suscripcion').insert({
     tenant_id: tenantId,
     suscripcion_id: susc?.id ?? null,
-    plan_id: susc?.plan_id ?? null,
+    plan_id: planEfectivoId,
+    plan_nombre_snapshot: planSnapshot?.nombre ?? null,
+    plan_precio_snapshot: planSnapshot?.precio_mensual ?? null,
+    plan_features_snapshot: planSnapshot?.features ?? null,
     monto,
     metodo,
     estado,
@@ -68,11 +83,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
-  // Pago aprobado con período → renueva la suscripción
+  // Pago aprobado con período → renueva la suscripción y aplica el cambio de plan pendiente (si había)
   if (estado === 'aprobado' && periodo_fin) {
     await supabase
       .from('suscripciones')
-      .update({ fecha_fin: periodo_fin, estado: 'activa', bloqueado: false, bloqueado_at: null })
+      .update({
+        fecha_fin: periodo_fin,
+        estado: 'activa',
+        bloqueado: false,
+        bloqueado_at: null,
+        ...(susc?.plan_pendiente_id ? { plan_id: susc.plan_pendiente_id, plan_pendiente_id: null } : {}),
+      })
       .eq('tenant_id', tenantId);
     await supabase.from('tenants').update({ activo: true }).eq('id', tenantId);
   }
