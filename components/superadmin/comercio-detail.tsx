@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2, Zap, Hand, Edit2, X, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2, Zap, Hand, Edit2, X, Check, KeyRound, UserCog } from 'lucide-react';
 import { digitsOnly, cn } from '@/lib/utils';
 
 interface Plan { id: string; nombre: string; precio_mensual: number; precio_anual: number | null; }
@@ -32,6 +32,7 @@ interface Tenant {
   activo: boolean; email_contacto: string; telefono: string | null;
 }
 interface Metricas { turnos_total: number; turnos_completados: number; turnos_cancelados: number; dinero_movido: number; }
+interface UsuarioAdmin { id: string; nombre: string; email: string; rol: string; activo: boolean; created_at: string; }
 
 interface Props {
   canSeeBilling: boolean;
@@ -41,6 +42,7 @@ interface Props {
   planes: Plan[];
   pagos: Pago[];
   metricas: Metricas;
+  usuarios: UsuarioAdmin[];
 }
 
 function formatARS(n: number) {
@@ -58,7 +60,7 @@ const ESTADO_PREAPPROVAL_LABEL: Record<string, string> = {
   cancelled: 'Cancelada',
 };
 
-export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcion, planes, pagos, metricas }: Props) {
+export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcion, planes, pagos, metricas, usuarios }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -86,6 +88,10 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
   const [editandoPagoId, setEditandoPagoId] = useState<string | null>(null);
   const [editPago, setEditPago] = useState({ monto: '', metodo: '', estado: '', periodo_fin: '' });
   const [borrandoPagoId, setBorrandoPagoId] = useState<string | null>(null);
+
+  // Edición de una cuenta de acceso (usuarios_admin) — soporte para "me olvidé mi contraseña/email"
+  const [editandoUsuarioId, setEditandoUsuarioId] = useState<string | null>(null);
+  const [editUsuario, setEditUsuario] = useState({ nombre: '', email: '', password: '' });
 
   // Si la sesión de superadmin caducó, el endpoint responde 401. En vez del
   // genérico "Error al guardar", avisamos y mandamos a re-loguear.
@@ -183,6 +189,28 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     else if (!sesionExpirada(res)) setMsg('No se pudo borrar el pago');
   };
 
+  const abrirEdicionUsuario = (u: UsuarioAdmin) => {
+    setEditandoUsuarioId(u.id);
+    setEditUsuario({ nombre: u.nombre, email: u.email, password: '' });
+  };
+
+  const guardarEdicionUsuario = async (usuarioId: string) => {
+    setSaving(true); setMsg(null);
+    const res = await fetch(`/api/superadmin/tenants/${tenant.id}/usuarios`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        usuarioId,
+        nombre: editUsuario.nombre,
+        email: editUsuario.email,
+        ...(editUsuario.password ? { password: editUsuario.password } : {}),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setSaving(false);
+    if (res.ok) { setMsg('Cuenta actualizada ✓'); setEditandoUsuarioId(null); router.refresh(); }
+    else if (!sesionExpirada(res)) setMsg(data.error || 'No se pudo actualizar la cuenta');
+  };
+
   const eliminar = async () => {
     const escrito = prompt(`Esta acción es IRREVERSIBLE. Se borrarán el comercio y todos sus turnos, clientes y servicios.\n\nPara confirmar, escribí el slug del comercio: ${tenant.slug}`);
     if (escrito !== tenant.slug) {
@@ -259,6 +287,66 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
         </div>
 
         {msg && <p className="text-sm text-violet-700 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2 mb-4">{msg}</p>}
+
+        {/* Cuentas de acceso — soporte para "me olvidé mi email/contraseña/nombre" */}
+        {isSuperadmin && (
+          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm mb-6">
+            <div className="px-5 py-3.5 border-b border-gray-100">
+              <h2 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+                <UserCog className="w-4 h-4 text-gray-400" /> Cuentas de acceso al panel
+              </h2>
+            </div>
+            {usuarios.length === 0 ? (
+              <div className="py-8 text-center text-gray-400 text-sm">Sin cuentas cargadas</div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {usuarios.map((u) => (
+                  editandoUsuarioId === u.id ? (
+                    <div key={u.id} className="px-5 py-4 space-y-2 bg-gray-50">
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className={label}>Nombre</label>
+                          <input className={input} value={editUsuario.nombre}
+                            onChange={(e) => setEditUsuario({ ...editUsuario, nombre: e.target.value })} />
+                        </div>
+                        <div>
+                          <label className={label}>Email (con esto entra)</label>
+                          <input type="email" className={input} value={editUsuario.email}
+                            onChange={(e) => setEditUsuario({ ...editUsuario, email: e.target.value })} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={label}>Nueva contraseña (dejar vacío para no cambiarla)</label>
+                        <input type="text" className={input} value={editUsuario.password} placeholder="Mínimo 6 caracteres"
+                          onChange={(e) => setEditUsuario({ ...editUsuario, password: e.target.value })} />
+                      </div>
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button onClick={() => setEditandoUsuarioId(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-200">
+                          <X className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => guardarEdicionUsuario(u.id)} disabled={saving}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold rounded-lg">
+                          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Guardar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={u.id} className="px-5 py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-900 font-medium truncate">{u.nombre}</p>
+                        <p className="text-xs text-gray-400 truncate">{u.email} · <span className="capitalize">{u.rol}</span>{!u.activo && ' · inactiva'}</p>
+                      </div>
+                      <button onClick={() => abrirEdicionUsuario(u)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0">
+                        <KeyRound className="w-3.5 h-3.5" /> Editar / resetear contraseña
+                      </button>
+                    </div>
+                  )
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {!canSeeBilling ? (
           <div className="bg-white border border-gray-100 rounded-2xl p-6 text-center text-gray-400 text-sm shadow-sm">
