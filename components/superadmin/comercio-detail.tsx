@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2, Zap, Hand } from 'lucide-react';
+import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2, Zap, Hand, Edit2, X, Check } from 'lucide-react';
 import { digitsOnly, cn } from '@/lib/utils';
 
 interface Plan { id: string; nombre: string; precio_mensual: number; precio_anual: number | null; }
@@ -82,6 +82,11 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     periodo_inicio: '', periodo_fin: '', referencia_externa: '',
   });
 
+  // Edición de un pago ya registrado
+  const [editandoPagoId, setEditandoPagoId] = useState<string | null>(null);
+  const [editPago, setEditPago] = useState({ monto: '', metodo: '', estado: '', periodo_fin: '' });
+  const [borrandoPagoId, setBorrandoPagoId] = useState<string | null>(null);
+
   // Si la sesión de superadmin caducó, el endpoint responde 401. En vez del
   // genérico "Error al guardar", avisamos y mandamos a re-loguear.
   const sesionExpirada = (res: Response) => {
@@ -148,6 +153,34 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
       setPago({ monto: '', metodo: 'transferencia', estado: 'aprobado', periodo_inicio: '', periodo_fin: '', referencia_externa: '' });
       router.refresh();
     } else if (!sesionExpirada(res)) { setMsg('Error al registrar el pago'); }
+  };
+
+  const abrirEdicionPago = (p: Pago) => {
+    setEditandoPagoId(p.id);
+    setEditPago({
+      monto: String(p.monto), metodo: p.metodo, estado: p.estado,
+      periodo_fin: p.periodo_fin ?? '',
+    });
+  };
+
+  const guardarEdicionPago = async (pagoId: string) => {
+    setSaving(true); setMsg(null);
+    const res = await fetch(`/api/superadmin/tenants/${tenant.id}/pagos/${pagoId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...editPago, monto: Number(editPago.monto), periodo_fin: editPago.periodo_fin || null }),
+    });
+    setSaving(false);
+    if (res.ok) { setMsg('Pago actualizado ✓'); setEditandoPagoId(null); router.refresh(); }
+    else if (!sesionExpirada(res)) setMsg('No se pudo actualizar el pago');
+  };
+
+  const borrarPago = async (pagoId: string) => {
+    if (!confirm('¿Borrar este pago del historial? No revierte cambios que ya haya hecho en la suscripción.')) return;
+    setBorrandoPagoId(pagoId);
+    const res = await fetch(`/api/superadmin/tenants/${tenant.id}/pagos/${pagoId}`, { method: 'DELETE' });
+    setBorrandoPagoId(null);
+    if (res.ok) { setMsg('Pago borrado ✓'); router.refresh(); }
+    else if (!sesionExpirada(res)) setMsg('No se pudo borrar el pago');
   };
 
   const eliminar = async () => {
@@ -366,13 +399,53 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
                 ) : (
                   <div className="divide-y divide-gray-50">
                     {pagos.map((p) => (
-                      <div key={p.id} className="px-5 py-3 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-900 font-medium">{formatARS(Number(p.monto))}</p>
-                          <p className="text-xs text-gray-400 capitalize">{p.metodo} · {new Date(p.created_at).toLocaleDateString('es-AR')}</p>
+                      editandoPagoId === p.id ? (
+                        <div key={p.id} className="px-5 py-3 space-y-2 bg-gray-50">
+                          <div className="grid grid-cols-2 gap-2">
+                            <input type="number" className={input} value={editPago.monto}
+                              onChange={(e) => setEditPago({ ...editPago, monto: e.target.value })} placeholder="Monto" />
+                            <select className={input} value={editPago.metodo}
+                              onChange={(e) => setEditPago({ ...editPago, metodo: e.target.value })}>
+                              {['transferencia', 'mercadopago', 'efectivo', 'tarjeta', 'otro'].map((m) => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <select className={input} value={editPago.estado}
+                              onChange={(e) => setEditPago({ ...editPago, estado: e.target.value })}>
+                              {['aprobado', 'pendiente', 'vencido', 'rechazado'].map((m) => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <input type="date" className={input} value={editPago.periodo_fin}
+                              onChange={(e) => setEditPago({ ...editPago, periodo_fin: e.target.value })} />
+                          </div>
+                          <div className="flex justify-end gap-2 pt-1">
+                            <button onClick={() => setEditandoPagoId(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-200">
+                              <X className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => guardarEdicionPago(p.id)} disabled={saving}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold rounded-lg">
+                              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Guardar
+                            </button>
+                          </div>
                         </div>
-                        <span className={`text-xs font-semibold capitalize ${ESTADO_PAGO[p.estado] ?? 'text-gray-400'}`}>{p.estado}</span>
-                      </div>
+                      ) : (
+                        <div key={p.id} className="px-5 py-3 flex items-center justify-between group">
+                          <div>
+                            <p className="text-sm text-gray-900 font-medium">{formatARS(Number(p.monto))}</p>
+                            <p className="text-xs text-gray-400 capitalize">{p.metodo} · {new Date(p.created_at).toLocaleDateString('es-AR')}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className={`text-xs font-semibold capitalize mr-1 ${ESTADO_PAGO[p.estado] ?? 'text-gray-400'}`}>{p.estado}</span>
+                            <button onClick={() => abrirEdicionPago(p)} title="Editar"
+                              className="p-1.5 rounded-lg text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => borrarPago(p.id)} disabled={borrandoPagoId === p.id} title="Borrar"
+                              className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+                              {borrandoPagoId === p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                      )
                     ))}
                   </div>
                 )}
