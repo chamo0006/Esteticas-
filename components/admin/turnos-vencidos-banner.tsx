@@ -41,7 +41,7 @@ export function TurnosVencidosBanner({ aviso, tenantSlug }: Props) {
           </p>
           <p className="text-xs sm:text-[13px] mt-0.5 leading-relaxed opacity-90">
             Revisalos para mantener tu agenda al día.{' '}
-            <a href={`/admin/${tenantSlug}/turnos?vista=todos`} className="underline font-medium">
+            <a href={`/admin/${tenantSlug}/turnos?vista=todos&estado=vencidos`} className="underline font-medium">
               Ver turnos →
             </a>
           </p>

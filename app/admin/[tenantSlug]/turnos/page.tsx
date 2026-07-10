@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 
 type Estado = 'pendiente' | 'confirmado' | 'completado' | 'cancelado';
 type Vista = 'agenda' | 'calendario' | 'todos';
+// 'vencidos' = pendiente/confirmado de días anteriores a hoy (mismo criterio que el aviso del layout)
+type FiltroEstado = 'todos' | Estado | 'vencidos';
 
 interface Turno {
   id: string;
@@ -91,6 +93,12 @@ function formatFechaHora(dt: string) {
 
 function toDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getTodayStartMs(): number {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
 }
 
 /** Returns the Monday of the week containing `d` */
@@ -421,11 +429,17 @@ export default function TurnosPage() {
   const [vista, setVista] = useState<Vista>('calendario');
   // Filtro por empleado (null = todos). Se sincroniza solo con el apartado de empleados.
   const [filtroProfesional, setFiltroProfesional] = useState<string | null>(null);
+  // Filtro por estado: Todos / Pendientes / Confirmados / Completados / Cancelados / Vencidos.
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos');
 
-  // Deep-link desde el aviso de turnos vencidos: /turnos?vista=todos
+  // Deep-link desde el aviso de turnos vencidos: /turnos?vista=todos&estado=vencidos
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     if (sp.get('vista') === 'todos') setVista('todos');
+    const estadoParam = sp.get('estado');
+    if (estadoParam && ['pendiente', 'confirmado', 'completado', 'cancelado', 'vencidos'].includes(estadoParam)) {
+      setFiltroEstado(estadoParam as FiltroEstado);
+    }
   }, []);
 
   // Modal state
@@ -539,12 +553,42 @@ export default function TurnosPage() {
     ? filtroProfesional
     : null;
 
-  const turnosFiltrados = filtroActivo
+  const turnosDelProfesional = filtroActivo
     ? turnos.filter(t => t.profesional_id === filtroActivo)
     : turnos;
 
   // En el calendario, al filtrar mostramos solo la columna de ese empleado
   const profesionalesCalendario = filtroActivo ? activeProfs.filter(p => p.id === filtroActivo) : profesionales;
+
+  // ── Filtro por estado (Pendientes / Confirmados / Completados / Cancelados / Vencidos) ──
+
+  const todayStartMs = getTodayStartMs();
+  const esVencido = (t: Turno) =>
+    (t.estado === 'pendiente' || t.estado === 'confirmado') && new Date(t.fecha_hora).getTime() < todayStartMs;
+
+  const countPendiente = turnosDelProfesional.filter(t => t.estado === 'pendiente').length;
+  const countConfirmado = turnosDelProfesional.filter(t => t.estado === 'confirmado').length;
+  const countCompletado = turnosDelProfesional.filter(t => t.estado === 'completado').length;
+  const countCancelado = turnosDelProfesional.filter(t => t.estado === 'cancelado').length;
+  const countVencidos = turnosDelProfesional.filter(esVencido).length;
+
+  const estadoTabs: Array<{ key: FiltroEstado; label: string; count: number; dot: string }> = [
+    { key: 'todos', label: 'Todos', count: turnosDelProfesional.length, dot: '' },
+    { key: 'pendiente', label: 'Pendientes', count: countPendiente, dot: 'bg-amber-400' },
+    { key: 'confirmado', label: 'Confirmados', count: countConfirmado, dot: 'bg-violet-500' },
+    { key: 'completado', label: 'Completados', count: countCompletado, dot: 'bg-emerald-500' },
+    { key: 'cancelado', label: 'Cancelados', count: countCancelado, dot: 'bg-gray-300' },
+  ];
+  if (countVencidos > 0) {
+    estadoTabs.push({ key: 'vencidos', label: 'Vencidos', count: countVencidos, dot: 'bg-red-500' });
+  }
+
+  const turnosFiltrados =
+    filtroEstado === 'todos'
+      ? turnosDelProfesional
+      : filtroEstado === 'vencidos'
+        ? turnosDelProfesional.filter(esVencido)
+        : turnosDelProfesional.filter(t => t.estado === filtroEstado);
 
   // ── Agenda (list) view ─────────────────────────────────────────────────────
 
@@ -747,6 +791,35 @@ export default function TurnosPage() {
         </button>
       </div>
       )}
+
+      {/* Filtro por estado */}
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+        {estadoTabs.map((tab) => {
+          const sel = filtroEstado === tab.key;
+          const selClasses = tab.key === 'vencidos'
+            ? 'bg-red-600 text-white border-red-600'
+            : 'bg-gray-900 text-white border-gray-900';
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setFiltroEstado(tab.key)}
+              className={cn(
+                'flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors border',
+                sel ? selClasses : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+              )}
+            >
+              {tab.dot && <span className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0', tab.dot)} />}
+              {tab.label}
+              <span className={cn(
+                'text-xs font-semibold px-1.5 py-0.5 rounded-full',
+                sel ? 'bg-white/20' : 'bg-gray-100 text-gray-500'
+              )}>
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Nav de empleados — se sincroniza solo con el apartado de Empleados */}
       {activeProfs.length > 0 && (
