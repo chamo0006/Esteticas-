@@ -63,6 +63,8 @@ export default async function SuperAdminPage() {
     plan_nombre: planMap.get(m.tenant_id as string) ?? null,
     turnos_total: Number(m.turnos_total ?? 0),
     dinero_movido: Number(m.dinero_movido ?? 0),
+    modalidad_cobro: (m.modalidad_cobro as string) ?? null,
+    mp_preapproval_status: (m.mp_preapproval_status as string) ?? null,
   }));
 
   const porVencer = tenants

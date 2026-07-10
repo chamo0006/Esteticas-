@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2 } from 'lucide-react';
-import { digitsOnly } from '@/lib/utils';
+import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2, Zap, Hand } from 'lucide-react';
+import { digitsOnly, cn } from '@/lib/utils';
 
 interface Plan { id: string; nombre: string; precio_mensual: number; precio_anual: number | null; }
 interface Suscripcion {
@@ -19,6 +19,8 @@ interface Suscripcion {
   precio_acordado: number | null;
   bloqueado: boolean;
   notas: string | null;
+  modalidad_cobro: string | null;
+  mp_preapproval_status: string | null;
 }
 interface Pago {
   id: string; monto: number; metodo: string; estado: string;
@@ -47,6 +49,13 @@ function formatARS(n: number) {
 
 const ESTADO_PAGO: Record<string, string> = {
   aprobado: 'text-emerald-600', pendiente: 'text-amber-600', vencido: 'text-red-500', rechazado: 'text-gray-400',
+};
+
+const ESTADO_PREAPPROVAL_LABEL: Record<string, string> = {
+  pending: 'Pendiente de autorización del dueño',
+  authorized: 'Autorizada y cobrando',
+  paused: 'Pausada',
+  cancelled: 'Cancelada',
 };
 
 export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcion, planes, pagos, metricas }: Props) {
@@ -96,6 +105,21 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     setSaving(false);
     if (res.ok) { setMsg('Suscripción guardada ✓'); router.refresh(); }
     else if (!sesionExpirada(res)) setMsg('Error al guardar');
+  };
+
+  const cambiarModalidad = async (modalidad: 'manual' | 'automatico') => {
+    if (modalidad === suscripcion?.modalidad_cobro) return;
+    if (modalidad === 'automatico' && !confirm('Se va a generar un link de autorización de débito automático en MercadoPago para que el dueño lo complete. ¿Continuar?')) return;
+    if (modalidad === 'manual' && suscripcion?.modalidad_cobro === 'automatico' && !confirm('Esto cancela la suscripción recurrente activa en MercadoPago. ¿Continuar?')) return;
+    setSaving(true); setMsg(null);
+    const res = await fetch(`/api/superadmin/tenants/${tenant.id}/modalidad-cobro`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ modalidad }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setSaving(false);
+    if (res.ok) { setMsg('Modalidad de cobro actualizada ✓'); router.refresh(); }
+    else if (!sesionExpirada(res)) setMsg(data.error || 'No se pudo cambiar la modalidad de cobro');
   };
 
   const toggleBloqueo = async () => {
@@ -213,6 +237,38 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
             <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
               <h2 className="font-semibold text-gray-900 mb-4">Suscripción</h2>
               <div className="space-y-3">
+                <div>
+                  <label className={label}>Modalidad de cobro</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => cambiarModalidad('manual')}
+                      disabled={saving}
+                      className={cn(
+                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-50',
+                        suscripcion?.modalidad_cobro !== 'automatico' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                      )}
+                    >
+                      <Hand className="w-3.5 h-3.5" /> Manual
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => cambiarModalidad('automatico')}
+                      disabled={saving}
+                      className={cn(
+                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-50',
+                        suscripcion?.modalidad_cobro === 'automatico' ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                      )}
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Automático
+                    </button>
+                  </div>
+                  {suscripcion?.modalidad_cobro === 'automatico' && (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      {ESTADO_PREAPPROVAL_LABEL[suscripcion.mp_preapproval_status ?? ''] ?? 'Sin suscripción de MercadoPago generada todavía'}
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label className={label}>Plan</label>
                   <select className={input} value={form.plan_id} onChange={(e) => setForm({ ...form, plan_id: e.target.value })}>

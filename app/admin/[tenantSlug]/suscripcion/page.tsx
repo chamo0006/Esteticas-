@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { getArgentinaRanges } from '@/lib/argentina-time';
+import { obtenerPreapproval } from '@/lib/mercadopago-suscripciones';
 import { SuscripcionDetail, type PlanInfo, type PagoHistorial } from '@/components/admin/suscripcion/suscripcion-detail';
 
 interface Props {
@@ -29,9 +30,12 @@ interface SuscripcionRowRaw {
   precio_acordado: number | null;
   bloqueado: boolean;
   bloqueo_motivo: string | null;
-  renovacion_automatica: boolean;
   cancelada_at: string | null;
   motivo_cancelacion: string | null;
+  modalidad_cobro: string;
+  mp_preapproval_id: string | null;
+  mp_preapproval_status: string | null;
+  mp_preapproval_init_point: string | null;
   plan: PlanRowRaw | PlanRowRaw[] | null;
   plan_pendiente: PlanRowRaw | PlanRowRaw[] | null;
 }
@@ -56,7 +60,8 @@ export default async function SuscripcionPage({ params }: Props) {
       .from('suscripciones')
       .select(`
         estado, ciclo, fecha_inicio, fecha_fin, dias_gracia, precio_acordado,
-        bloqueado, bloqueo_motivo, renovacion_automatica, cancelada_at, motivo_cancelacion,
+        bloqueado, bloqueo_motivo, cancelada_at, motivo_cancelacion,
+        modalidad_cobro, mp_preapproval_id, mp_preapproval_status, mp_preapproval_init_point,
         plan:planes!suscripciones_plan_id_fkey(id, nombre, precio_mensual, precio_anual, max_profesionales, max_servicios, max_turnos_mes, features),
         plan_pendiente:planes!suscripciones_plan_pendiente_id_fkey(id, nombre, precio_mensual, precio_anual, max_profesionales, max_servicios, max_turnos_mes, features)
       `)
@@ -94,6 +99,20 @@ export default async function SuscripcionPage({ params }: Props) {
   const planActual = susc ? unwrap(susc.plan) : null;
   const planPendiente = susc ? unwrap(susc.plan_pendiente) : null;
 
+  // Si tiene débito automático autorizado, traemos el detalle en vivo (fecha
+  // real del próximo cobro y método usado) — best-effort, no bloquea la página.
+  let proximoCobro: string | null = null;
+  let metodoPagoVinculado: string | null = null;
+  if (susc?.modalidad_cobro === 'automatico' && susc.mp_preapproval_id) {
+    try {
+      const pre = await obtenerPreapproval(susc.mp_preapproval_id);
+      proximoCobro = pre.next_payment_date ?? null;
+      metodoPagoVinculado = pre.payment_method_id ?? null;
+    } catch (err) {
+      console.error('[suscripcion/page] no se pudo obtener el preapproval', err);
+    }
+  }
+
   const suscripcion = susc ? {
     estado: susc.estado,
     ciclo: susc.ciclo,
@@ -103,9 +122,13 @@ export default async function SuscripcionPage({ params }: Props) {
     precio_acordado: susc.precio_acordado,
     bloqueado: susc.bloqueado,
     bloqueo_motivo: susc.bloqueo_motivo,
-    renovacion_automatica: susc.renovacion_automatica,
     cancelada_at: susc.cancelada_at,
     motivo_cancelacion: susc.motivo_cancelacion,
+    modalidad_cobro: susc.modalidad_cobro,
+    mp_preapproval_status: susc.mp_preapproval_status,
+    mp_preapproval_init_point: susc.mp_preapproval_init_point,
+    proximo_cobro: proximoCobro,
+    metodo_pago_vinculado: metodoPagoVinculado,
   } : null;
 
   const planes: PlanInfo[] = (planesRes.data ?? []) as PlanInfo[];

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CreditCard, CalendarCheck, CalendarClock, AlertTriangle, Loader2,
-  Download, MessageCircle, RefreshCw, Users, Scissors, CalendarDays, TrendingUp,
+  Download, RefreshCw, Users, Scissors, CalendarDays, TrendingUp, ShieldCheck, ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AvisoBanner } from '@/components/ui/aviso-banner';
@@ -46,9 +46,13 @@ interface SuscripcionInfo {
   precio_acordado: number | null;
   bloqueado: boolean;
   bloqueo_motivo: string | null;
-  renovacion_automatica: boolean;
   cancelada_at: string | null;
   motivo_cancelacion: string | null;
+  modalidad_cobro: string;
+  mp_preapproval_status: string | null;
+  mp_preapproval_init_point: string | null;
+  proximo_cobro: string | null;
+  metodo_pago_vinculado: string | null;
 }
 
 interface Props {
@@ -60,8 +64,6 @@ interface Props {
   pagos: PagoHistorial[];
   uso: { profesionales: number; servicios: number; turnosMes: number };
 }
-
-const WHATSAPP_SOPORTE = '5491121615661';
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
@@ -94,6 +96,24 @@ const ESTADO_PAGO_BADGE: Record<string, string> = {
   vencido: 'bg-red-100 text-red-700',
   rechazado: 'bg-gray-100 text-gray-500',
 };
+
+const ESTADO_PREAPPROVAL_LABEL: Record<string, string> = {
+  pending: 'Pendiente de autorización',
+  authorized: 'Activa',
+  paused: 'Pausada',
+  cancelled: 'Cancelada',
+};
+
+const ESTADO_PREAPPROVAL_BADGE: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-700',
+  authorized: 'bg-emerald-100 text-emerald-700',
+  paused: 'bg-gray-200 text-gray-600',
+  cancelled: 'bg-gray-200 text-gray-600',
+};
+
+function capitalizar(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 function UsoBar({ icon: Icon, label, usado, limite }: { icon: typeof Users; label: string; usado: number; limite: number | null }) {
   const ilimitado = limite == null;
@@ -159,7 +179,25 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
     return false;
   };
 
-  const toggleRenovacion = () => patch({ accion: 'toggle_renovacion', renovacion_automatica: !suscripcion?.renovacion_automatica });
+  const iniciarPagoRedirect = async (url: string) => {
+    setGuardando(true);
+    setMsg(null);
+    try {
+      const res = await fetch(url, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.initPoint) {
+        window.location.href = data.initPoint;
+        return;
+      }
+      setMsg(data.error || 'No se pudo iniciar el pago con MercadoPago.');
+    } catch {
+      setMsg('No se pudo conectar con MercadoPago. Probá de nuevo.');
+    }
+    setGuardando(false);
+  };
+
+  const iniciarAbonar = () => iniciarPagoRedirect(`/api/admin/${tenantSlug}/suscripcion/abonar`);
+  const actualizarMetodoPago = () => iniciarPagoRedirect(`/api/admin/${tenantSlug}/suscripcion/actualizar-metodo-pago`);
 
   const confirmarCambioPlan = async (planId: string) => {
     const ok = await patch({ accion: 'solicitar_cambio_plan', plan_id: planId });
@@ -173,7 +211,9 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
 
   const deshacerCancelacion = () => patch({ accion: 'reactivar_cancelacion' });
 
-  const whatsappUrl = (texto: string) => `https://wa.me/${WHATSAPP_SOPORTE}?text=${encodeURIComponent(texto)}`;
+  const esManual = suscripcion?.modalidad_cobro === 'manual';
+  const esAutomatico = suscripcion?.modalidad_cobro === 'automatico';
+  const preapprovalPendiente = esAutomatico && suscripcion?.mp_preapproval_status === 'pending';
 
   const pagosFiltrados = useMemo(() => {
     return pagos.filter((p) => {
@@ -201,7 +241,7 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
         <>
           {msg && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2 mb-4">{msg}</p>}
 
-          {/* Bloqueo / vencimiento */}
+          {/* Bloqueo / vencimiento — la acción depende de la modalidad de cobro que definió el superadmin */}
           {suscripcion.bloqueado && (
             <AvisoBanner
               variant="critical"
@@ -209,7 +249,13 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
               detalle={suscripcion.bloqueo_motivo || 'Regularizá el pago para reactivar las reservas.'}
               clave="pagina-bloqueada"
               dismissible={false}
-              accion={{ label: 'Coordinar pago por WhatsApp', href: whatsappUrl(`Hola! Mi cuenta (${tenantSlug}) está suspendida y quiero regularizar el pago.`) }}
+              accion={
+                esManual
+                  ? { label: 'Abonar ahora', onClick: iniciarAbonar }
+                  : preapprovalPendiente && suscripcion.mp_preapproval_init_point
+                    ? { label: 'Autorizar débito automático', href: suscripcion.mp_preapproval_init_point }
+                    : { label: 'Actualizar método de pago', onClick: actualizarMetodoPago }
+              }
             />
           )}
           {!suscripcion.bloqueado && vencida && (
@@ -218,7 +264,13 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
               titulo="Tu suscripción venció"
               detalle={`Venció hace ${Math.abs(dias!)} día${plural(Math.abs(dias!))}. Regularizá el pago para evitar que se suspenda el sistema.`}
               clave={`pagina-vencida-${dias}`}
-              accion={{ label: 'Pagar ahora', href: whatsappUrl(`Hola! Quiero renovar mi suscripción (${tenantSlug}), venció hace ${Math.abs(dias!)} día${plural(Math.abs(dias!))}.`) }}
+              accion={
+                esManual
+                  ? { label: 'Pagar ahora', onClick: iniciarAbonar }
+                  : preapprovalPendiente && suscripcion.mp_preapproval_init_point
+                    ? { label: 'Autorizar débito automático', href: suscripcion.mp_preapproval_init_point }
+                    : { label: 'Actualizar método de pago', onClick: actualizarMetodoPago }
+              }
             />
           )}
 
@@ -312,42 +364,61 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
               </div>
             </div>
 
-            {/* Renovación automática */}
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-4 flex-wrap">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Renovación automática</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {suscripcion.renovacion_automatica
-                    ? 'Vamos a coordinar el cobro automático con vos por WhatsApp.'
-                    : 'Pagás mes a mes de forma manual.'}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                {(vencida || (dias !== null && dias <= 7)) && (
-                  <a
-                    href={whatsappUrl(`Hola! Quiero pagar mi suscripción (${tenantSlug}).`)}
-                    target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors"
+            {/* Modalidad de cobro — la define el superadmin, acá solo se muestra y se opera */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              {esManual ? (
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Pago manual</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Renovás vos mismo cada período con el botón de abajo.</p>
+                  </div>
+                  <button
+                    onClick={iniciarAbonar}
+                    disabled={guardando}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors disabled:opacity-50"
                   >
-                    <MessageCircle className="w-3.5 h-3.5" /> Pagar ahora
-                  </a>
-                )}
-                <button
-                  onClick={toggleRenovacion}
-                  disabled={guardando}
-                  role="switch"
-                  aria-checked={suscripcion.renovacion_automatica}
-                  className={cn(
-                    'relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50',
-                    suscripcion.renovacion_automatica ? 'bg-violet-600' : 'bg-gray-200'
+                    <CreditCard className="w-4 h-4" /> Abonar
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
+                    <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-violet-500" /> Renovación automática
+                    </p>
+                    <span className={cn('px-2.5 py-1 rounded-lg text-xs font-semibold', ESTADO_PREAPPROVAL_BADGE[suscripcion.mp_preapproval_status ?? ''] ?? 'bg-gray-100 text-gray-500')}>
+                      {ESTADO_PREAPPROVAL_LABEL[suscripcion.mp_preapproval_status ?? ''] ?? 'Sin configurar'}
+                    </span>
+                  </div>
+
+                  {preapprovalPendiente && suscripcion.mp_preapproval_init_point ? (
+                    <a
+                      href={suscripcion.mp_preapproval_init_point}
+                      className="flex items-center justify-center gap-1.5 w-full px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold transition-colors"
+                    >
+                      Autorizar débito automático <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  ) : (
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div className="text-xs text-gray-400 space-y-0.5">
+                        {suscripcion.proximo_cobro && (
+                          <p>Próximo cobro: <span className="text-gray-600 font-medium">{formatFecha(suscripcion.proximo_cobro)}</span></p>
+                        )}
+                        {suscripcion.metodo_pago_vinculado && (
+                          <p>Método vinculado: <span className="text-gray-600 font-medium">{capitalizar(suscripcion.metodo_pago_vinculado)}</span></p>
+                        )}
+                      </div>
+                      <button
+                        onClick={actualizarMetodoPago}
+                        disabled={guardando}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold transition-colors disabled:opacity-50"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" /> Actualizar método de pago
+                      </button>
+                    </div>
                   )}
-                >
-                  <span className={cn(
-                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
-                    suscripcion.renovacion_automatica && 'translate-x-5'
-                  )} />
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           </div>
 

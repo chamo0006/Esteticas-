@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Search, Eye, Loader2, ChevronRight, Scissors, Sparkles, Ban, CheckCircle,
-  Download, ArrowUpDown,
+  Download, ArrowUpDown, Zap, Hand,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type TenantRow, formatARS, formatFecha, semaforo } from './types';
@@ -164,6 +164,7 @@ export function ComerciosTable({ rol, canSeeBilling, tenants }: Props) {
                 {th('Comercio', 'nombre')}
                 {th('Rubro')}
                 {th('Plan')}
+                {th('Cobro')}
                 {th('Estado', 'dias_para_vencer')}
                 {th('Turnos', 'turnos_total')}
                 {canSeeBilling && th('Dinero movido', 'dinero_movido')}
@@ -172,7 +173,7 @@ export function ComerciosTable({ rol, canSeeBilling, tenants }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtrados.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">Sin comercios</td></tr>
+                <tr><td colSpan={8} className="px-4 py-10 text-center text-gray-400">Sin comercios</td></tr>
               ) : filtrados.map((t) => {
                 const s = semaforo(t);
                 const bloqueado = t.bloqueado || t.estado_suscripcion === 'suspendida';
@@ -191,6 +192,25 @@ export function ComerciosTable({ rol, canSeeBilling, tenants }: Props) {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{t.plan_nombre ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      {t.modalidad_cobro === 'automatico' ? (
+                        <span
+                          title={t.mp_preapproval_status ?? undefined}
+                          className={cn(
+                            'inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border',
+                            t.mp_preapproval_status === 'authorized'
+                              ? 'bg-violet-50 text-violet-700 border-violet-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          )}
+                        >
+                          <Zap className="w-3 h-3" /> Automático
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border bg-gray-50 text-gray-500 border-gray-200">
+                          <Hand className="w-3 h-3" /> Manual
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3"><span className={`text-xs px-2.5 py-1 rounded-lg border ${s.cls}`}>{s.label}</span></td>
                     <td className="px-4 py-3 text-gray-600">{t.turnos_total}</td>
                     {canSeeBilling && <td className="px-4 py-3 text-gray-600">{formatARS(t.dinero_movido)}</td>}

@@ -11,6 +11,8 @@ export interface TenantRow {
   plan_nombre: string | null;
   turnos_total: number;
   dinero_movido: number;
+  modalidad_cobro: string | null;
+  mp_preapproval_status: string | null;
 }
 
 export interface LeadRow {

@@ -14,9 +14,8 @@ async function getAdminPayload(tenantSlug: string) {
 
 // PATCH /api/admin/[tenantSlug]/suscripcion  body: { accion, ... }
 // Acciones self-service que puede hacer el dueño del comercio sobre su propia
-// suscripción. Ninguna de estas cobra ni renueva nada automáticamente todavía
-// (la facturación sigue siendo manual): solo registran la intención, que se
-// aplica en el próximo pago que registre el superadmin.
+// suscripción. La modalidad de cobro (manual/automático) NO está acá — la
+// define solo el superadmin desde /api/superadmin/tenants/[id]/modalidad-cobro.
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ tenantSlug: string }> }
@@ -27,19 +26,6 @@ export async function PATCH(
 
   const body = await req.json();
   const { accion } = body;
-
-  if (accion === 'toggle_renovacion') {
-    const { renovacion_automatica } = body;
-    if (typeof renovacion_automatica !== 'boolean') {
-      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
-    }
-    const { error } = await supabase
-      .from('suscripciones')
-      .update({ renovacion_automatica })
-      .eq('tenant_id', payload.tenantId);
-    if (error) return NextResponse.json({ error: 'Error interno' }, { status: 500 });
-    return NextResponse.json({ ok: true });
-  }
 
   if (accion === 'solicitar_cambio_plan') {
     const { plan_id } = body;

@@ -57,6 +57,8 @@ export default async function FacturacionPage() {
     plan_nombre: null,
     turnos_total: Number(m.turnos_total ?? 0),
     dinero_movido: Number(m.dinero_movido ?? 0),
+    modalidad_cobro: (m.modalidad_cobro as string) ?? null,
+    mp_preapproval_status: (m.mp_preapproval_status as string) ?? null,
   }));
 
   const morosos = tenants.filter((t) => t.bloqueado || t.estado_suscripcion === 'suspendida' || (t.dias_para_vencer != null && t.dias_para_vencer < 0));
