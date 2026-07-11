@@ -21,48 +21,48 @@ const features = [
     title: 'Calendario inteligente',
     description:
       'Agenda digital para cualquier profesional. Los slots se calculan automáticamente según la duración de cada servicio.',
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-700',
   },
   {
     icon: Smartphone,
     title: 'Reservas online 24/7',
     description:
       'Tus clientes reservan turnos desde el celular en segundos. Sin llamadas, sin idas y vueltas, sin WhatsApp.',
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-700',
   },
   {
     icon: CreditCard,
     title: 'Señas con Mercado Pago',
     description:
       'Tu cliente paga la seña al reservar. Confirmación automática, cero cancelaciones de último momento.',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-700',
   },
   {
     icon: BookUser,
     title: 'Libreta de clientes',
     description:
       'Historial de visitas, servicios y notas privadas de cada cliente de tu negocio.',
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-700',
   },
   {
     icon: Wallet,
     title: 'Balance de ingresos',
     description:
       'Cuánto ganaste hoy, esta semana y este mes. Con breakdown por servicio para entender tu negocio.',
-    iconBg: 'bg-rose-50',
-    iconColor: 'text-rose-600',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-700',
   },
   {
     icon: FolderKanban,
     title: 'Agendas separadas',
     description:
       'Cada tipo de servicio puede tener su propia agenda independiente para no mezclar turnos.',
-    iconBg: 'bg-sky-50',
-    iconColor: 'text-sky-600',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-700',
   },
 ];
 
