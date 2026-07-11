@@ -20,7 +20,11 @@ export interface PagoRow {
 }
 
 interface Props {
-  stats: { cobradoMes: number; cobradoMesPasado: number; pendientes: number; morosos: number };
+  stats: {
+    cobradoMes: number; cobradoMesPasado: number;
+    pagosMes: number; ventasMes: number;
+    pendientes: number; morosos: number;
+  };
   pagos: PagoRow[];
   morosos: TenantRow[];
   proximos: TenantRow[];
@@ -53,8 +57,14 @@ export function Facturacion({ stats, pagos, morosos, proximos }: Props) {
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div className="bg-violet-50 border border-violet-100 rounded-2xl p-5">
-          <p className="text-xs text-violet-600 font-medium mb-1 flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Cobrado este mes</p>
+          <p className="text-xs text-violet-600 font-medium mb-1 flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Ingresos este mes</p>
           <p className="text-2xl font-bold text-gray-900">{formatARS(stats.cobradoMes)}</p>
+          <p className="text-[11px] text-violet-500 mt-1">
+            {formatARS(stats.pagosMes)} suscripciones ·{' '}
+            <Link href="/superadmin/ventas" className="underline hover:text-violet-700">
+              {formatARS(stats.ventasMes)} ventas
+            </Link>
+          </p>
           {variacion != null && (
             <p className={cn('text-xs mt-1 flex items-center gap-1 font-medium', variacion >= 0 ? 'text-emerald-600' : 'text-red-500')}>
               <TrendingUp className="w-3 h-3" /> {variacion >= 0 ? '+' : ''}{variacion}% vs mes pasado

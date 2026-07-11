@@ -17,7 +17,7 @@ export default async function FacturacionPage() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
-  const [pagosRes, metricasRes, mesRes, mesPasadoRes] = await Promise.all([
+  const [pagosRes, metricasRes, mesRes, mesPasadoRes, ventasMesRes, ventasMesPasadoRes] = await Promise.all([
     supabase
       .from('pagos_suscripcion')
       .select('id, tenant_id, monto, metodo, estado, periodo_fin, fecha_pago, created_at, tenants!inner(nombre, slug)')
@@ -26,6 +26,10 @@ export default async function FacturacionPage() {
     supabase.from('vista_metricas_tenant').select('*'),
     supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', monthStart),
     supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', prevMonthStart).lt('fecha_pago', monthStart),
+    // Ventas manuales (ventas_facturacion): fuente independiente, se suma al
+    // total del mes sin mezclar los datos con pagos_suscripcion.
+    supabase.from('ventas_facturacion').select('monto').gte('fecha_pago', monthStart),
+    supabase.from('ventas_facturacion').select('monto').gte('fecha_pago', prevMonthStart).lt('fecha_pago', monthStart),
   ]);
 
   const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
@@ -66,9 +70,16 @@ export default async function FacturacionPage() {
     .filter((t) => !t.bloqueado && t.dias_para_vencer != null && t.dias_para_vencer >= 0 && t.dias_para_vencer <= 7)
     .sort((a, b) => (a.dias_para_vencer ?? 0) - (b.dias_para_vencer ?? 0));
 
+  const pagosMes = (mesRes.data ?? []).reduce((s, p) => s + Number(p.monto), 0);
+  const pagosMesPasado = (mesPasadoRes.data ?? []).reduce((s, p) => s + Number(p.monto), 0);
+  const ventasMes = (ventasMesRes.data ?? []).reduce((s, v) => s + Number(v.monto), 0);
+  const ventasMesPasado = (ventasMesPasadoRes.data ?? []).reduce((s, v) => s + Number(v.monto), 0);
+
   const stats = {
-    cobradoMes: (mesRes.data ?? []).reduce((s, p) => s + Number(p.monto), 0),
-    cobradoMesPasado: (mesPasadoRes.data ?? []).reduce((s, p) => s + Number(p.monto), 0),
+    cobradoMes: pagosMes + ventasMes,
+    cobradoMesPasado: pagosMesPasado + ventasMesPasado,
+    pagosMes,
+    ventasMes,
     pendientes: pagos.filter((p) => p.estado === 'pendiente').length,
     morosos: morosos.length,
   };

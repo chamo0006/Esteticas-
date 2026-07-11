@@ -57,8 +57,9 @@ export function SuperadminOverview({ canSeeBilling, stats, porVencer, ingresosPo
       {canSeeBilling && (
         <div className="grid sm:grid-cols-3 gap-3 mb-6">
           <div className="bg-violet-50 border border-violet-100 rounded-2xl p-5">
-            <p className="text-xs text-violet-600 font-medium mb-1">Cobrado este mes</p>
+            <p className="text-xs text-violet-600 font-medium mb-1">Ingresos este mes</p>
             <p className="text-3xl font-bold text-gray-900">{formatARS(stats.ingresosMes)}</p>
+            <p className="text-[11px] text-violet-500 mt-1">Suscripciones + ventas manuales</p>
           </div>
           <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
             <p className="text-xs text-gray-400 font-medium mb-1">En prueba (trial)</p>
