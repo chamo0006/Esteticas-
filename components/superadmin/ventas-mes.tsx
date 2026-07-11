@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Loader2, Receipt } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, Loader2, Receipt, Zap } from 'lucide-react';
 import { cn, digitsOnly } from '@/lib/utils';
 import { formatARS } from './types';
 
@@ -15,6 +15,7 @@ interface Venta {
   notas: string | null;
   created_at: string;
   autor: string | null;
+  automatico: boolean;
 }
 
 interface Props {
@@ -109,8 +110,14 @@ export function VentasMes({ clientesSugeridos = [], planesSugeridos = [] }: Prop
 
   const eliminar = async (id: string) => {
     if (!confirm('¿Eliminar esta venta?')) return;
+    const anteriores = ventas;
     setVentas((vs) => vs.filter((v) => v.id !== id));
-    await fetch(`/api/superadmin/ventas-facturacion?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/superadmin/ventas-facturacion?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setVentas(anteriores);
+      alert(data.error ?? 'No se pudo eliminar');
+    }
   };
 
   const total = ventas.reduce((s, v) => s + v.monto, 0);
@@ -226,7 +233,14 @@ export function VentasMes({ clientesSugeridos = [], planesSugeridos = [] }: Prop
                 {ventas.map((v) => (
                   <tr key={v.id} className="hover:bg-gray-50 transition-colors group">
                     <td className="px-5 py-3">
-                      <p className="font-medium text-gray-900">{v.cliente}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-medium text-gray-900">{v.cliente}</p>
+                        {v.automatico && (
+                          <span title="Se generó solo desde un pago registrado en Facturación" className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-600 bg-violet-50 border border-violet-100 px-1.5 py-0.5 rounded-md">
+                            <Zap className="w-2.5 h-2.5" /> Automático
+                          </span>
+                        )}
+                      </div>
                       {v.notas && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[220px]">{v.notas}</p>}
                     </td>
                     <td className="px-5 py-3 text-gray-600">{v.plan}</td>
@@ -234,14 +248,16 @@ export function VentasMes({ clientesSugeridos = [], planesSugeridos = [] }: Prop
                     <td className="px-5 py-3 text-gray-500">{formatFechaCorta(v.fecha_pago)}</td>
                     <td className="px-5 py-3 text-gray-500">{formatFechaCorta(v.fecha_vencimiento)}</td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => abrirEdicion(v)} className="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50" aria-label="Editar">
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button onClick={() => eliminar(v.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50" aria-label="Eliminar">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      {!v.automatico && (
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => abrirEdicion(v)} className="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50" aria-label="Editar">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => eliminar(v.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50" aria-label="Eliminar">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

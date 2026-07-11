@@ -46,23 +46,46 @@ export async function registrarPagoSuscripcion(params: RegistrarPagoParams): Pro
     ? await supabase.from('planes').select('nombre, precio_mensual, precio_anual, features').eq('id', planEfectivoId).maybeSingle()
     : { data: null };
 
-  await supabase.from('pagos_suscripcion').insert({
-    tenant_id: params.tenantId,
-    suscripcion_id: susc?.id ?? null,
-    plan_id: planEfectivoId,
-    plan_nombre_snapshot: planSnapshot?.nombre ?? null,
-    plan_precio_snapshot: planSnapshot?.precio_mensual ?? null,
-    plan_features_snapshot: planSnapshot?.features ?? null,
-    monto: params.monto,
-    metodo: params.metodo,
-    estado: params.estado,
-    periodo_inicio: params.periodoInicio ?? null,
-    periodo_fin: params.periodoFin ?? null,
-    fecha_pago: params.estado === 'aprobado' ? (params.fechaPago || new Date().toISOString()) : (params.fechaPago || null),
-    referencia_externa: params.referenciaExterna ?? null,
-    origen: params.origen,
-    notas: params.notas ?? null,
-  });
+  const fechaPagoFinal = params.estado === 'aprobado' ? (params.fechaPago || new Date().toISOString()) : (params.fechaPago || null);
+
+  const { data: pagoInsertado } = await supabase
+    .from('pagos_suscripcion')
+    .insert({
+      tenant_id: params.tenantId,
+      suscripcion_id: susc?.id ?? null,
+      plan_id: planEfectivoId,
+      plan_nombre_snapshot: planSnapshot?.nombre ?? null,
+      plan_precio_snapshot: planSnapshot?.precio_mensual ?? null,
+      plan_features_snapshot: planSnapshot?.features ?? null,
+      monto: params.monto,
+      metodo: params.metodo,
+      estado: params.estado,
+      periodo_inicio: params.periodoInicio ?? null,
+      periodo_fin: params.periodoFin ?? null,
+      fecha_pago: fechaPagoFinal,
+      referencia_externa: params.referenciaExterna ?? null,
+      origen: params.origen,
+      notas: params.notas ?? null,
+    })
+    .select('id')
+    .single();
+
+  // Todo pago aprobado se refleja también en Ventas (ventas_facturacion), para
+  // tener ahí el registro completo de toda la plata que entra — formal o
+  // manual. Se marca con pago_suscripcion_id para no contarlo dos veces en
+  // los totales de ingresos (esos ya lo suman vía pagos_suscripcion).
+  if (params.estado === 'aprobado' && pagoInsertado) {
+    const { data: tenant } = await supabase.from('tenants').select('nombre').eq('id', params.tenantId).maybeSingle();
+    await supabase.from('ventas_facturacion').insert({
+      cliente: tenant?.nombre ?? 'Comercio',
+      plan: planSnapshot?.nombre ?? 'Sin plan',
+      monto: params.monto,
+      fecha_pago: (fechaPagoFinal ?? new Date().toISOString()).slice(0, 10),
+      fecha_vencimiento: params.periodoFin ?? null,
+      notas: `Pago registrado automáticamente (${params.origen === 'mercadopago' ? 'MercadoPago' : 'manual'})`,
+      pago_suscripcion_id: pagoInsertado.id,
+    });
+  }
 
   if (params.estado === 'aprobado' && params.periodoFin) {
     await supabase

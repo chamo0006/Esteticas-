@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await supabase
     .from('ventas_facturacion')
-    .select('id, cliente, plan, monto, fecha_pago, fecha_vencimiento, notas, created_at, platform_admins(nombre)')
+    .select('id, cliente, plan, monto, fecha_pago, fecha_vencimiento, notas, created_at, pago_suscripcion_id, platform_admins(nombre)')
     .gte('fecha_pago', inicio.toISOString().slice(0, 10))
     .lt('fecha_pago', fin.toISOString().slice(0, 10))
     .order('fecha_pago', { ascending: false });
@@ -33,12 +33,14 @@ export async function GET(req: Request) {
   type Raw = {
     id: string; cliente: string; plan: string; monto: number; fecha_pago: string;
     fecha_vencimiento: string | null; notas: string | null; created_at: string;
+    pago_suscripcion_id: string | null;
     platform_admins: { nombre: string } | { nombre: string }[] | null;
   };
   const ventas = ((data ?? []) as unknown as Raw[]).map((v) => ({
     id: v.id, cliente: v.cliente, plan: v.plan, monto: Number(v.monto),
     fecha_pago: v.fecha_pago, fecha_vencimiento: v.fecha_vencimiento, notas: v.notas,
     created_at: v.created_at, autor: one(v.platform_admins)?.nombre ?? null,
+    automatico: v.pago_suscripcion_id != null,
   }));
 
   return NextResponse.json(ventas);
@@ -92,6 +94,11 @@ export async function PATCH(req: Request) {
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 });
 
+  const { data: existente } = await supabase.from('ventas_facturacion').select('pago_suscripcion_id').eq('id', id).maybeSingle();
+  if (existente?.pago_suscripcion_id) {
+    return NextResponse.json({ error: 'Esta venta se generó automáticamente desde un pago — corregí el pago en Facturación, no acá' }, { status: 409 });
+  }
+
   const body = validar(await req.json());
   if (!body) return NextResponse.json({ error: 'Faltan datos obligatorios (cliente, plan, monto, fecha de pago)' }, { status: 400 });
 
@@ -112,6 +119,11 @@ export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 });
+
+  const { data: existente } = await supabase.from('ventas_facturacion').select('pago_suscripcion_id').eq('id', id).maybeSingle();
+  if (existente?.pago_suscripcion_id) {
+    return NextResponse.json({ error: 'Esta venta se generó automáticamente desde un pago — borrala desde Facturación, no acá' }, { status: 409 });
+  }
 
   const { error } = await supabase.from('ventas_facturacion').delete().eq('id', id);
   if (error) return NextResponse.json({ error: 'Error al eliminar' }, { status: 500 });

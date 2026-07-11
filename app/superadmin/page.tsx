@@ -42,13 +42,14 @@ export default async function SuperAdminPage() {
     billing
       ? supabase.from('pagos_suscripcion').select('monto, fecha_pago').eq('estado', 'aprobado').gte('fecha_pago', seisMesesAtras)
       : Promise.resolve({ data: [] as { monto: number; fecha_pago: string }[] }),
-    // Ventas manuales (ventas_facturacion): fuente independiente de pagos_suscripcion
-    // — se suman al total de ingresos, sin mezclar las tablas entre sí.
+    // Ventas manuales (ventas_facturacion) que NO vienen de un pago formal —
+    // las que sí (pago_suscripcion_id seteado) ya se cuentan arriba vía
+    // pagos_suscripcion, así que se excluyen acá para no sumarlas dos veces.
     billing
-      ? supabase.from('ventas_facturacion').select('monto').gte('fecha_pago', monthStart)
+      ? supabase.from('ventas_facturacion').select('monto').is('pago_suscripcion_id', null).gte('fecha_pago', monthStart)
       : Promise.resolve({ data: [] as { monto: number }[] }),
     billing
-      ? supabase.from('ventas_facturacion').select('monto, fecha_pago').gte('fecha_pago', seisMesesAtras)
+      ? supabase.from('ventas_facturacion').select('monto, fecha_pago').is('pago_suscripcion_id', null).gte('fecha_pago', seisMesesAtras)
       : Promise.resolve({ data: [] as { monto: number; fecha_pago: string }[] }),
   ]);
 

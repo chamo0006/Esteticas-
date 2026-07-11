@@ -26,10 +26,11 @@ export default async function FacturacionPage() {
     supabase.from('vista_metricas_tenant').select('*'),
     supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', monthStart),
     supabase.from('pagos_suscripcion').select('monto').eq('estado', 'aprobado').gte('fecha_pago', prevMonthStart).lt('fecha_pago', monthStart),
-    // Ventas manuales (ventas_facturacion): fuente independiente, se suma al
-    // total del mes sin mezclar los datos con pagos_suscripcion.
-    supabase.from('ventas_facturacion').select('monto').gte('fecha_pago', monthStart),
-    supabase.from('ventas_facturacion').select('monto').gte('fecha_pago', prevMonthStart).lt('fecha_pago', monthStart),
+    // Ventas manuales (ventas_facturacion) que NO vienen de un pago formal —
+    // las que sí ya se cuentan arriba vía pagos_suscripcion, se excluyen para
+    // no sumarlas dos veces.
+    supabase.from('ventas_facturacion').select('monto').is('pago_suscripcion_id', null).gte('fecha_pago', monthStart),
+    supabase.from('ventas_facturacion').select('monto').is('pago_suscripcion_id', null).gte('fecha_pago', prevMonthStart).lt('fecha_pago', monthStart),
   ]);
 
   const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
