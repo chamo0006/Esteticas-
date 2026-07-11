@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import {
   Check, ChevronRight, Plus, MoreHorizontal, Sparkles,
-  LayoutDashboard, Calendar, Scissors, UserCog, Users, Settings,
+  LayoutDashboard, Calendar, Scissors, UserCog, Users, Settings, CreditCard,
   Clock, DollarSign, TrendingUp,
 } from 'lucide-react';
 
 type Tab = 'client' | 'admin' | 'staff';
 
 const TABS: { id: Tab; emoji: string; label: string; short: string }[] = [
-  { id: 'client', emoji: '📱', label: 'Reservas para clientes', short: 'Cliente' },
-  { id: 'admin',  emoji: '📊', label: 'Tu panel de control',    short: 'Admin'  },
-  { id: 'staff',  emoji: '👥', label: 'Gestión de staff',       short: 'Staff'  },
+  { id: 'client', emoji: '📱', label: 'Reservas para clientes', short: 'Cliente'   },
+  { id: 'admin',  emoji: '📊', label: 'Tu panel de control',    short: 'Admin'    },
+  { id: 'staff',  emoji: '👥', label: 'Gestión de empleados',   short: 'Empleados' },
 ];
 
 function ClientView() {
@@ -130,12 +130,13 @@ function ClientView() {
 
 function AdminView() {
   const nav = [
-    { label: 'Dashboard',     icon: LayoutDashboard, active: true },
-    { label: 'Turnos',        icon: Calendar },
-    { label: 'Servicios',     icon: Scissors },
-    { label: 'Empleados',     icon: UserCog },
-    { label: 'Clientes',      icon: Users },
-    { label: 'Configuración', icon: Settings },
+    { label: 'Dashboard',      icon: LayoutDashboard, active: true },
+    { label: 'Turnos',         icon: Calendar },
+    { label: 'Servicios',      icon: Scissors },
+    { label: 'Empleados',      icon: UserCog },
+    { label: 'Clientes',       icon: Users },
+    { label: 'Mi suscripción', icon: CreditCard },
+    { label: 'Configuración',  icon: Settings },
   ];
   const stats = [
     { label: 'Turnos hoy',       value: '24',    icon: Calendar,    color: 'text-violet-500 bg-violet-50'   },
@@ -255,12 +256,12 @@ function StaffView() {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl shadow-gray-100/80 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Gestión de Staff</h3>
-            <p className="text-xs text-gray-400 mt-0.5">3 profesionales activas</p>
+            <h3 className="text-sm font-semibold text-gray-900">Empleados</h3>
+            <p className="text-xs text-gray-400 mt-0.5">3 empleadas cargadas</p>
           </div>
           <button className="inline-flex items-center gap-1.5 text-xs bg-violet-600 text-white px-3.5 py-2 rounded-xl font-medium">
             <Plus className="w-3.5 h-3.5" />
-            Agregar profesional
+            Nuevo empleado
           </button>
         </div>
 
@@ -295,7 +296,7 @@ function StaffView() {
             <div className="w-6 h-6 rounded-full border-2 border-dashed border-violet-300 flex items-center justify-center">
               <Plus className="w-3 h-3" />
             </div>
-            Agregar nuevo servicio
+            Agregar otro empleado
           </button>
         </div>
       </div>
