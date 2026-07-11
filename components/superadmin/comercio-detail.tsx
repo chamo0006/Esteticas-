@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Eye, Loader2, Save, Ban, CheckCircle, DollarSign, Trash2, Zap, Hand, Edit2, X, Check, KeyRound, UserCog } from 'lucide-react';
@@ -77,6 +77,25 @@ export function ComercioDetail({ canSeeBilling, isSuperadmin, tenant, suscripcio
     precio_acordado: suscripcion?.precio_acordado ?? '',
     notas: suscripcion?.notas ?? '',
   });
+
+  // useState solo toma el valor inicial en el primer render: si se registra un
+  // pago que renueva la suscripción (o se cambia la modalidad de cobro), el
+  // server component vuelve a traer datos frescos vía router.refresh(), pero
+  // sin esto el formulario se quedaba mostrando los valores viejos (vencido,
+  // fecha anterior) aunque la base ya estuviera actualizada.
+  useEffect(() => {
+    setForm({
+      plan_id: suscripcion?.plan_id ?? '',
+      estado: suscripcion?.estado ?? 'trial',
+      ciclo: suscripcion?.ciclo ?? 'mensual',
+      fecha_fin: suscripcion?.fecha_fin ?? '',
+      dias_gracia: (suscripcion?.dias_gracia ?? 5) as number | null,
+      descuento_porcentaje: (suscripcion?.descuento_porcentaje ?? 0) as number | null,
+      descuento_motivo: suscripcion?.descuento_motivo ?? '',
+      precio_acordado: suscripcion?.precio_acordado ?? '',
+      notas: suscripcion?.notas ?? '',
+    });
+  }, [suscripcion]);
 
   // Form pago
   const [pago, setPago] = useState({
