@@ -4,16 +4,17 @@ import { useState } from 'react';
 import {
   Check, ChevronRight, Plus, MoreHorizontal, Sparkles,
   LayoutDashboard, Calendar, Scissors, UserCog, Users, Settings, CreditCard,
-  Clock, DollarSign, TrendingUp,
+  Clock, DollarSign, TrendingUp, Palette, Bell, Building2,
 } from 'lucide-react';
 
-type Tab = 'client' | 'admin' | 'staff';
+type Tab = 'client' | 'admin';
 
 const TABS: { id: Tab; emoji: string; label: string; short: string }[] = [
-  { id: 'client', emoji: '📱', label: 'Reservas para clientes', short: 'Cliente'   },
-  { id: 'admin',  emoji: '📊', label: 'Tu panel de control',    short: 'Admin'    },
-  { id: 'staff',  emoji: '👥', label: 'Gestión de empleados',   short: 'Empleados' },
+  { id: 'client', emoji: '📱', label: 'Reservas para clientes', short: 'Cliente' },
+  { id: 'admin',  emoji: '📊', label: 'Tu panel de control',    short: 'Admin'   },
 ];
+
+type Section = 'dashboard' | 'turnos' | 'servicios' | 'empleados' | 'clientes' | 'suscripcion' | 'configuracion';
 
 function ClientView() {
   return (
@@ -128,29 +129,251 @@ function ClientView() {
   );
 }
 
+const NAV_ITEMS: { key: Section; label: string; icon: typeof LayoutDashboard }[] = [
+  { key: 'dashboard',     label: 'Dashboard',      icon: LayoutDashboard },
+  { key: 'turnos',        label: 'Turnos',         icon: Calendar        },
+  { key: 'servicios',     label: 'Servicios',      icon: Scissors        },
+  { key: 'empleados',     label: 'Empleados',      icon: UserCog         },
+  { key: 'clientes',      label: 'Clientes',       icon: Users           },
+  { key: 'suscripcion',   label: 'Mi suscripción', icon: CreditCard      },
+  { key: 'configuracion', label: 'Configuración',  icon: Settings        },
+];
+
+const SECTION_TITLES: Record<Section, string> = {
+  dashboard: 'Dashboard',
+  turnos: 'Turnos',
+  servicios: 'Servicios',
+  empleados: 'Empleados',
+  clientes: 'Clientes',
+  suscripcion: 'Mi suscripción',
+  configuracion: 'Configuración',
+};
+
+const stats = [
+  { label: 'Turnos hoy',       value: '24',    icon: Calendar,    color: 'text-violet-500 bg-violet-50'   },
+  { label: 'Pendientes',       value: '3',     icon: Clock,       color: 'text-amber-500 bg-amber-50'     },
+  { label: 'Ingresos hoy',     value: '$48k',  icon: DollarSign,  color: 'text-emerald-500 bg-emerald-50' },
+  { label: 'Ingresos del mes', value: '$284k', icon: TrendingUp,  color: 'text-blue-500 bg-blue-50'       },
+  { label: 'Total clientes',   value: '156',   icon: Users,       color: 'text-pink-500 bg-pink-50'       },
+];
+
+const turnos = [
+  { n: 'Ana García',   s: 'Esculpidas · Hoy 10:00',       p: '$15.000', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'A' },
+  { n: 'Laura Pérez',  s: 'Semi permanente · Hoy 11:30',  p: '$8.000',  st: 'pendiente',  c: 'bg-amber-100 text-amber-700', ini: 'L' },
+  { n: 'Sofía R.',     s: 'Lifting de cejas · Hoy 13:00', p: '$6.500',  st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'S' },
+  { n: 'Valentina M.', s: 'Esculpidas · Hoy 15:30',       p: '$15.000', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'V' },
+];
+
+const servicios = [
+  { n: 'Esculpidas Gel',    d: '60 min', p: '$15.000' },
+  { n: 'Semi permanente',   d: '45 min', p: '$8.000'  },
+  { n: 'Lifting de cejas',  d: '30 min', p: '$6.500'  },
+  { n: 'Manicura spa',      d: '50 min', p: '$10.000' },
+];
+
+const empleados = [
+  { name: 'Sofía Rodríguez', role: 'Pestañas & Extensiones', ini: 'SR', color: 'bg-violet-100 text-violet-700' },
+  { name: 'Micaela Torres',  role: 'Manicurista & Nail Art',  ini: 'MT', color: 'bg-rose-100 text-rose-600'   },
+  { name: 'Ana Gómez',       role: 'Depiladora & Cejas',      ini: 'AG', color: 'bg-amber-100 text-amber-700'  },
+];
+
+const clientes = [
+  { name: 'Ana García',   info: '12 visitas · Esculpidas Gel', ini: 'A' },
+  { name: 'Laura Pérez',  info: '5 visitas · Semi permanente', ini: 'L' },
+  { name: 'Valentina M.', info: '8 visitas · Lifting de cejas', ini: 'V' },
+];
+
+const configItems = [
+  { label: 'Colores de marca',       icon: Palette  },
+  { label: 'Horarios de atención',   icon: Clock    },
+  { label: 'Notificaciones',         icon: Bell     },
+  { label: 'Datos del negocio',      icon: Building2 },
+];
+
+function SectionContent({ section }: { section: Section }) {
+  if (section === 'dashboard') {
+    return (
+      <>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+          {stats.map(s => (
+            <div key={s.label} className="bg-white rounded-xl p-2.5 border border-zinc-100 shadow-sm">
+              <div className={`w-6 h-6 rounded-lg flex items-center justify-center mb-1.5 ${s.color}`}>
+                <s.icon className="w-3 h-3" />
+              </div>
+              <p className="text-sm font-bold text-zinc-900 leading-none">{s.value}</p>
+              <p className="text-[8px] text-zinc-400 mt-1 font-medium">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+          <div className="px-3 py-2 border-b border-zinc-100 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-3 h-3 text-zinc-400" />
+              <p className="text-[10px] font-semibold text-zinc-900">Próximos turnos</p>
+            </div>
+            <span className="text-[9px] text-violet-600 font-medium">Ver todos →</span>
+          </div>
+          <div className="divide-y divide-zinc-50">
+            {turnos.map(a => (
+              <div key={a.n} className="px-3 py-1.5 flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                    <span className="text-[8px] font-bold text-violet-600">{a.ini}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium text-zinc-900 leading-tight truncate">{a.n}</p>
+                    <p className="text-[8px] text-zinc-400 truncate">{a.s}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[9px] font-semibold text-zinc-700">{a.p}</span>
+                  <span className={`text-[7px] px-1.5 py-0.5 rounded-md font-semibold ${a.c}`}>{a.st}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (section === 'turnos') {
+    return (
+      <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="px-3 py-2 border-b border-zinc-100 flex items-center gap-1.5">
+          {['Todos 4', 'Pendientes 1', 'Confirmados 3'].map((p, i) => (
+            <span key={p} className={`text-[8px] px-2 py-1 rounded-full font-semibold ${i === 0 ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}>{p}</span>
+          ))}
+        </div>
+        <div className="divide-y divide-zinc-50">
+          {turnos.map(a => (
+            <div key={a.n} className="px-3 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                  <span className="text-[8px] font-bold text-violet-600">{a.ini}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium text-zinc-900 leading-tight truncate">{a.n}</p>
+                  <p className="text-[8px] text-zinc-400 truncate">{a.s}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[9px] font-semibold text-zinc-700">{a.p}</span>
+                <span className={`text-[7px] px-1.5 py-0.5 rounded-md font-semibold ${a.c}`}>{a.st}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'servicios') {
+    return (
+      <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="divide-y divide-zinc-50">
+          {servicios.map(s => (
+            <div key={s.n} className="px-3 py-2.5 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-medium text-zinc-900">{s.n}</p>
+                <p className="text-[8px] text-zinc-400 mt-0.5">{s.d}</p>
+              </div>
+              <span className="text-[10px] font-semibold text-zinc-700">{s.p}</span>
+            </div>
+          ))}
+        </div>
+        <div className="px-3 py-2.5 border-t border-dashed border-zinc-200 bg-zinc-50/40">
+          <span className="flex items-center gap-1.5 text-[9px] text-violet-600 font-medium">
+            <Plus className="w-3 h-3" /> Agregar servicio
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'empleados') {
+    return (
+      <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="divide-y divide-zinc-50">
+          {empleados.map(e => (
+            <div key={e.name} className="px-3 py-2.5 flex items-center gap-2.5">
+              <div className={`w-7 h-7 rounded-full ${e.color} flex items-center justify-center text-[9px] font-bold shrink-0`}>{e.ini}</div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-medium text-zinc-900 truncate">{e.name}</p>
+                <p className="text-[8px] text-zinc-400 truncate">{e.role}</p>
+              </div>
+              <MoreHorizontal className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
+            </div>
+          ))}
+        </div>
+        <div className="px-3 py-2.5 border-t border-dashed border-zinc-200 bg-zinc-50/40">
+          <span className="flex items-center gap-1.5 text-[9px] text-violet-600 font-medium">
+            <Plus className="w-3 h-3" /> Agregar empleado
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'clientes') {
+    return (
+      <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="divide-y divide-zinc-50">
+          {clientes.map(c => (
+            <div key={c.name} className="px-3 py-2.5 flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-[9px] font-bold shrink-0">{c.ini}</div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-medium text-zinc-900 truncate">{c.name}</p>
+                <p className="text-[8px] text-zinc-400 truncate">{c.info}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'suscripcion') {
+    return (
+      <div className="bg-white rounded-xl border border-zinc-100 shadow-sm p-3.5">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <p className="text-[8px] font-semibold text-zinc-400 uppercase tracking-wide mb-1">Plan actual</p>
+            <p className="text-sm font-bold text-zinc-900">Pro</p>
+            <p className="text-[9px] text-zinc-400 mt-0.5">$49.999 / mes</p>
+          </div>
+          <span className="text-[8px] font-semibold px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700">Activa</span>
+        </div>
+        <div className="pt-3 border-t border-zinc-100 flex items-center justify-between">
+          <div>
+            <p className="text-[8px] font-semibold text-zinc-400 uppercase tracking-wide mb-1">Próximo vencimiento</p>
+            <p className="text-[10px] font-medium text-zinc-700">10 de agosto</p>
+          </div>
+          <span className="text-[9px] text-violet-600 font-medium">Cambiar de plan →</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+      <div className="divide-y divide-zinc-50">
+        {configItems.map(c => (
+          <div key={c.label} className="px-3 py-2.5 flex items-center gap-2.5">
+            <c.icon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+            <p className="text-[10px] font-medium text-zinc-900 flex-1">{c.label}</p>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AdminView() {
-  const nav = [
-    { label: 'Dashboard',      icon: LayoutDashboard, active: true },
-    { label: 'Turnos',         icon: Calendar },
-    { label: 'Servicios',      icon: Scissors },
-    { label: 'Empleados',      icon: UserCog },
-    { label: 'Clientes',       icon: Users },
-    { label: 'Mi suscripción', icon: CreditCard },
-    { label: 'Configuración',  icon: Settings },
-  ];
-  const stats = [
-    { label: 'Turnos hoy',       value: '24',    icon: Calendar,    color: 'text-violet-500 bg-violet-50'   },
-    { label: 'Pendientes',       value: '3',     icon: Clock,       color: 'text-amber-500 bg-amber-50'     },
-    { label: 'Ingresos hoy',     value: '$48k',  icon: DollarSign,  color: 'text-emerald-500 bg-emerald-50' },
-    { label: 'Ingresos del mes', value: '$284k', icon: TrendingUp,  color: 'text-blue-500 bg-blue-50'       },
-    { label: 'Total clientes',   value: '156',   icon: Users,       color: 'text-pink-500 bg-pink-50'       },
-  ];
-  const turnos = [
-    { n: 'Ana García',   s: 'Esculpidas · Hoy 10:00',      p: '$15.000', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'A' },
-    { n: 'Laura Pérez',  s: 'Semi permanente · Hoy 11:30', p: '$8.000',  st: 'pendiente',  c: 'bg-amber-100 text-amber-700', ini: 'L' },
-    { n: 'Sofía R.',     s: 'Lifting de cejas · Hoy 13:00', p: '$6.500', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'S' },
-    { n: 'Valentina M.', s: 'Esculpidas · Hoy 15:30',      p: '$15.000', st: 'confirmado', c: 'bg-blue-100 text-blue-700',   ini: 'V' },
-  ];
+  const [section, setSection] = useState<Section>('dashboard');
+
   return (
     <div className="max-w-3xl mx-auto py-6 px-4">
       <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl shadow-gray-100/80 overflow-hidden">
@@ -169,16 +392,17 @@ function AdminView() {
               </div>
             </div>
             <div className="flex-1 p-1.5 sm:p-2.5 space-y-0.5">
-              {nav.map(({ label, icon: Icon, active }) => (
-                <div
-                  key={label}
-                  className={`flex items-center justify-center sm:justify-start gap-2 px-1.5 sm:px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors ${
-                    active ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-white'
+              {NAV_ITEMS.map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setSection(key)}
+                  className={`w-full flex items-center justify-center sm:justify-start gap-2 px-1.5 sm:px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors ${
+                    section === key ? 'bg-violet-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span className="hidden sm:inline">{label}</span>
-                </div>
+                </button>
               ))}
             </div>
             <div className="p-2.5 border-t border-zinc-800 hidden sm:block">
@@ -190,114 +414,16 @@ function AdminView() {
           </div>
 
           {/* Main content */}
-          <div className="flex-1 p-3 sm:p-4 bg-gray-50/40 overflow-hidden min-w-0">
+          <div className="flex-1 p-3 sm:p-4 bg-gray-50/40 overflow-y-auto min-w-0">
             <div className="mb-3">
-              <h3 className="text-sm font-bold text-zinc-900">Dashboard</h3>
-              <p className="text-[10px] text-zinc-400 mt-0.5">miércoles 24 de junio de 2026</p>
+              <h3 className="text-sm font-bold text-zinc-900">{SECTION_TITLES[section]}</h3>
+              {section === 'dashboard' && (
+                <p className="text-[10px] text-zinc-400 mt-0.5">miércoles 24 de junio de 2026</p>
+              )}
             </div>
 
-            {/* KPIs */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-              {stats.map(s => (
-                <div key={s.label} className="bg-white rounded-xl p-2.5 border border-zinc-100 shadow-sm">
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center mb-1.5 ${s.color}`}>
-                    <s.icon className="w-3 h-3" />
-                  </div>
-                  <p className="text-sm font-bold text-zinc-900 leading-none">{s.value}</p>
-                  <p className="text-[8px] text-zinc-400 mt-1 font-medium">{s.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Próximos turnos */}
-            <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
-              <div className="px-3 py-2 border-b border-zinc-100 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3 text-zinc-400" />
-                  <p className="text-[10px] font-semibold text-zinc-900">Próximos turnos</p>
-                </div>
-                <span className="text-[9px] text-violet-600 font-medium">Ver todos →</span>
-              </div>
-              <div className="divide-y divide-zinc-50">
-                {turnos.map(a => (
-                  <div key={a.n} className="px-3 py-1.5 flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-                        <span className="text-[8px] font-bold text-violet-600">{a.ini}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-medium text-zinc-900 leading-tight truncate">{a.n}</p>
-                        <p className="text-[8px] text-zinc-400 truncate">{a.s}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[9px] font-semibold text-zinc-700">{a.p}</span>
-                      <span className={`text-[7px] px-1.5 py-0.5 rounded-md font-semibold ${a.c}`}>{a.st}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SectionContent section={section} />
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StaffView() {
-  const staff = [
-    { name: 'Sofía Rodríguez', role: 'Pestañas & Extensiones', services: 4, days: 'Lun — Vie', initials: 'SR', color: 'bg-violet-100 text-violet-700' },
-    { name: 'Micaela Torres',  role: 'Manicurista & Nail Art',  services: 6, days: 'Mar — Sáb', initials: 'MT', color: 'bg-rose-100 text-rose-600'   },
-    { name: 'Ana Gómez',       role: 'Depiladora & Cejas',      services: 5, days: 'Lun — Jue', initials: 'AG', color: 'bg-amber-100 text-amber-700'  },
-  ];
-  return (
-    <div className="max-w-2xl mx-auto py-6 px-4">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl shadow-gray-100/80 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">Empleados</h3>
-            <p className="text-xs text-gray-400 mt-0.5">3 empleadas cargadas</p>
-          </div>
-          <button className="inline-flex items-center gap-1.5 text-xs bg-violet-600 text-white px-3.5 py-2 rounded-xl font-medium">
-            <Plus className="w-3.5 h-3.5" />
-            Nuevo empleado
-          </button>
-        </div>
-
-        <div className="divide-y divide-gray-50">
-          {staff.map(s => (
-            <div key={s.name} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/70 transition-colors">
-              <div className={`w-10 h-10 rounded-full ${s.color} flex items-center justify-center text-xs font-bold shrink-0`}>
-                {s.initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">{s.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{s.role}</p>
-              </div>
-              <div className="hidden sm:flex items-center gap-4 text-xs text-gray-400">
-                <span><strong className="text-gray-600 font-medium">{s.services}</strong> servicios</span>
-                <span>{s.days}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="text-[11px] text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:border-gray-300 transition-colors">
-                  Editar
-                </button>
-                <button className="text-gray-300 hover:text-gray-500 transition-colors">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="px-6 py-4 border-t border-dashed border-gray-200 bg-gray-50/30">
-          <button className="flex items-center gap-2 text-xs text-violet-600 font-medium hover:text-violet-700 transition-colors">
-            <div className="w-6 h-6 rounded-full border-2 border-dashed border-violet-300 flex items-center justify-center">
-              <Plus className="w-3 h-3" />
-            </div>
-            Agregar otro empleado
-          </button>
         </div>
       </div>
     </div>
@@ -346,7 +472,6 @@ export function SystemPreview() {
       >
         {active === 'client' && <ClientView />}
         {active === 'admin'  && <AdminView />}
-        {active === 'staff'  && <StaffView />}
       </div>
     </div>
   );
