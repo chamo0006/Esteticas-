@@ -150,12 +150,12 @@ const navLinks = [
   ['Contacto', '#contacto'],
 ] as const;
 
-const avatarColors = [
-  'bg-violet-200',
-  'bg-rose-200',
-  'bg-amber-200',
-  'bg-emerald-200',
-  'bg-sky-200',
+const avatarPhotos = [
+  'https://i.pravatar.cc/64?img=5',
+  'https://i.pravatar.cc/64?img=47',
+  'https://i.pravatar.cc/64?img=25',
+  'https://i.pravatar.cc/64?img=32',
+  'https://i.pravatar.cc/64?img=9',
 ];
 
 export default function LandingPage() {
@@ -248,8 +248,17 @@ export default function LandingPage() {
           style={{ animationDelay: '320ms' }}
         >
           <div className="flex -space-x-2">
-            {avatarColors.map((c, i) => (
-              <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-white`} />
+            {avatarPhotos.map((src, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={src}
+                alt=""
+                width={32}
+                height={32}
+                loading="lazy"
+                className="w-8 h-8 rounded-full border-2 border-white object-cover bg-gray-100"
+              />
             ))}
           </div>
           <div className="flex items-center gap-1">
