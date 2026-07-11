@@ -4,6 +4,12 @@ import {
   MessageCircle,
   Sparkles,
   Star,
+  CalendarClock,
+  Smartphone,
+  CreditCard,
+  BookUser,
+  Wallet,
+  FolderKanban,
 } from 'lucide-react';
 import { AnimateIn } from '@/components/landing/animate-in';
 import { SystemPreview } from '@/components/landing/system-preview';
@@ -11,46 +17,52 @@ import { ContactForm } from '@/components/landing/contact-form';
 
 const features = [
   {
-    emoji: '📅',
+    icon: CalendarClock,
     title: 'Calendario inteligente',
     description:
       'Agenda digital para cualquier profesional. Los slots se calculan automáticamente según la duración de cada servicio.',
     iconBg: 'bg-violet-50',
+    iconColor: 'text-violet-600',
   },
   {
-    emoji: '📱',
+    icon: Smartphone,
     title: 'Reservas online 24/7',
     description:
       'Tus clientes reservan turnos desde el celular en segundos. Sin llamadas, sin idas y vueltas, sin WhatsApp.',
     iconBg: 'bg-blue-50',
+    iconColor: 'text-blue-600',
   },
   {
-    emoji: '💳',
+    icon: CreditCard,
     title: 'Señas con Mercado Pago',
     description:
       'Tu cliente paga la seña al reservar. Confirmación automática, cero cancelaciones de último momento.',
     iconBg: 'bg-emerald-50',
+    iconColor: 'text-emerald-600',
   },
   {
-    emoji: '📒',
+    icon: BookUser,
     title: 'Libreta de clientes',
     description:
       'Historial de visitas, servicios y notas privadas de cada cliente de tu negocio.',
     iconBg: 'bg-amber-50',
+    iconColor: 'text-amber-600',
   },
   {
-    emoji: '💰',
+    icon: Wallet,
     title: 'Balance de ingresos',
     description:
       'Cuánto ganaste hoy, esta semana y este mes. Con breakdown por servicio para entender tu negocio.',
     iconBg: 'bg-rose-50',
+    iconColor: 'text-rose-600',
   },
   {
-    emoji: '🗂️',
+    icon: FolderKanban,
     title: 'Agendas separadas',
     description:
       'Cada tipo de servicio puede tener su propia agenda independiente para no mezclar turnos.',
     iconBg: 'bg-sky-50',
+    iconColor: 'text-sky-600',
   },
 ];
 
@@ -356,8 +368,8 @@ export default function LandingPage() {
             {features.map((f, i) => (
               <AnimateIn key={f.title} delay={i * 80}>
                 <div className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-xl hover:shadow-gray-100/80 hover:-translate-y-1 transition-all duration-300 h-full">
-                  <div className={`w-12 h-12 rounded-2xl ${f.iconBg} flex items-center justify-center mb-5 text-2xl leading-none`}>
-                    <span aria-hidden="true">{f.emoji}</span>
+                  <div className={`w-12 h-12 rounded-2xl ${f.iconBg} flex items-center justify-center mb-5`}>
+                    <f.icon className={`w-6 h-6 ${f.iconColor}`} />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{f.title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{f.description}</p>
