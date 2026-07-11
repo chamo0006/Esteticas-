@@ -184,12 +184,20 @@ export default function LandingPage() {
             ))}
           </nav>
 
-          <a
-            href="#contacto"
-            className="text-sm bg-gray-900 text-white px-5 py-2.5 rounded-full font-medium hover:bg-gray-700 hover:-translate-y-0.5 transition-all duration-200"
-          >
-            Contratar servicio
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/admin/login"
+              className="text-sm text-gray-600 hover:text-gray-900 px-4 py-2.5 font-medium transition-colors"
+            >
+              Iniciar sesión
+            </a>
+            <a
+              href="#contacto"
+              className="text-sm bg-gray-900 text-white px-5 py-2.5 rounded-full font-medium hover:bg-gray-700 hover:-translate-y-0.5 transition-all duration-200"
+            >
+              Contratar servicio
+            </a>
+          </div>
         </div>
       </header>
 
