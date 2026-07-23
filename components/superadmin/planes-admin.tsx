@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Trash2, Plus, Loader2, Package } from 'lucide-react';
+import { Save, Trash2, Plus, Loader2, Package, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatARS } from './types';
 
 export interface Plan {
@@ -21,7 +21,12 @@ export interface Plan {
 const input = 'w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-400';
 const label = 'block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5';
 
-function PlanCard({ plan, isSuperadmin, onChanged }: { plan: Plan; isSuperadmin: boolean; onChanged: () => void }) {
+function PlanCard({
+  plan, isSuperadmin, onChanged, onMoveUp, onMoveDown, canMoveUp, canMoveDown, moving,
+}: {
+  plan: Plan; isSuperadmin: boolean; onChanged: () => void;
+  onMoveUp: () => void; onMoveDown: () => void; canMoveUp: boolean; canMoveDown: boolean; moving: boolean;
+}) {
   const [f, setF] = useState({
     nombre: plan.nombre,
     descripcion: plan.descripcion ?? '',
@@ -65,10 +70,22 @@ function PlanCard({ plan, isSuperadmin, onChanged }: { plan: Plan; isSuperadmin:
           <Package className="w-4 h-4 text-violet-500" />
           <span className="text-xs text-gray-400 font-mono">/{plan.slug}</span>
         </div>
-        <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
-          <input type="checkbox" checked={f.activo} onChange={(e) => setF({ ...f, activo: e.target.checked })} />
-          Activo
-        </label>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col -my-1">
+            <button onClick={onMoveUp} disabled={!canMoveUp || moving} title="Mover antes"
+              className="p-0.5 text-gray-300 hover:text-violet-600 disabled:opacity-30 disabled:hover:text-gray-300">
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={onMoveDown} disabled={!canMoveDown || moving} title="Mover después"
+              className="p-0.5 text-gray-300 hover:text-violet-600 disabled:opacity-30 disabled:hover:text-gray-300">
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
+            <input type="checkbox" checked={f.activo} onChange={(e) => setF({ ...f, activo: e.target.checked })} />
+            Activo
+          </label>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -131,14 +148,40 @@ export function PlanesAdmin({ planes, isSuperadmin }: { planes: Plan[]; isSupera
   const [nuevo, setNuevo] = useState({ slug: '', nombre: '', precio_mensual: '' });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [movingId, setMovingId] = useState<string | null>(null);
+
+  const ordenados = [...planes].sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre));
 
   const onChanged = () => router.refresh();
+
+  // Reordena por posición y renumera todo 1..N — corrige de paso empates o huecos
+  // en "orden" que puedan haber quedado de ediciones manuales previas.
+  const mover = async (index: number, dir: -1 | 1) => {
+    const destino = index + dir;
+    if (destino < 0 || destino >= ordenados.length) return;
+    const reordenados = [...ordenados];
+    [reordenados[index], reordenados[destino]] = [reordenados[destino], reordenados[index]];
+
+    const actual = ordenados[index];
+    setMovingId(actual.id);
+    const cambios = reordenados
+      .map((p, i) => ({ p, nuevoOrden: i + 1 }))
+      .filter(({ p, nuevoOrden }) => p.orden !== nuevoOrden);
+
+    const resultados = await Promise.all(cambios.map(({ p, nuevoOrden }) =>
+      fetch(`/api/superadmin/planes/${p.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orden: nuevoOrden }),
+      })
+    ));
+    setMovingId(null);
+    if (resultados.every((r) => r.ok)) router.refresh();
+  };
 
   const crear = async () => {
     setBusy(true); setErr(null);
     const res = await fetch('/api/superadmin/planes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...nuevo, precio_mensual: Number(nuevo.precio_mensual) || 0, orden: planes.length + 1 }),
+      body: JSON.stringify({ ...nuevo, precio_mensual: Number(nuevo.precio_mensual) || 0, orden: planes.reduce((m, p) => Math.max(m, p.orden), 0) + 1 }),
     });
     setBusy(false);
     if (res.ok) { setCreando(false); setNuevo({ slug: '', nombre: '', precio_mensual: '' }); router.refresh(); }
@@ -181,8 +224,12 @@ export function PlanesAdmin({ planes, isSuperadmin }: { planes: Plan[]; isSupera
       )}
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {planes.map((p) => <PlanCard key={p.id} plan={p} isSuperadmin={isSuperadmin} onChanged={onChanged} />)}
-        {planes.length === 0 && <p className="text-gray-400 text-sm">No hay planes cargados.</p>}
+        {ordenados.map((p, i) => (
+          <PlanCard key={p.id} plan={p} isSuperadmin={isSuperadmin} onChanged={onChanged}
+            onMoveUp={() => mover(i, -1)} onMoveDown={() => mover(i, 1)}
+            canMoveUp={i > 0} canMoveDown={i < ordenados.length - 1} moving={movingId === p.id} />
+        ))}
+        {ordenados.length === 0 && <p className="text-gray-400 text-sm">No hay planes cargados.</p>}
       </div>
     </div>
   );

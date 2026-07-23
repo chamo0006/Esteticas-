@@ -248,16 +248,14 @@ export function VentasMes({ clientesSugeridos = [], planesSugeridos = [] }: Prop
                     <td className="px-5 py-3 text-gray-500">{formatFechaCorta(v.fecha_pago)}</td>
                     <td className="px-5 py-3 text-gray-500">{formatFechaCorta(v.fecha_vencimiento)}</td>
                     <td className="px-5 py-3">
-                      {!v.automatico && (
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => abrirEdicion(v)} className="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50" aria-label="Editar">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => eliminar(v.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50" aria-label="Eliminar">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => abrirEdicion(v)} className="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50" aria-label="Editar">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => eliminar(v.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50" aria-label="Eliminar">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

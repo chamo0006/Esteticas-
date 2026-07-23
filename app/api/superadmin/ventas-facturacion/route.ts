@@ -94,11 +94,6 @@ export async function PATCH(req: Request) {
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 });
 
-  const { data: existente } = await supabase.from('ventas_facturacion').select('pago_suscripcion_id').eq('id', id).maybeSingle();
-  if (existente?.pago_suscripcion_id) {
-    return NextResponse.json({ error: 'Esta venta se generó automáticamente desde un pago — corregí el pago en Facturación, no acá' }, { status: 409 });
-  }
-
   const body = validar(await req.json());
   if (!body) return NextResponse.json({ error: 'Faltan datos obligatorios (cliente, plan, monto, fecha de pago)' }, { status: 400 });
 
@@ -119,11 +114,6 @@ export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 });
-
-  const { data: existente } = await supabase.from('ventas_facturacion').select('pago_suscripcion_id').eq('id', id).maybeSingle();
-  if (existente?.pago_suscripcion_id) {
-    return NextResponse.json({ error: 'Esta venta se generó automáticamente desde un pago — borrala desde Facturación, no acá' }, { status: 409 });
-  }
 
   const { error } = await supabase.from('ventas_facturacion').delete().eq('id', id);
   if (error) return NextResponse.json({ error: 'Error al eliminar' }, { status: 500 });
