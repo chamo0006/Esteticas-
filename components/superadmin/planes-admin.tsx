@@ -104,7 +104,7 @@ function PlanCard({
             <input type="number" className={input} placeholder="(opcional)" value={f.precio_anual} onChange={(e) => setF({ ...f, precio_anual: e.target.value })} />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 items-end">
           <div>
             <label className={label}>Máx. profesionales</label>
             <input type="number" className={input} placeholder="∞" value={f.max_profesionales} onChange={(e) => setF({ ...f, max_profesionales: e.target.value })} />
