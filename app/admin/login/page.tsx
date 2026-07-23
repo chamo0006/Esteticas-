@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-              Slug de la estética
+              Nombre de tu negocio
             </label>
             <input
               type="text"
