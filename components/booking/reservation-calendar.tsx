@@ -62,8 +62,13 @@ export function ReservationCalendar({
     if (!tenantSlug) return;
     fetch(`/api/${tenantSlug}/profesionales`)
       .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setProfesionales(data); })
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        setProfesionales(data);
+        if (data.length === 1 && onSelectProfesional) onSelectProfesional(data[0].id);
+      })
       .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug]);
 
   useEffect(() => {
@@ -247,22 +252,24 @@ export function ReservationCalendar({
             </p>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <button onClick={() => onSelectProfesional(null)}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
-                style={
-                  selectedProfesional === null
-                    ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
-                    : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
-                }>
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
-                  style={{ backgroundColor: selectedProfesional === null ? "#FFFFFF50" : T.border }}>
-                  {isBarberia ? "✂️" : "✨"}
-                </div>
-                <span className="text-xs font-medium text-center leading-tight"
-                  style={{ color: selectedProfesional === null ? "#FFFFFF" : T.muted }}>
-                  Sin preferencia
-                </span>
-              </button>
+              {profesionales.length > 1 && (
+                <button onClick={() => onSelectProfesional(null)}
+                  className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
+                  style={
+                    selectedProfesional === null
+                      ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
+                      : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
+                  }>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
+                    style={{ backgroundColor: selectedProfesional === null ? "#FFFFFF50" : T.border }}>
+                    {isBarberia ? "✂️" : "✨"}
+                  </div>
+                  <span className="text-xs font-medium text-center leading-tight"
+                    style={{ color: selectedProfesional === null ? "#FFFFFF" : T.muted }}>
+                    Sin preferencia
+                  </span>
+                </button>
+              )}
 
               {profesionales.map(p => {
                 const initials = p.nombre.split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0].toUpperCase()).join("");
