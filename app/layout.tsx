@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Caracruz — Plataforma de turnos para estéticas',
+  title: 'Turfull — Plataforma de turnos para estéticas',
   description: 'La plataforma SaaS que permite a los centros de estética tener su propia web con reservas online y panel de administración.',
   generator: 'v0.app',
   icons: {

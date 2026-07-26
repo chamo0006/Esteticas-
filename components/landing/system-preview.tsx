@@ -386,8 +386,8 @@ function AdminView() {
                   <Sparkles className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div className="min-w-0 hidden sm:block">
-                  <p className="text-white text-xs font-semibold leading-tight truncate">Caracruz</p>
-                  <p className="text-zinc-500 text-[9px] truncate">caracruz</p>
+                  <p className="text-white text-xs font-semibold leading-tight truncate">Turfull</p>
+                  <p className="text-zinc-500 text-[9px] truncate">turfull</p>
                 </div>
               </div>
             </div>

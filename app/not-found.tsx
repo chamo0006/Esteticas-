@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center shadow-md shadow-violet-900/20">
           <Sparkles className="w-4 h-4 text-white" />
         </div>
-        <span className="font-semibold text-gray-900">Caracruz</span>
+        <span className="font-semibold text-gray-900">Turfull</span>
       </div>
 
       <p className="text-sm font-semibold text-violet-600 tracking-wide mb-3">Error 404</p>

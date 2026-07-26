@@ -181,7 +181,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-xl bg-gray-900 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-gray-900">Caracruz</span>
+            <span className="font-semibold text-gray-900">Turfull</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -211,7 +211,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-full px-4 py-2 mb-8">
             <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
             <span className="text-xs font-medium text-violet-700">
-              Más de 200 estéticas ya están usando Caracruz
+              Más de 200 estéticas ya están usando Turfull
             </span>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function LandingPage() {
               Tan simple como debe ser
             </h2>
             <p className="text-gray-500 max-w-lg mx-auto">
-              Tres pasos y tu negocio ya está en Caracruz.
+              Tres pasos y tu negocio ya está en Turfull.
             </p>
           </AnimateIn>
 
@@ -503,7 +503,7 @@ export default function LandingPage() {
             <div className="w-7 h-7 rounded-xl bg-violet-600 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-semibold text-white">Caracruz</span>
+            <span className="font-semibold text-white">Turfull</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -519,7 +519,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-sm text-gray-500">
-            &copy; 2025 Caracruz &mdash; Hecho con amor en Argentina
+            &copy; 2025 Turfull &mdash; Hecho con amor en Argentina
           </p>
         </div>
       </footer>
