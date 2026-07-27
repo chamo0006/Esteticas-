@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [tenantSlug, setTenantSlug] = useState('');
@@ -48,8 +48,9 @@ export default function AdminLoginPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-violet-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-900/50">
-            <Sparkles className="w-7 h-7 text-white" />
+          <div className="bg-white rounded-xl px-4 py-2.5 inline-flex mb-5 shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto" />
           </div>
           <h1 className="text-2xl font-bold text-white">Panel de Gestión</h1>
           <p className="text-gray-500 text-sm mt-2">Acceso exclusivo para administradores</p>

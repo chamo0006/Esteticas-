@@ -2,7 +2,6 @@ import {
   ArrowRight,
   Check,
   MessageCircle,
-  Sparkles,
   Star,
   CalendarClock,
   Smartphone,
@@ -178,10 +177,8 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gray-900 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-gray-900">Turfull</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto rounded-lg" />
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -499,11 +496,9 @@ export default function LandingPage() {
       {/* ── Footer ──────────────────────────────────────────── */}
       <footer className="bg-gray-950 py-10 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-violet-600 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-semibold text-white">Turfull</span>
+          <div className="bg-white rounded-lg px-3 py-1.5 inline-flex">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-6 w-auto" />
           </div>
 
           <div className="flex items-center gap-6">

@@ -1,14 +1,12 @@
 import Link from 'next/link';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-[#FCF8F5] flex flex-col items-center justify-center px-4 text-center">
       <div className="flex items-center gap-2.5 mb-10">
-        <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center shadow-md shadow-violet-900/20">
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
-        <span className="font-semibold text-gray-900">Turfull</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto rounded-lg" />
       </div>
 
       <p className="text-sm font-semibold text-violet-600 tracking-wide mb-3">Error 404</p>

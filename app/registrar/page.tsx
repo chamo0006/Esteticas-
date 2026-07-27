@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Loader2, Check, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Check, Eye, EyeOff } from 'lucide-react';
 
 export default function RegistrarPage() {
   const [form, setForm] = useState({
@@ -95,8 +95,9 @@ export default function RegistrarPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-violet-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-900/50">
-            <Sparkles className="w-7 h-7 text-white" />
+          <div className="bg-white rounded-xl px-4 py-2.5 inline-flex mb-5 shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto" />
           </div>
           <h1 className="text-2xl font-bold text-white">Registrá tu negocio</h1>
           <p className="text-zinc-500 text-sm mt-2">Empezá a recibir reservas en minutos</p>
