@@ -47,9 +47,9 @@ function SuperadminLoginForm() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="bg-white rounded-xl px-4 py-2.5 inline-flex mb-5 shadow-lg">
+          <div className="inline-flex mb-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto" />
+            <img src="/turfull-icon.png" alt="Turfull" className="w-14 h-14" />
           </div>
           <h1 className="text-2xl font-bold text-white">Super Admin</h1>
           <p className="text-gray-500 text-sm mt-2">Panel de gestión de la plataforma</p>

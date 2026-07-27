@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-[#FCF8F5] flex flex-col items-center justify-center px-4 text-center">
       <div className="flex items-center gap-2.5 mb-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto rounded-lg" />
+        <img src="/turfull-logo-transparent.png" alt="Turfull" className="h-8 w-auto" />
       </div>
 
       <p className="text-sm font-semibold text-violet-600 tracking-wide mb-3">Error 404</p>

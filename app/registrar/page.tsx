@@ -95,9 +95,9 @@ export default function RegistrarPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="bg-white rounded-xl px-4 py-2.5 inline-flex mb-5 shadow-lg">
+          <div className="inline-flex mb-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto" />
+            <img src="/turfull-icon.png" alt="Turfull" className="w-14 h-14" />
           </div>
           <h1 className="text-2xl font-bold text-white">Registrá tu negocio</h1>
           <p className="text-zinc-500 text-sm mt-2">Empezá a recibir reservas en minutos</p>

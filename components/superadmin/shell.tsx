@@ -72,9 +72,9 @@ export function SuperadminShell({ rol, canSeeBilling, children }: Props) {
       {/* Sidebar desktop */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-60 flex-col bg-gray-900 p-4">
         <div className="flex items-center gap-2.5 px-2 mb-6">
-          <div className="bg-white rounded-lg px-2 py-1.5 flex-shrink-0">
+          <div className="flex-shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-5 w-auto" />
+            <img src="/turfull-icon.png" alt="Turfull" className="w-9 h-9" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-white leading-tight">Super Admin</p>
@@ -93,9 +93,9 @@ export function SuperadminShell({ rol, canSeeBilling, children }: Props) {
       {/* Topbar mobile */}
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-900/95 backdrop-blur">
         <div className="flex items-center gap-2">
-          <div className="bg-white rounded-lg px-2 py-1.5">
+          <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-4 w-auto" />
+            <img src="/turfull-icon.png" alt="Turfull" className="w-8 h-8" />
           </div>
           <span className="text-sm font-bold text-white">Super Admin</span>
         </div>

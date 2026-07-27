@@ -178,7 +178,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-8 w-auto rounded-lg" />
+            <img src="/turfull-logo-transparent.png" alt="Turfull" className="h-8 w-auto" />
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -496,9 +496,10 @@ export default function LandingPage() {
       {/* ── Footer ──────────────────────────────────────────── */}
       <footer className="bg-gray-950 py-10 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="bg-white rounded-lg px-3 py-1.5 inline-flex">
+          <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/turfull-logo.jpeg" alt="Turfull" className="h-6 w-auto" />
+            <img src="/turfull-icon.png" alt="" className="w-7 h-7" />
+            <span className="font-semibold text-white">Turfull</span>
           </div>
 
           <div className="flex items-center gap-6">

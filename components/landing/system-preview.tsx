@@ -382,9 +382,9 @@ function AdminView() {
           <div className="w-12 sm:w-44 bg-zinc-900 flex flex-col shrink-0">
             <div className="px-2 sm:px-4 py-4 border-b border-zinc-800 flex justify-center sm:block">
               <div className="flex items-center gap-2">
-                <div className="bg-white rounded-lg px-1.5 py-1 shrink-0">
+                <div className="shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/turfull-logo.jpeg" alt="Turfull" className="h-3.5 w-auto" />
+                  <img src="/turfull-icon.png" alt="Turfull" className="w-7 h-7" />
                 </div>
                 <div className="min-w-0 hidden sm:block">
                   <p className="text-white text-xs font-semibold leading-tight truncate">Turfull</p>
