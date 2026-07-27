@@ -599,67 +599,71 @@ export default function TurnosPage() {
       t.estado === 'cancelado' ? 'opacity-50' : ''
     )}>
       <div className="p-4 flex items-start gap-3 md:gap-4">
-              <div className="text-center min-w-[52px]">
-                <p className="text-lg font-bold text-gray-900">{formatHora(t.fecha_hora)}</p>
-                <p className="text-xs text-gray-400">{t.duracion_minutos} min</p>
-              </div>
-              <div className="w-px bg-gray-100 self-stretch" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-semibold text-gray-900">{t.cliente_nombre}</p>
-                  <span className={cn('px-2 py-0.5 rounded-lg text-xs font-semibold border', ESTADO_STYLES[t.estado])}>
-                    {t.estado}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">{t.servicio_nombre}</p>
-                {t.profesional_nombre && (
-                  <p className="text-xs text-violet-500 mt-0.5">💆 {t.profesional_nombre}</p>
-                )}
-                {t.cliente_telefono && (
-                  <p className="text-xs text-gray-400 mt-1">📱 {t.cliente_telefono}</p>
-                )}
-                {t.pago_monto && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    💳 {t.pago_metodo} · {t.pago_tipo === 'sena' ? `Seña ${formatARS(Number(t.pago_monto))}` : formatARS(Number(t.pago_monto))} · <span className={t.pago_estado === 'acreditado' ? 'text-emerald-500' : 'text-amber-500'}>{t.pago_estado}</span>
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                <p className="font-bold text-gray-900">{formatARS(Number(t.precio))}</p>
-                {t.estado !== 'completado' && t.estado !== 'cancelado' && (
-                  <div className="flex gap-1.5 flex-wrap justify-end">
-                    {t.estado === 'pendiente' && (
-                      <button
-                        onClick={() => changeEstado(t.id, 'confirmado')}
-                        disabled={!!updating}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold rounded-lg transition-colors"
-                      >
-                        {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                        Confirmar
-                      </button>
-                    )}
-                    {t.estado === 'confirmado' && (
-                      <button
-                        onClick={() => changeEstado(t.id, 'completado')}
-                        disabled={!!updating}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-lg transition-colors"
-                      >
-                        {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                        Completar
-                      </button>
-                    )}
-                    <button
-                      onClick={() => changeEstado(t.id, 'cancelado')}
-                      disabled={!!updating}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-semibold rounded-lg transition-colors"
-                    >
-                      <X className="w-3 h-3" /> Cancelar
-                    </button>
-                  </div>
-                )}
-              </div>
+        <div className="text-center min-w-[52px] flex-shrink-0">
+          <p className="text-lg font-bold text-gray-900">{formatHora(t.fecha_hora)}</p>
+          <p className="text-xs text-gray-400">{t.duracion_minutos} min</p>
+        </div>
+        <div className="w-px bg-gray-100 self-stretch flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <p className="font-semibold text-gray-900 truncate">{t.cliente_nombre}</p>
+              <span className={cn('px-2 py-0.5 rounded-lg text-xs font-semibold border whitespace-nowrap', ESTADO_STYLES[t.estado])}>
+                {t.estado}
+              </span>
             </div>
+            <p className="font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">{formatARS(Number(t.precio))}</p>
           </div>
+          <p className="text-sm text-gray-500">{t.servicio_nombre}</p>
+          {t.profesional_nombre && (
+            <p className="text-xs text-violet-500 mt-0.5">💆 {t.profesional_nombre}</p>
+          )}
+          {t.cliente_telefono && (
+            <p className="text-xs text-gray-400 mt-1">📱 {t.cliente_telefono}</p>
+          )}
+          {t.pago_monto && (
+            <p className="text-xs text-gray-400 mt-0.5 flex flex-wrap items-center gap-x-1.5">
+              <span>💳 {t.pago_metodo}</span>
+              <span>·</span>
+              <span>{t.pago_tipo === 'sena' ? `Seña ${formatARS(Number(t.pago_monto))}` : formatARS(Number(t.pago_monto))}</span>
+              <span>·</span>
+              <span className={t.pago_estado === 'acreditado' ? 'text-emerald-500' : 'text-amber-500'}>{t.pago_estado}</span>
+            </p>
+          )}
+        </div>
+      </div>
+      {t.estado !== 'completado' && t.estado !== 'cancelado' && (
+        <div className="flex gap-2 px-4 pb-4">
+          {t.estado === 'pendiente' && (
+            <button
+              onClick={() => changeEstado(t.id, 'confirmado')}
+              disabled={!!updating}
+              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold rounded-lg transition-colors"
+            >
+              {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              Confirmar
+            </button>
+          )}
+          {t.estado === 'confirmado' && (
+            <button
+              onClick={() => changeEstado(t.id, 'completado')}
+              disabled={!!updating}
+              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-lg transition-colors"
+            >
+              {updating === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              Completar
+            </button>
+          )}
+          <button
+            onClick={() => changeEstado(t.id, 'cancelado')}
+            disabled={!!updating}
+            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-semibold rounded-lg transition-colors"
+          >
+            <X className="w-3 h-3" /> Cancelar
+          </button>
+        </div>
+      )}
+    </div>
   );
 
   const renderAgenda = () => (
