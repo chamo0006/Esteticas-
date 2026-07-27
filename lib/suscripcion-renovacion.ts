@@ -101,3 +101,38 @@ export async function registrarPagoSuscripcion(params: RegistrarPagoParams): Pro
     await supabase.from('tenants').update({ activo: true }).eq('id', params.tenantId);
   }
 }
+
+// Se llama al borrar o corregir un pago que YA había extendido el vencimiento
+// (estaba aprobado y traía un período). Si ese período sigue siendo el
+// vigente en la suscripción, lo recalcula en base al pago aprobado más
+// reciente que quede — o, si no queda ninguno, la deja sin vencimiento
+// (null) para que el semáforo de morosos la detecte. Nunca toca `estado`
+// ni `bloqueado`: esos siguen siendo manuales (ver panel de facturación).
+export async function recalcularVencimientoSiCorresponde(
+  tenantId: string,
+  periodoFinAfectado: string | null | undefined,
+): Promise<void> {
+  if (!periodoFinAfectado) return;
+
+  const { data: susc } = await supabase
+    .from('suscripciones')
+    .select('fecha_fin')
+    .eq('tenant_id', tenantId)
+    .maybeSingle();
+  if (!susc || susc.fecha_fin !== periodoFinAfectado) return; // no era el vigente, no tocar nada
+
+  const { data: siguiente } = await supabase
+    .from('pagos_suscripcion')
+    .select('periodo_fin')
+    .eq('tenant_id', tenantId)
+    .eq('estado', 'aprobado')
+    .not('periodo_fin', 'is', null)
+    .order('periodo_fin', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  await supabase
+    .from('suscripciones')
+    .update({ fecha_fin: siguiente?.periodo_fin ?? null })
+    .eq('tenant_id', tenantId);
+}
