@@ -133,6 +133,28 @@ export async function PATCH(
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
+  // Al completar el turno, el pago queda saldado sin importar el método: en
+  // efectivo/transferencia nadie lo confirma automáticamente (a diferencia del
+  // webhook de MercadoPago), así que lo marcamos acreditado nosotros acá.
+  if (estado === 'completado') {
+    const { data: turno } = await supabase
+      .from('turnos').select('pago_id').eq('id', id).single();
+
+    if (turno?.pago_id) {
+      await supabase
+        .from('pagos')
+        .update({ estado: 'acreditado' })
+        .eq('id', turno.pago_id)
+        .eq('estado', 'pendiente');
+    } else {
+      await supabase
+        .from('pagos')
+        .update({ estado: 'acreditado' })
+        .eq('turno_id', id)
+        .eq('estado', 'pendiente');
+    }
+  }
+
   // Al cancelar, devolvemos la seña de MercadoPago si corresponde.
   const devolucion = estado === 'cancelado'
     ? await devolverSenaSiCorresponde(id, payload.tenantId)

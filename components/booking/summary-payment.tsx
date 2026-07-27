@@ -205,6 +205,14 @@ export function SummaryPayment({
             <MessageCircle className="w-4 h-4" />
             Finalizar por WhatsApp
           </a>
+
+          {tenantSlug && (
+            <a href={`/${tenantSlug}`}
+              className="flex items-center justify-center w-full py-4 font-sans font-medium text-sm transition-opacity hover:opacity-80"
+              style={{ backgroundColor: "transparent", color: T.muted, border: `1px solid ${T.border}`, borderRadius: "9999px" }}>
+              Volver al inicio
+            </a>
+          )}
         </div>
       </div>
     );
