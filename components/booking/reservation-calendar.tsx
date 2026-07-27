@@ -284,22 +284,22 @@ export function ReservationCalendar({
                       isSelected
                         ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
                         : isBusy
-                        ? { backgroundColor: "#F5F5F5", border: "1.5px solid #E0E0E0", opacity: 0.6, cursor: "not-allowed" }
+                        ? { backgroundColor: T.surf2, border: `1.5px solid ${T.border}`, opacity: 0.6, cursor: "not-allowed" }
                         : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
                     }>
                     {selectedTime && !profLoading && (
                       <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: libre ? "#4CAF50" : "#9E9E9E" }} />
+                        style={{ backgroundColor: libre ? "#4CAF50" : T.muted }} />
                     )}
                     <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
-                      style={{ backgroundColor: isSelected ? "#FFFFFF60" : isBusy ? "#E0E0E0" : `${primaryColor}40`, color: isBusy ? "#9E9E9E" : T.text }}>
+                      style={{ backgroundColor: isSelected ? "#FFFFFF60" : isBusy ? T.border : `${primaryColor}40`, color: isBusy ? T.muted : T.text }}>
                       {initials}
                     </div>
                     <span className="text-xs font-medium text-center leading-tight"
-                      style={{ color: isSelected ? "#FFFFFF" : isBusy ? "#9E9E9E" : T.text }}>
+                      style={{ color: isSelected ? "#FFFFFF" : isBusy ? T.muted : T.text }}>
                       {p.nombre}
                     </span>
-                    {isBusy && <span className="text-[10px]" style={{ color: "#9E9E9E" }}>Ocupado/a</span>}
+                    {isBusy && <span className="text-[10px]" style={{ color: T.muted }}>Ocupado/a</span>}
                   </button>
                 );
               })}

@@ -362,7 +362,7 @@ export function SummaryPayment({
                 style={{
                   borderRadius: "14px",
                   border: paymentMethod === p.id ? `1.5px solid ${primaryColor}` : `1px solid ${T.border}`,
-                  backgroundColor: paymentMethod === p.id ? `${primaryColor}12` : "#FFFFFF",
+                  backgroundColor: paymentMethod === p.id ? `${primaryColor}12` : T.cardBg,
                 }}>
                 <span className="text-xl">{p.icon}</span>
                 <span className="text-sm font-sans font-medium flex-1 text-left" style={{ color: T.text }}>{p.label}</span>

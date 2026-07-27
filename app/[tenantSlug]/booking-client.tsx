@@ -5,6 +5,7 @@ import { ServicesCatalog } from '@/components/booking/services-catalog';
 import { ReservationCalendar } from '@/components/booking/reservation-calendar';
 import { SummaryPayment } from '@/components/booking/summary-payment';
 import { CartBar } from '@/components/booking/cart-bar';
+import { getBookingTheme } from '@/lib/booking-theme';
 import type {
   Service,
   CartItem,
@@ -65,7 +66,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
     return false;
   };
 
-  const bgColor = tenant.tipo_negocio === 'barberia' ? '#F3F2F0' : '#FAFAF8';
+  const bgColor = getBookingTheme(tenant.tipo_negocio, tenant.color_primario, tenant.color_acento).bg;
 
   return (
     <main className="min-h-screen pb-28" style={{ backgroundColor: bgColor }}>

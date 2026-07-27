@@ -33,6 +33,7 @@ const ESTETICA: BookingTheme = {
   surf2: '#F5F4F0',
 };
 
+// Barbería — carbón con acento rojo ladrillo (clásico poste de barbería).
 const BARBERIA: BookingTheme = {
   bg: '#111111',
   bgSticky: 'rgba(17,17,17,0.97)',
@@ -44,13 +45,13 @@ const BARBERIA: BookingTheme = {
   inputBg: '#252525',
   cta: 'Reservar turno',
   decoration: '✂️',
-  primary: '#C9A96E',
-  accent: '#B8935A',
+  primary: '#B14B3F',
+  accent: '#C9705F',
   surf2: '#252525',
 };
 
 // Colores personalizados del tenant (Configuración → Apariencia) pisan el
-// primary/accent del preset fijo (Sora para estética, dorado para barbería);
+// primary/accent del preset fijo (Sora para estética, rojo/carbón para barbería);
 // si no están cargados, se usa el preset tal cual.
 export function getBookingTheme(
   tipo: TipoNegocio | undefined,
