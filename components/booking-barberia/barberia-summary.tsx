@@ -34,7 +34,7 @@ interface Props {
 export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount, onBack, tenantSlug, tenant, profesionalId }: Props) {
   const primaryColor = tenant.color_primario ?? B.accent;
   const [payMethod, setPayMethod] = useState<PaymentMethod>("mercadopago");
-  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", phone: "" });
+  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", phone: "", notas: "" });
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<BookingConfirmation | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +80,7 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
           servicioIds: cart.map(i => i.id), fechaHora,
           cliente: { nombre: form.nombre, apellido: form.apellido, email: form.email, telefono: form.phone },
           metodoPago: payMethod,
+          ...(form.notas.trim() ? { notas: form.notas.trim() } : {}),
           ...(profesionalId ? { profesionalId } : {}),
         }),
       });
@@ -260,6 +261,21 @@ export function BarberiaSummary({ cart, selectedDate, selectedTime, totalAmount,
               {phoneError && (
                 <p className="text-xs mt-1.5" style={{ color: "#F87171" }}>{phoneError}</p>
               )}
+            </div>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: B.muted }}>
+                Algo que quieras contarnos <span style={{ opacity: 0.6 }}>(opcional)</span>
+              </label>
+              <textarea
+                value={form.notas}
+                maxLength={500}
+                rows={3}
+                placeholder="Ej: alergia a algún producto, referencia de corte…"
+                onChange={e => setF("notas", e.target.value)}
+                style={{ ...inputStyle, resize: "none" }}
+                onFocus={e => { e.currentTarget.style.borderColor = primaryColor; }}
+                onBlur={e => { e.currentTarget.style.borderColor = B.border; }}
+              />
             </div>
           </div>
         </div>

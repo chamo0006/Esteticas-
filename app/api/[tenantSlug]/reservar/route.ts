@@ -48,7 +48,7 @@ export async function POST(
     );
   }
 
-  const { servicioIds, fechaHora, cliente, metodoPago } = parsed.data;
+  const { servicioIds, fechaHora, cliente, metodoPago, notas } = parsed.data;
   const raw = body as Record<string, unknown>;
   const profesionalIdReq = typeof raw.profesionalId === 'string' ? raw.profesionalId : null;
 
@@ -208,6 +208,7 @@ export async function POST(
         fecha_hora: currentTime.toISOString(),
         estado: 'pendiente',
         ...(profesionalId ? { profesional_id: profesionalId } : {}),
+        ...(notas ? { notas } : {}),
       })
       .select('id')
       .single();

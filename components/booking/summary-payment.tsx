@@ -43,7 +43,7 @@ export function SummaryPayment({
   tenantSlug, tenantConfig, profesionalId,
 }: SummaryPaymentProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mercadopago");
-  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", phone: "" });
+  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", phone: "", notas: "" });
   const [bookingStatus, setBookingStatus] = useState<BookingStatus>("idle");
   const [bookingResult, setBookingResult] = useState<BookingConfirmation | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -106,6 +106,7 @@ export function SummaryPayment({
           fechaHora,
           cliente: { nombre: formData.nombre, apellido: formData.apellido, email: formData.email, telefono: formData.phone },
           metodoPago: paymentMethod,
+          ...(formData.notas.trim() ? { notas: formData.notas.trim() } : {}),
           ...(profesionalId ? { profesionalId } : {}),
         }),
       });
@@ -332,6 +333,21 @@ export function SummaryPayment({
               {phoneError && (
                 <p className="text-xs mt-1.5" style={{ color: "#F87171" }}>{phoneError}</p>
               )}
+            </div>
+            <div>
+              <label className="block text-xs font-sans mb-1.5" style={{ color: T.muted }}>
+                Algo que quieras contarnos <span style={{ opacity: 0.6 }}>(opcional)</span>
+              </label>
+              <textarea
+                value={formData.notas}
+                maxLength={500}
+                rows={3}
+                placeholder={isBarberia ? "Ej: alergia a algún producto, referencia de corte…" : "Ej: alergia a algún producto, preferencia de color…"}
+                onChange={e => handleInput("notas", e.target.value)}
+                style={{ ...inputStyle, resize: "none" }}
+                onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
+                onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
+              />
             </div>
           </div>
         </div>

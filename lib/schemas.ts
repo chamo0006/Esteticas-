@@ -10,6 +10,7 @@ export const reservarSchema = z.object({
     telefono: z.string().min(6).max(20),
   }),
   metodoPago: z.enum(['efectivo', 'transferencia', 'mercadopago']),
+  notas: z.string().max(500).optional(),
 });
 
 export const loginAdminSchema = z.object({
