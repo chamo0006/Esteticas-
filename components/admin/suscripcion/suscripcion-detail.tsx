@@ -115,7 +115,7 @@ function capitalizar(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function UsoBar({ icon: Icon, label, usado, limite }: { icon: typeof Users; label: string; usado: number; limite: number | null }) {
+function UsoBar({ icon: Icon, label, usado, limite, mensajeLimite }: { icon: typeof Users; label: string; usado: number; limite: number | null; mensajeLimite?: string }) {
   const ilimitado = limite == null;
   const pct = ilimitado ? 0 : Math.min(100, Math.round((usado / Math.max(limite, 1)) * 100));
   const cerca = !ilimitado && pct >= 80;
@@ -139,7 +139,9 @@ function UsoBar({ icon: Icon, label, usado, limite }: { icon: typeof Users; labe
         </div>
       )}
       {cerca && (
-        <p className="text-xs text-amber-600 mt-1">Estás cerca del límite de tu plan — considerá pasar a uno superior.</p>
+        <p className="text-xs text-amber-600 mt-1">
+          {mensajeLimite ?? 'Estás cerca del límite de tu plan — considerá pasar a uno superior.'}
+        </p>
       )}
     </div>
   );
@@ -429,7 +431,13 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
                 <TrendingUp className="w-4 h-4 text-gray-400" /> Uso de tu plan
               </h2>
               <div className="space-y-4">
-                <UsoBar icon={Users} label="Profesionales" usado={uso.profesionales} limite={planActual.max_profesionales} />
+                <UsoBar
+                  icon={Users}
+                  label="Profesionales"
+                  usado={uso.profesionales}
+                  limite={planActual.max_profesionales}
+                  mensajeLimite="¿Necesitás sumar más empleados? Actualizá tu plan para agregar más profesionales."
+                />
                 <UsoBar icon={Scissors} label="Servicios" usado={uso.servicios} limite={planActual.max_servicios} />
                 <UsoBar icon={CalendarDays} label="Turnos este mes" usado={uso.turnosMes} limite={planActual.max_turnos_mes} />
               </div>
