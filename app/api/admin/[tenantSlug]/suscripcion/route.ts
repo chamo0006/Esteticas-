@@ -27,23 +27,6 @@ export async function PATCH(
   const body = await req.json();
   const { accion } = body;
 
-  if (accion === 'solicitar_cambio_plan') {
-    const { plan_id } = body;
-    if (typeof plan_id !== 'string' && plan_id !== null) {
-      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
-    }
-    if (plan_id) {
-      const { data: plan } = await supabase.from('planes').select('id').eq('id', plan_id).eq('activo', true).maybeSingle();
-      if (!plan) return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
-    }
-    const { error } = await supabase
-      .from('suscripciones')
-      .update({ plan_pendiente_id: plan_id })
-      .eq('tenant_id', payload.tenantId);
-    if (error) return NextResponse.json({ error: 'Error interno' }, { status: 500 });
-    return NextResponse.json({ ok: true });
-  }
-
   if (accion === 'cancelar') {
     const { motivo } = body;
     const { error } = await supabase

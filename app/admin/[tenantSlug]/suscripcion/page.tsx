@@ -55,7 +55,7 @@ export default async function SuscripcionPage({ params }: Props) {
 
   const { monthStart } = getArgentinaRanges();
 
-  const [suscRes, planesRes, pagosRes, profesionalesRes, serviciosRes, turnosMesRes] = await Promise.all([
+  const [suscRes, pagosRes, profesionalesRes, serviciosRes, turnosMesRes] = await Promise.all([
     supabase
       .from('suscripciones')
       .select(`
@@ -67,11 +67,6 @@ export default async function SuscripcionPage({ params }: Props) {
       `)
       .eq('tenant_id', tenantId)
       .maybeSingle<SuscripcionRowRaw>(),
-    supabase
-      .from('planes')
-      .select('id, nombre, precio_mensual, precio_anual, max_profesionales, max_servicios, max_turnos_mes, features')
-      .eq('activo', true)
-      .order('orden'),
     supabase
       .from('pagos_suscripcion')
       .select('id, monto, metodo, estado, periodo_inicio, periodo_fin, fecha_pago, created_at, comprobante_url, plan_nombre_snapshot, plan_precio_snapshot, plan_features_snapshot')
@@ -131,7 +126,6 @@ export default async function SuscripcionPage({ params }: Props) {
     metodo_pago_vinculado: metodoPagoVinculado,
   } : null;
 
-  const planes: PlanInfo[] = (planesRes.data ?? []) as PlanInfo[];
   const pagos: PagoHistorial[] = (pagosRes.data ?? []) as PagoHistorial[];
 
   const uso = {
@@ -146,7 +140,6 @@ export default async function SuscripcionPage({ params }: Props) {
       suscripcion={suscripcion}
       planActual={planActual as PlanInfo | null}
       planPendiente={planPendiente as PlanInfo | null}
-      planes={planes}
       pagos={pagos}
       uso={uso}
     />

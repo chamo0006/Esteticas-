@@ -8,8 +8,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AvisoBanner } from '@/components/ui/aviso-banner';
-import { PlanComparisonModal } from './plan-comparison-modal';
 import { CancelarSuscripcionModal } from './cancelar-modal';
+
+const SOPORTE_WHATSAPP = '5491121615661';
 
 export interface PlanInfo {
   id: string;
@@ -60,7 +61,6 @@ interface Props {
   suscripcion: SuscripcionInfo | null;
   planActual: PlanInfo | null;
   planPendiente: PlanInfo | null;
-  planes: PlanInfo[];
   pagos: PagoHistorial[];
   uso: { profesionales: number; servicios: number; turnosMes: number };
 }
@@ -147,9 +147,8 @@ function UsoBar({ icon: Icon, label, usado, limite, mensajeLimite }: { icon: typ
   );
 }
 
-export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPendiente, planes, pagos, uso }: Props) {
+export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPendiente, pagos, uso }: Props) {
   const router = useRouter();
-  const [modalPlan, setModalPlan] = useState(false);
   const [modalCancelar, setModalCancelar] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -201,9 +200,11 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
   const iniciarAbonar = () => iniciarPagoRedirect(`/api/admin/${tenantSlug}/suscripcion/abonar`);
   const actualizarMetodoPago = () => iniciarPagoRedirect(`/api/admin/${tenantSlug}/suscripcion/actualizar-metodo-pago`);
 
-  const confirmarCambioPlan = async (planId: string) => {
-    const ok = await patch({ accion: 'solicitar_cambio_plan', plan_id: planId });
-    if (ok) setModalPlan(false);
+  const whatsappCambioPlan = () => {
+    const texto = planActual
+      ? `¡Hola! 👋 Soy de *${tenantSlug}* y estoy en el plan *${planActual.nombre}* de Turfull. Quiero cambiar de plan, ¿me ayudás a ver las opciones disponibles?`
+      : `¡Hola! 👋 Soy de *${tenantSlug}* y quiero cambiar mi plan de Turfull, ¿me ayudás a ver las opciones disponibles?`;
+    window.open(`https://wa.me/${SOPORTE_WHATSAPP}?text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
   };
 
   const confirmarCancelacion = async (motivo: string) => {
@@ -330,7 +331,7 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
                 </span>
                 {planActual && (
                   <button
-                    onClick={() => setModalPlan(true)}
+                    onClick={whatsappCambioPlan}
                     className="text-xs font-semibold text-violet-600 hover:underline"
                   >
                     Cambiar de plan
@@ -508,18 +509,6 @@ export function SuscripcionDetail({ tenantSlug, suscripcion, planActual, planPen
             </div>
           )}
         </>
-      )}
-
-      {modalPlan && planActual && (
-        <PlanComparisonModal
-          planes={planes}
-          planActualId={planActual.id}
-          planPendienteId={planPendiente?.id ?? null}
-          ciclo={suscripcion?.ciclo ?? 'mensual'}
-          uso={uso}
-          onClose={() => setModalPlan(false)}
-          onConfirm={confirmarCambioPlan}
-        />
       )}
 
       {modalCancelar && (
