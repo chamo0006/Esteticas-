@@ -390,7 +390,7 @@ export function SummaryPayment({
           style={
             !isFormValid() || bookingStatus === "loading"
               ? { backgroundColor: T.border, color: T.muted, borderRadius: "9999px", cursor: "not-allowed" }
-              : { backgroundColor: primaryColor, color: "#FFFFFF", borderRadius: "9999px", boxShadow: `0 4px 20px ${primaryColor}66` }
+              : { background: T.ctaGradient ?? primaryColor, color: "#FFFFFF", borderRadius: "9999px", boxShadow: `0 4px 20px ${primaryColor}66` }
           }
         >
           {bookingStatus === "loading" ? (

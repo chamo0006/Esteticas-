@@ -156,7 +156,7 @@ export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasPr
             <button onClick={buscar} disabled={!formValid || loading}
               className="w-full py-3.5 font-medium text-sm flex items-center justify-center gap-2 transition-opacity"
               style={{
-                backgroundColor: !formValid || loading ? T.border : primaryColor,
+                background: !formValid || loading ? T.border : (T.ctaGradient ?? primaryColor),
                 color: !formValid || loading ? T.muted : "#FFFFFF",
                 borderRadius: "9999px", cursor: !formValid || loading ? "not-allowed" : "pointer",
               }}>

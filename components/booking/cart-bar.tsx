@@ -34,7 +34,7 @@ export function CartBar({ itemCount, totalAmount, onContinue, disabled, tenantCo
           style={
             disabled
               ? { backgroundColor: T.border, color: T.muted, borderRadius: "9999px", cursor: "not-allowed" }
-              : { backgroundColor: primaryColor, color: "#FFFFFF", borderRadius: "9999px", boxShadow: `0 4px 16px ${primaryColor}55` }
+              : { background: T.ctaGradient ?? primaryColor, color: "#FFFFFF", borderRadius: "9999px", boxShadow: `0 4px 16px ${primaryColor}55` }
           }>
           Continuar →
         </button>

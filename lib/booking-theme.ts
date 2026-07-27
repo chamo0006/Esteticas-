@@ -14,6 +14,7 @@ export interface BookingTheme {
   primary: string;      // color de acción: CTAs y estados seleccionados
   accent: string;       // acento: precios, líneas, detalles
   surf2: string;        // superficie sutil (filas/estados seleccionados suaves)
+  ctaGradient?: string; // fondo alternativo para el CTA principal (degradado); si no está, se usa `primary` sólido
 }
 
 // Estética "Sora" — zen japonés: crema, negro tinta y dorado apagado.
@@ -33,7 +34,8 @@ const ESTETICA: BookingTheme = {
   surf2: '#F5F4F0',
 };
 
-// Barbería — carbón con acento rojo ladrillo (clásico poste de barbería).
+// Barbería — carbón con azul (estados seleccionados) y rojo/coral (acentos,
+// precios). Poste de barbería clásico, look "app" moderno.
 const BARBERIA: BookingTheme = {
   bg: '#111111',
   bgSticky: 'rgba(17,17,17,0.97)',
@@ -45,8 +47,8 @@ const BARBERIA: BookingTheme = {
   inputBg: '#252525',
   cta: 'Reservar turno',
   decoration: '✂️',
-  primary: '#B14B3F',
-  accent: '#C9705F',
+  primary: '#4361EE',
+  accent: '#E14D5D',
   surf2: '#252525',
 };
 
@@ -59,9 +61,12 @@ export function getBookingTheme(
   colorAcento?: string | null,
 ): BookingTheme {
   const base = tipo === 'barberia' ? BARBERIA : ESTETICA;
+  const primary = colorPrimario || base.primary;
+  const accent = colorAcento || base.accent;
   return {
     ...base,
-    primary: colorPrimario || base.primary,
-    accent: colorAcento || base.accent,
+    primary,
+    accent,
+    ctaGradient: tipo === 'barberia' ? `linear-gradient(90deg, ${primary}, ${accent})` : undefined,
   };
 }

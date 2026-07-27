@@ -185,7 +185,7 @@ export function ReservationCalendar({
                   disabled={past}
                   className="w-9 h-9 rounded-[4px] flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
                   style={
-                    selected ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600 }
+                    selected ? { backgroundColor: isBarberia ? accentColor : primaryColor, color: "#FFFFFF", fontWeight: 600 }
                     : past   ? { color: T.border, cursor: "not-allowed", opacity: 0.4 }
                     : isToday? { color: accentColor, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: "2px" }
                     :          { color: T.text }
