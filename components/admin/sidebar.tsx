@@ -38,7 +38,13 @@ export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
 
       {/* Logo + tenant */}
       <div className="px-5 py-6 border-b border-gray-800">
-        <div className="flex items-center gap-3 mb-1">
+        <a
+          href={`/${tenantSlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 mb-1 rounded-lg -m-1 p-1 hover:bg-gray-800 transition-colors"
+          title="Ver tienda pública"
+        >
           <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-900/50">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
@@ -46,7 +52,7 @@ export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
             <p className="text-white font-semibold text-sm leading-tight truncate">{tenantNombre}</p>
             <p className="text-gray-500 text-xs truncate">{tenantSlug}</p>
           </div>
-        </div>
+        </a>
       </div>
 
       {/* Nav */}
