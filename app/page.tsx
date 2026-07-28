@@ -513,10 +513,6 @@ export default function LandingPage() {
               </a>
             ))}
           </div>
-
-          <p className="text-sm text-gray-500">
-            &copy; 2025 Turfull &mdash; Hecho con amor en Argentina
-          </p>
         </div>
       </footer>
 
