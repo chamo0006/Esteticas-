@@ -401,16 +401,17 @@ export default function LandingPage() {
                     <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-400 to-purple-600" />
                   )}
 
-                  {plan.badge && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-3 py-1 mb-4 self-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                      {plan.badge}
-                    </span>
-                  )}
-
-                  <h3 className={'text-lg font-semibold mb-1 ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
-                    {plan.name}
-                  </h3>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <h3 className={'text-lg font-semibold ' + (plan.dark ? 'text-white' : 'text-gray-900')}>
+                      {plan.name}
+                    </h3>
+                    {plan.badge && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-3 py-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                        {plan.badge}
+                      </span>
+                    )}
+                  </div>
                   <p className={'text-sm mb-4 ' + (plan.dark ? 'text-gray-400' : 'text-gray-500')}>
                     {plan.tagline}
                   </p>
