@@ -140,8 +140,8 @@ const pricingPlans = [
     popular: false,
     dark: true,
     features: [
-      'Locales con +5 empleados',
       'Todo lo incluido en el Plan Pro',
+      'Locales con +5 empleados',
       'Reportes avanzados y métricas de negocio',
       'Prioridad en soporte técnico',
       'Recordatorios automáticos',
