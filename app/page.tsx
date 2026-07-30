@@ -10,6 +10,7 @@ import {
   Wallet,
   FolderKanban,
 } from 'lucide-react';
+import Link from 'next/link';
 import { AnimateIn } from '@/components/landing/animate-in';
 import { SystemPreview } from '@/components/landing/system-preview';
 import { ContactForm } from '@/components/landing/contact-form';
@@ -175,10 +176,10 @@ export default function LandingPage() {
       {/* ── Navbar ──────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/turfull-logo-transparent.png" alt="Turfull" className="h-8 w-auto" />
-          </div>
+          </Link>
 
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map(([label, href]) => (
@@ -514,11 +515,11 @@ export default function LandingPage() {
       {/* ── Footer ──────────────────────────────────────────── */}
       <footer className="bg-gray-950 py-10 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/turfull-icon.png" alt="" className="w-7 h-7" />
             <span className="font-semibold text-white">Turfull</span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-6">
             {navLinks.map(([label, href]) => (
