@@ -217,7 +217,7 @@ export default function LandingPage() {
           className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-6 animate-hero"
           style={{ animationDelay: '80ms' }}
         >
-          Tu estética merece
+          Tu negocio merece
           <br />
           <span className="bg-gradient-to-br from-violet-500 via-purple-600 to-violet-700 bg-clip-text text-transparent">
             su propio sistema
