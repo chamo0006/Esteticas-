@@ -490,6 +490,25 @@ export default function LandingPage() {
           <AnimateIn delay={100}>
             <ContactForm />
           </AnimateIn>
+
+          <AnimateIn delay={150}>
+            <div className="flex items-center gap-3 my-6">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">o</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+
+            <a
+              href="https://wa.me/5491121615661?text=%C2%A1Hola%21%20Quiero%20contratar%20el%20servicio%20de%20Turfull%20para%20mi%20negocio."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3.5 flex items-center justify-center gap-2 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              style={{ backgroundColor: '#25D366' }}
+            >
+              <MessageCircle className="w-5 h-5" fill="white" />
+              Contratar por WhatsApp
+            </a>
+          </AnimateIn>
         </div>
       </section>
 
