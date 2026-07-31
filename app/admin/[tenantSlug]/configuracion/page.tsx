@@ -281,6 +281,10 @@ export default function ConfiguracionPage() {
       return { ...t, apariencia: { ...base, colors: { ...base.colors, [key]: value } } };
     });
   };
+  // Vuelve al diseño por defecto (preset Sora, sin apariencia personalizada guardada).
+  const resetApariencia = () => {
+    setTenant(t => t ? { ...t, apariencia: null } : t);
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center py-20 text-gray-400">
@@ -896,6 +900,7 @@ export default function ConfiguracionPage() {
                   onPreset={setPreset}
                   onField={setAparienciaField}
                   onColorField={setAparienciaColor}
+                  onReset={resetApariencia}
                 />
               )}
 
@@ -1024,17 +1029,27 @@ const COLOR_FIELDS: { key: keyof AparienciaColors; label: string }[] = [
   { key: 'accent', label: 'Acento' },
 ];
 
-function AparienciaEsteticaPanel({ apariencia, onPreset, onField, onColorField }: {
+function AparienciaEsteticaPanel({ apariencia, onPreset, onField, onColorField, onReset }: {
   apariencia: Apariencia;
   onPreset: (preset: PresetTema) => void;
   onField: <K extends keyof Apariencia>(field: K, value: Apariencia[K]) => void;
   onColorField: (key: keyof AparienciaColors, value: string) => void;
+  onReset: () => void;
 }) {
   return (
     <>
       {/* Tema */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900">Tema</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Tema</h3>
+          <button
+            type="button"
+            onClick={onReset}
+            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+          >
+            Reiniciar apariencia
+          </button>
+        </div>
         <div className="grid grid-cols-3 gap-3">
           {(Object.keys(PRESET_LABELS) as PresetTema[]).map((preset) => (
             <ThemeCard
