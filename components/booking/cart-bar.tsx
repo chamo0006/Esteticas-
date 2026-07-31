@@ -19,6 +19,8 @@ export function CartBar({ itemCount, totalAmount, onContinue, disabled, tenantCo
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
   const primaryColor = T.primary;
 
+  if (itemCount === 0) return null;
+
   return (
     <div className="fixed bottom-0 left-0 right-0 px-5 py-4 z-50"
       style={{ backgroundColor: isBarberia ? "rgba(17,17,17,0.97)" : "rgba(255,255,255,0.97)", borderTop: `1px solid ${T.border}`, boxShadow: `0 -4px 24px ${T.shadow}`, backdropFilter: "blur(8px)" }}>
