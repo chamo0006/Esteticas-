@@ -24,7 +24,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('servicios')
-    .select('id, nombre, descripcion, duracion_minutos, precio, categoria, activo')
+    .select('id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url')
     .eq('tenant_id', payload.tenantId)
     .order('categoria')
     .order('nombre');
@@ -46,7 +46,7 @@ export async function POST(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { nombre, descripcion, duracion_minutos, precio, categoria } = await req.json();
+  const { nombre, descripcion, duracion_minutos, precio, categoria, imagen_url } = await req.json();
   if (!nombre || !duracion_minutos || precio == null) {
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
   }
@@ -60,6 +60,7 @@ export async function POST(
       duracion_minutos,
       precio,
       categoria: categoria ?? 'general',
+      imagen_url: imagen_url ?? null,
     })
     .select('id')
     .single();
@@ -82,7 +83,7 @@ export async function PATCH(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { id, nombre, descripcion, duracion_minutos, precio, categoria, activo } = await req.json();
+  const { id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url } = await req.json();
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
   // Build update object with only defined fields
@@ -93,6 +94,7 @@ export async function PATCH(
   if (precio           !== undefined) updateData.precio            = precio;
   if (categoria        !== undefined) updateData.categoria         = categoria;
   if (activo           !== undefined) updateData.activo            = activo;
+  if (imagen_url       !== undefined) updateData.imagen_url        = imagen_url;
 
   const { error } = await supabase
     .from('servicios')

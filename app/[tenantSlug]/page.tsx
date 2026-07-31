@@ -18,7 +18,7 @@ export default async function TenantBookingPage({ params }: Props) {
 
   const { data } = await supabase
     .from('servicios')
-    .select('id, nombre, duracion_minutos, precio, categoria')
+    .select('id, nombre, duracion_minutos, precio, categoria, imagen_url')
     .eq('tenant_id', tenant.id)
     .eq('activo', true)
     .order('categoria')
@@ -30,6 +30,7 @@ export default async function TenantBookingPage({ params }: Props) {
     duration: `${s.duracion_minutos} min`,
     price: Number(s.precio),
     category: s.categoria ?? 'general',
+    imageUrl: s.imagen_url ?? null,
   }));
 
   return <BookingClient tenant={tenant} services={services} />;

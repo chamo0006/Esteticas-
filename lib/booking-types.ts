@@ -6,6 +6,7 @@ export type Service = {
   duration: string;   // "45 min"
   price: number;
   category: string;   // "nails" | "lashes" | "brows" | "general"
+  imageUrl: string | null;
 };
 
 export type CartItem = Service & {

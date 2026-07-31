@@ -29,10 +29,15 @@ function ServiceTile({ service, isSelected, onToggle, theme, compact = false }: 
       }}
     >
       <div
-        className={compact ? "h-16 flex items-center justify-center" : "h-24 flex items-center justify-center"}
+        className={compact ? "h-16 flex items-center justify-center relative overflow-hidden" : "h-24 flex items-center justify-center relative overflow-hidden"}
         style={{ background: `linear-gradient(135deg, ${theme.primary}1A, ${theme.accent}1A)` }}
       >
-        <span style={{ color: theme.accent, opacity: 0.6, fontSize: compact ? 20 : 28 }}>{theme.decoration}</span>
+        {service.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={service.imageUrl} alt={service.name} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <span style={{ color: theme.accent, opacity: 0.6, fontSize: compact ? 20 : 28 }}>{theme.decoration}</span>
+        )}
       </div>
       <div className={compact ? "p-3" : "p-4"}>
         <div className="flex items-start justify-between gap-2">

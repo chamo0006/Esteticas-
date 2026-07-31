@@ -16,7 +16,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from('servicios')
-      .select('id, nombre, descripcion, duracion_minutos, precio, categoria')
+      .select('id, nombre, descripcion, duracion_minutos, precio, categoria, imagen_url')
       .eq('tenant_id', tenant.id)
       .eq('activo', true)
       .order('categoria')
@@ -32,6 +32,7 @@ export async function GET(
       duracion_minutos: Number(s.duracion_minutos),
       price: Number(s.precio),
       category: s.categoria ?? 'general',
+      imageUrl: s.imagen_url ?? null,
     }));
 
     return NextResponse.json(services);

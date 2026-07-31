@@ -20,9 +20,11 @@ const MIME_EXT: Record<string, string> = {
 };
 const MAX_BYTES = 3 * 1024 * 1024; // 3MB
 
-// POST /api/admin/[tenantSlug]/upload — sube el logo a Storage.
-// FormData: file (Blob), kind ('logo'). Devuelve { url }.
-// No toca la tabla tenants — el front persiste la URL vía PATCH /configuracion.
+const KINDS = ['logo', 'servicio'] as const;
+
+// POST /api/admin/[tenantSlug]/upload — sube el logo o la foto de un servicio a Storage.
+// FormData: file (Blob), kind ('logo' | 'servicio'). Devuelve { url }.
+// No toca las tablas — el front persiste la URL vía PATCH /configuracion o /servicios.
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ tenantSlug: string }> }
@@ -35,7 +37,7 @@ export async function POST(
   const file = formData.get('file');
   const kind = formData.get('kind');
 
-  if (!(file instanceof Blob) || kind !== 'logo') {
+  if (!(file instanceof Blob) || typeof kind !== 'string' || !KINDS.includes(kind as typeof KINDS[number])) {
     return NextResponse.json({ error: 'Faltan datos (file, kind)' }, { status: 400 });
   }
   const ext = MIME_EXT[file.type];
