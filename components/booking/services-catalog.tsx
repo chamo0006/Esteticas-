@@ -259,7 +259,7 @@ export function ServicesCatalog({
       </header>
 
       {/* Acceso a "Mis reservas" — entre el buscador y la barra de pasos */}
-      <div className="px-5">
+      <div className="px-5 pb-4">
         <button onClick={() => setMisReservasOpen(true)}
           className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors"
           style={{ backgroundColor: T.cardBg, color: T.text, border: `1px solid ${T.border}`, borderRadius: T.radCtl, boxShadow: T.shadowBox, fontFamily: T.fontBody }}>
