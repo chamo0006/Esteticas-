@@ -15,6 +15,7 @@ interface ServiceCardProps {
   textColor?: string;
   mutedColor?: string;
   surf2?: string;
+  fontBody?: string;
 }
 
 const formatPrice = (price: number) =>
@@ -29,6 +30,7 @@ export function ServiceCard({
   textColor = "#1A1A10",
   mutedColor = "#888870",
   surf2 = "#F5F4F0",
+  fontBody,
 }: ServiceCardProps) {
   return (
     <div
@@ -41,6 +43,7 @@ export function ServiceCard({
         marginInline: isSelected ? -12 : 0,
         paddingInline: isSelected ? 12 : 0,
         borderRadius: isSelected ? 4 : 0,
+        fontFamily: fontBody,
       }}
     >
       <div className="flex-1 min-w-0">

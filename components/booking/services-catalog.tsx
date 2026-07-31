@@ -1,13 +1,67 @@
 "use client";
 
 import { useState } from "react";
-import { Instagram, Search, MessageCircle, CalendarCheck, Facebook, Globe, MapPin } from "lucide-react";
+import { Instagram, Search, MessageCircle, CalendarCheck, Facebook, Globe, MapPin, Plus, Check } from "lucide-react";
 import Image from "next/image";
 import type { Service, TenantConfig } from "@/lib/booking-types";
-import { getBookingTheme } from "@/lib/booking-theme";
+import { getBookingTheme, onColor, type BookingTheme } from "@/lib/booking-theme";
 import { ServiceCard } from "./service-card";
 import { StepBar } from "./step-bar";
 import { MisReservas } from "./mis-reservas";
+
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 0 }).format(price);
+
+// Layout "Tarjetas": una tarjeta grande por fila, con un bloque decorativo a
+// modo de imagen (no hay fotos de servicios todavía).
+function ServiceTile({ service, isSelected, onToggle, theme, compact = false }: {
+  service: Service; isSelected: boolean; onToggle: () => void; theme: BookingTheme; compact?: boolean;
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className="text-left w-full overflow-hidden transition-all duration-200"
+      style={{
+        backgroundColor: theme.cardBg,
+        border: `1px solid ${isSelected ? theme.primary : theme.border}`,
+        borderRadius: theme.radCard,
+        boxShadow: theme.shadowBox,
+      }}
+    >
+      <div
+        className={compact ? "h-16 flex items-center justify-center" : "h-24 flex items-center justify-center"}
+        style={{ background: `linear-gradient(135deg, ${theme.primary}1A, ${theme.accent}1A)` }}
+      >
+        <span style={{ color: theme.accent, opacity: 0.6, fontSize: compact ? 20 : 28 }}>{theme.decoration}</span>
+      </div>
+      <div className={compact ? "p-3" : "p-4"}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className={compact ? "text-xs leading-snug" : "text-sm leading-snug"}
+              style={{ color: theme.text, fontFamily: theme.fontHead, fontWeight: theme.headWeight }}>
+              {service.name}
+            </div>
+            <div className={compact ? "text-[10px] mt-0.5" : "text-xs mt-1"} style={{ color: theme.muted }}>
+              {service.duration}
+            </div>
+          </div>
+          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0"
+            style={{
+              backgroundColor: isSelected ? theme.primary : "transparent",
+              border: isSelected ? "none" : `1px solid ${theme.border}`,
+              borderRadius: theme.radPill,
+              color: isSelected ? onColor(theme.primary) : theme.muted,
+            }}>
+            {isSelected ? <Check className="w-3.5 h-3.5" strokeWidth={2.2} /> : <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />}
+          </div>
+        </div>
+        <div className={compact ? "text-xs font-medium mt-2" : "text-sm font-medium mt-2.5"} style={{ color: theme.accent }}>
+          {formatPrice(service.price)}
+        </div>
+      </div>
+    </button>
+  );
+}
 
 interface ServicesCatalogProps {
   services: Service[];
@@ -57,7 +111,7 @@ export function ServicesCatalog({
   services, searchQuery, onSearchChange, onToggleService, isInCart,
   tenantNombre, logoUrl, telefono, tenantConfig,
 }: ServicesCatalogProps) {
-  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento);
+  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento, tenantConfig?.apariencia);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
   const primaryColor = T.primary;
   const accentColor  = T.accent;
@@ -107,15 +161,16 @@ export function ServicesCatalog({
             <div className="text-center">
               {!isBarberia && (
                 <div className="text-[9px] uppercase tracking-[0.18em] mb-1" style={{ color: T.muted }}>
-                  {T.decoration} · Estética & bienestar
+                  {T.decoration} · {T.tagline}
                 </div>
               )}
-              <h1 className={`font-serif leading-tight ${isBarberia ? "text-xl" : "text-xl font-light"}`} style={{ color: T.text }}>
+              <h1 className={`leading-tight ${isBarberia ? "text-xl" : "text-xl"}`}
+                style={{ color: T.text, fontFamily: T.fontHead, fontWeight: isBarberia ? 400 : T.headWeight }}>
                 {tenantNombre ?? "Reserve su experiencia"}
               </h1>
               {!isBarberia && <div className="w-6 h-px mx-auto my-1.5" style={{ backgroundColor: T.accent }} />}
-              <p className="font-serif italic text-xs mt-0.5" style={{ color: T.muted }}>
-                {isBarberia ? "Reservá tu turno" : "Reserve su experiencia de belleza"}
+              <p className="italic text-xs mt-0.5" style={{ color: T.muted, fontFamily: T.fontHead }}>
+                {isBarberia ? "Reservá tu turno" : T.sub}
               </p>
               {tenantConfig?.bio && (
                 <p className="text-xs mt-2 max-w-xs leading-relaxed" style={{ color: T.muted }}>{tenantConfig.bio}</p>
@@ -191,9 +246,9 @@ export function ServicesCatalog({
             type="text" placeholder="Buscar servicio..." value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             className="w-full pl-11 pr-5 py-3 text-sm transition-all focus:outline-none"
-            style={{ backgroundColor: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "9999px", color: T.text, boxShadow: `0 2px 20px ${T.shadow}` }}
+            style={{ backgroundColor: T.inputBg, border: `1px solid ${T.border}`, borderRadius: T.radCtl, color: T.text, fontFamily: T.fontBody, boxShadow: T.shadowBox }}
             onFocus={e => { e.currentTarget.style.borderColor = primaryColor; e.currentTarget.style.boxShadow = `0 0 0 3px ${primaryColor}20`; }}
-            onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = `0 2px 20px ${T.shadow}`; }}
+            onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = T.shadowBox; }}
           />
         </div>
       </header>
@@ -202,7 +257,7 @@ export function ServicesCatalog({
       <div className="px-5">
         <button onClick={() => setMisReservasOpen(true)}
           className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors"
-          style={{ backgroundColor: T.cardBg, color: T.text, border: `1px solid ${T.border}`, borderRadius: "9999px", boxShadow: `0 2px 20px ${T.shadow}` }}>
+          style={{ backgroundColor: T.cardBg, color: T.text, border: `1px solid ${T.border}`, borderRadius: T.radCtl, boxShadow: T.shadowBox, fontFamily: T.fontBody }}>
           <CalendarCheck className="w-4 h-4" style={{ color: accentColor }} strokeWidth={1.6} />
           Mis reservas
         </button>
@@ -225,10 +280,10 @@ export function ServicesCatalog({
             const sel = activeCat === c;
             return (
               <button key={c} onClick={() => setActiveCat(c)}
-                className="text-xs px-3.5 py-1.5 rounded-sm whitespace-nowrap transition-colors capitalize"
+                className="text-xs px-3.5 py-1.5 whitespace-nowrap transition-colors capitalize"
                 style={sel
-                  ? { backgroundColor: T.primary, color: T.bg, border: `1px solid ${T.primary}` }
-                  : { backgroundColor: "transparent", color: T.muted, border: `1px solid ${T.border}` }}>
+                  ? { backgroundColor: T.primary, color: onColor(T.primary), border: `1px solid ${T.primary}`, borderRadius: T.radCtl, fontFamily: T.fontBody }
+                  : { backgroundColor: "transparent", color: T.muted, border: `1px solid ${T.border}`, borderRadius: T.radCtl, fontFamily: T.fontBody }}>
                 {c}
               </button>
             );
@@ -236,23 +291,40 @@ export function ServicesCatalog({
         </div>
       )}
 
-      {/* Services list */}
+      {/* Services list — el layout (lista/tarjetas/grilla) lo define el tema */}
       <div className="px-5 pb-4 pt-4">
         {!isBarberia && shown.length > 0 && (
           <div className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: T.muted }}>Servicios</div>
         )}
-        {shown.map((service, index) => (
+        {!isBarberia && T.layout === "tarjetas" && (
+          <div className="space-y-3">
+            {shown.map((service) => (
+              <ServiceTile key={service.id} service={service} isSelected={isInCart(service.id)}
+                onToggle={() => onToggleService(service)} theme={T} />
+            ))}
+          </div>
+        )}
+        {!isBarberia && T.layout === "grilla" && (
+          <div className="grid grid-cols-2 gap-3">
+            {shown.map((service) => (
+              <ServiceTile key={service.id} service={service} isSelected={isInCart(service.id)}
+                onToggle={() => onToggleService(service)} theme={T} compact />
+            ))}
+          </div>
+        )}
+        {(isBarberia || T.layout === "lista") && shown.map((service, index) => (
           <ServiceCard
             key={service.id} service={service} isSelected={isInCart(service.id)}
             onToggle={() => onToggleService(service)} index={index}
             primaryColor={primaryColor} accentColor={accentColor} borderColor={T.border}
             cardBg={T.cardBg} textColor={T.text} mutedColor={T.muted} surf2={T.surf2}
+            fontBody={T.fontBody}
           />
         ))}
         {shown.length === 0 && (
           <div className="text-center py-16" style={{ color: T.muted }}>
             {isBarberia ? <BarberDecoration color={accentColor} /> : <BotanicalLeaf color={accentColor} />}
-            <p className="font-serif italic mt-3">No se encontraron servicios</p>
+            <p className="italic mt-3" style={{ fontFamily: T.fontHead }}>No se encontraron servicios</p>
           </div>
         )}
       </div>

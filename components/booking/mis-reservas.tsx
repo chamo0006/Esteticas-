@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Loader2, Calendar, Search, CheckCircle } from "lucide-react";
 import type { TenantConfig } from "@/lib/booking-types";
-import { getBookingTheme } from "@/lib/booking-theme";
+import { getBookingTheme, onColor } from "@/lib/booking-theme";
 
 interface MisReservasProps {
   tenantSlug: string;
@@ -43,7 +43,7 @@ function fmtHora(iso: string) {
 }
 
 export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasProps) {
-  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento);
+  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento, tenantConfig?.apariencia);
   const primaryColor = T.primary;
   const accentColor  = T.accent;
 
@@ -61,8 +61,8 @@ export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasPr
 
   const inputStyle = {
     width: "100%", padding: "12px 16px", backgroundColor: T.inputBg,
-    border: `1px solid ${T.border}`, borderRadius: "12px", color: T.text,
-    fontSize: "14px", outline: "none",
+    border: `1px solid ${T.border}`, borderRadius: T.radCtl, color: T.text,
+    fontSize: "14px", fontFamily: T.fontBody, outline: "none",
   } as React.CSSProperties;
 
   const buscar = async () => {
@@ -121,12 +121,12 @@ export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasPr
     <div className="fixed inset-0 z-[100] flex items-stretch sm:items-center justify-center sm:p-4"
       style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={onClose}>
       <div className="w-full h-full sm:h-auto sm:max-w-md sm:max-h-[88vh] overflow-y-auto sm:rounded-3xl flex flex-col shadow-2xl"
-        style={{ backgroundColor: T.bg }} onClick={(e) => e.stopPropagation()}>
+        style={{ backgroundColor: T.bg, fontFamily: T.fontBody }} onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-5 py-4"
           style={{ backgroundColor: T.bg, borderBottom: `1px solid ${T.border}` }}>
-          <h2 className="font-serif text-lg" style={{ color: T.text }}>Mis reservas</h2>
+          <h2 className="text-lg" style={{ color: T.text, fontFamily: T.fontHead, fontWeight: T.headWeight }}>Mis reservas</h2>
           <button onClick={onClose} className="p-1.5 rounded-full transition-colors"
             style={{ color: T.muted }} aria-label="Cerrar">
             <X className="w-5 h-5" />
@@ -157,8 +157,8 @@ export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasPr
               className="w-full py-3.5 font-medium text-sm flex items-center justify-center gap-2 transition-opacity"
               style={{
                 background: !formValid || loading ? T.border : (T.ctaGradient ?? primaryColor),
-                color: !formValid || loading ? T.muted : "#FFFFFF",
-                borderRadius: "9999px", cursor: !formValid || loading ? "not-allowed" : "pointer",
+                color: !formValid || loading ? T.muted : onColor(primaryColor),
+                borderRadius: T.radBtn, cursor: !formValid || loading ? "not-allowed" : "pointer",
               }}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               Buscar mis reservas
@@ -189,8 +189,8 @@ export function MisReservas({ tenantSlug, tenantConfig, onClose }: MisReservasPr
           )}
 
           {reservas.map((r) => (
-            <div key={r.id} className="rounded-2xl p-4"
-              style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+            <div key={r.id} className="p-4"
+              style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: T.shadowBox, borderRadius: T.radCard }}>
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
                   <p className="text-sm font-medium" style={{ color: T.text }}>{fmtFecha(r.fechaHora)}</p>

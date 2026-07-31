@@ -26,7 +26,7 @@ export async function GET(
   const [tenantResult, horariosResult, diasResult] = await Promise.all([
     supabase
       .from('tenants')
-      .select('nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion, logo_url, exige_sena, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes')
+      .select('nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion, logo_url, exige_sena, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes, apariencia')
       .eq('id', payload.tenantId)
       .single(),
     supabase
@@ -80,6 +80,9 @@ export async function PATCH(
   const color_primario = 'color_primario' in raw ? (raw.color_primario as string | null) : undefined;
   const color_acento   = 'color_acento'   in raw ? (raw.color_acento   as string | null) : undefined;
   const tipo_negocio   = 'tipo_negocio'   in raw ? (raw.tipo_negocio   as string)        : undefined;
+  // apariencia (JSONB): objeto completo con preset/colores/tipografía/layout/bordes,
+  // sin validar campo por campo — pasa tal cual llega desde el panel de Apariencia.
+  const apariencia     = 'apariencia'     in raw ? (raw.apariencia     as unknown)       : undefined;
 
   // Build update object with only the fields that are defined
   const updateData: Record<string, unknown> = {};
@@ -107,6 +110,7 @@ export async function PATCH(
   if (color_acento     !== undefined) updateData.color_acento      = color_acento;
   if (tipo_negocio     !== undefined && ['estetica', 'barberia'].includes(tipo_negocio))
                                       updateData.tipo_negocio      = tipo_negocio;
+  if (apariencia       !== undefined) updateData.apariencia        = apariencia;
 
   const { error } = await supabase
     .from('tenants')

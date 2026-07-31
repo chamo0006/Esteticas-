@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { SchedulingMode, TimeSlot, TenantConfig } from "@/lib/booking-types";
-import { getBookingTheme } from "@/lib/booking-theme";
+import { getBookingTheme, onColor } from "@/lib/booking-theme";
 import { StepBar } from "./step-bar";
 import { useState, useMemo, useEffect } from "react";
 
@@ -53,7 +53,7 @@ export function ReservationCalendar({
   const [profesionales, setProfesionales] = useState<Profesional[]>([]);
   const [profLoading, setProfLoading] = useState(false);
 
-  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento);
+  const T = getBookingTheme(tenantConfig?.tipo_negocio, tenantConfig?.color_primario, tenantConfig?.color_acento, tenantConfig?.apariencia);
   const isBarberia = tenantConfig?.tipo_negocio === "barberia";
   const primaryColor = T.primary;
   const accentColor  = T.accent;
@@ -137,7 +137,7 @@ export function ReservationCalendar({
             <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
             Volver
           </button>
-          <h1 className="font-serif text-xl" style={{ color: T.text }}>Seleccioná tu fecha</h1>
+          <h1 className="text-xl" style={{ color: T.text, fontFamily: T.fontHead, fontWeight: T.headWeight }}>Seleccioná tu fecha</h1>
         </div>
       </header>
 
@@ -145,8 +145,8 @@ export function ReservationCalendar({
 
       <div className="px-5 pt-6 pb-6 space-y-6">
         {/* Calendar card */}
-        <div className="rounded-2xl p-5"
-          style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
+        <div className="p-5"
+          style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: T.shadowBox, borderRadius: T.radCard }}>
 
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-5">
@@ -156,7 +156,7 @@ export function ReservationCalendar({
               style={{ color: T.muted }} aria-label="Mes anterior">
               <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <h2 className="font-serif text-base" style={{ color: T.text }}>
+            <h2 className="text-base" style={{ color: T.text, fontFamily: T.fontHead, fontWeight: T.headWeight }}>
               {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h2>
             <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
@@ -180,16 +180,18 @@ export function ReservationCalendar({
               const selected = isSameDay(date, selectedDate);
               const past = isPastDate(date);
               const isToday = isSameDay(date, today);
+              const selBg = isBarberia ? accentColor : primaryColor;
               return (
                 <button key={date.toISOString()} onClick={() => !past && onSelectDate(date)}
                   disabled={past}
-                  className="w-9 h-9 rounded-[4px] flex items-center justify-center text-sm font-sans mx-auto transition-all duration-200"
-                  style={
-                    selected ? { backgroundColor: isBarberia ? accentColor : primaryColor, color: "#FFFFFF", fontWeight: 600 }
+                  className="w-9 h-9 flex items-center justify-center text-sm mx-auto transition-all duration-200"
+                  style={{
+                    borderRadius: T.radCtl, fontFamily: T.fontBody,
+                    ...(selected ? { backgroundColor: selBg, color: onColor(selBg), fontWeight: 600 }
                     : past   ? { color: T.border, cursor: "not-allowed", opacity: 0.4 }
                     : isToday? { color: accentColor, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: "2px" }
-                    :          { color: T.text }
-                  }>
+                    :          { color: T.text }),
+                  }}>
                   {date.getDate()}
                 </button>
               );
@@ -199,20 +201,20 @@ export function ReservationCalendar({
 
         {/* Time slots */}
         <div>
-          <h3 className="font-serif text-lg mb-4" style={{ color: T.text }}>Horarios disponibles</h3>
+          <h3 className="text-lg mb-4" style={{ color: T.text, fontFamily: T.fontHead, fontWeight: T.headWeight }}>Horarios disponibles</h3>
 
           {slotsLoading ? (
             <div className="grid grid-cols-3 gap-2">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-11 rounded-[4px] animate-pulse" style={{ backgroundColor: T.border }} />
+                <div key={i} className="h-11 animate-pulse" style={{ backgroundColor: T.border, borderRadius: T.radCtl }} />
               ))}
             </div>
           ) : !selectedDate ? (
-            <p className="text-center text-sm py-8 font-sans italic" style={{ color: T.muted }}>
+            <p className="text-center text-sm py-8 italic" style={{ color: T.muted, fontFamily: T.fontHead }}>
               Seleccioná un día para ver los horarios
             </p>
           ) : slots.length === 0 ? (
-            <p className="text-center text-sm py-8 font-sans italic" style={{ color: T.muted }}>
+            <p className="text-center text-sm py-8 italic" style={{ color: T.muted, fontFamily: T.fontHead }}>
               No hay horarios disponibles para este día
             </p>
           ) : (
@@ -222,14 +224,15 @@ export function ReservationCalendar({
                 return (
                   <button key={slot.timeValue} onClick={() => slot.available && onSelectTime(slot.timeValue)}
                     disabled={!slot.available}
-                    className="py-2.5 px-3 text-sm font-sans transition-all duration-200"
-                    style={
-                      isSelected
-                        ? { backgroundColor: primaryColor, color: "#FFFFFF", fontWeight: 600, borderRadius: "4px", border: `1px solid ${primaryColor}` }
+                    className="py-2.5 px-3 text-sm transition-all duration-200"
+                    style={{
+                      borderRadius: T.radCtl, fontFamily: T.fontBody,
+                      ...(isSelected
+                        ? { backgroundColor: primaryColor, color: onColor(primaryColor), fontWeight: 600, border: `1px solid ${primaryColor}` }
                         : slot.available
-                        ? { backgroundColor: T.cardBg, color: T.text, borderRadius: "4px", border: `1px solid ${T.border}`, boxShadow: `0 1px 8px ${T.shadow}` }
-                        : { backgroundColor: T.bg, color: T.border, borderRadius: "4px", border: `1px solid ${T.border}`, opacity: 0.5, cursor: "not-allowed" }
-                    }>
+                        ? { backgroundColor: T.cardBg, color: T.text, border: `1px solid ${T.border}`, boxShadow: T.shadowBox }
+                        : { backgroundColor: T.bg, color: T.border, border: `1px solid ${T.border}`, opacity: 0.5, cursor: "not-allowed" }),
+                    }}>
                     {slot.time}
                   </button>
                 );
@@ -240,12 +243,12 @@ export function ReservationCalendar({
 
         {/* Profesionales */}
         {profesionales.length > 0 && onSelectProfesional && (
-          <div className="rounded-2xl p-5"
-            style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: `0 2px 20px ${T.shadow}` }}>
-            <h3 className="font-serif text-lg mb-0.5" style={{ color: T.text }}>
-              {isBarberia ? "¿Con quién querés atenderte?" : "¿Con quién querés atenderte?"}
+          <div className="p-5"
+            style={{ backgroundColor: T.cardBg, border: `1px solid ${T.border}`, boxShadow: T.shadowBox, borderRadius: T.radCard }}>
+            <h3 className="text-lg mb-0.5" style={{ color: T.text, fontFamily: T.fontHead, fontWeight: T.headWeight }}>
+              ¿Con quién querés atenderte?
             </h3>
-            <p className="text-xs font-sans mb-4" style={{ color: T.muted }}>
+            <p className="text-xs mb-4" style={{ color: T.muted, fontFamily: T.fontBody }}>
               {selectedTime
                 ? "Verde = disponible en ese horario · Gris = ocupado/a"
                 : "Elegí un horario primero para ver disponibilidad"}
@@ -254,18 +257,19 @@ export function ReservationCalendar({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {profesionales.length > 1 && (
                 <button onClick={() => onSelectProfesional(null)}
-                  className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200"
-                  style={
-                    selectedProfesional === null
+                  className="flex flex-col items-center gap-2 p-3 text-sm transition-all duration-200"
+                  style={{
+                    borderRadius: T.radCtl, fontFamily: T.fontBody,
+                    ...(selectedProfesional === null
                       ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
-                      : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
-                  }>
+                      : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }),
+                  }}>
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
-                    style={{ backgroundColor: selectedProfesional === null ? "#FFFFFF50" : T.border }}>
+                    style={{ backgroundColor: selectedProfesional === null ? `${onColor(primaryColor)}50` : T.border }}>
                     {isBarberia ? "✂️" : "✨"}
                   </div>
                   <span className="text-xs font-medium text-center leading-tight"
-                    style={{ color: selectedProfesional === null ? "#FFFFFF" : T.muted }}>
+                    style={{ color: selectedProfesional === null ? onColor(primaryColor) : T.muted }}>
                     Sin preferencia
                   </span>
                 </button>
@@ -276,27 +280,29 @@ export function ReservationCalendar({
                 const isSelected = selectedProfesional === p.id;
                 const libre = p.disponible !== false;
                 const isBusy = selectedTime && p.disponible === false;
+                const selText = onColor(primaryColor);
                 return (
                   <button key={p.id} onClick={() => !isBusy && onSelectProfesional(p.id)}
                     disabled={!!isBusy || profLoading}
-                    className="flex flex-col items-center gap-2 p-3 rounded-2xl text-sm font-sans transition-all duration-200 relative"
-                    style={
-                      isSelected
+                    className="flex flex-col items-center gap-2 p-3 text-sm transition-all duration-200 relative"
+                    style={{
+                      borderRadius: T.radCtl, fontFamily: T.fontBody,
+                      ...(isSelected
                         ? { backgroundColor: primaryColor, border: `2px solid ${accentColor}` }
                         : isBusy
                         ? { backgroundColor: T.surf2, border: `1.5px solid ${T.border}`, opacity: 0.6, cursor: "not-allowed" }
-                        : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }
-                    }>
+                        : { backgroundColor: T.bg, border: `1.5px solid ${T.border}` }),
+                    }}>
                     {selectedTime && !profLoading && (
                       <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full"
                         style={{ backgroundColor: libre ? "#4CAF50" : T.muted }} />
                     )}
                     <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
-                      style={{ backgroundColor: isSelected ? "#FFFFFF60" : isBusy ? T.border : `${primaryColor}40`, color: isBusy ? T.muted : T.text }}>
+                      style={{ backgroundColor: isSelected ? `${selText}60` : isBusy ? T.border : `${primaryColor}40`, color: isBusy ? T.muted : T.text }}>
                       {initials}
                     </div>
                     <span className="text-xs font-medium text-center leading-tight"
-                      style={{ color: isSelected ? "#FFFFFF" : isBusy ? T.muted : T.text }}>
+                      style={{ color: isSelected ? selText : isBusy ? T.muted : T.text }}>
                       {p.nombre}
                     </span>
                     {isBusy && <span className="text-[10px]" style={{ color: T.muted }}>Ocupado/a</span>}

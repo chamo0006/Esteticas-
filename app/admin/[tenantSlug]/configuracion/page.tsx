@@ -4,6 +4,19 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Save, Loader2, Plus, X, Settings, Clock, CreditCard, Palette, Upload, ImageIcon, BarChart3 } from 'lucide-react';
 import { cn, digitsOnly } from '@/lib/utils';
+import type { Apariencia, AparienciaColors, PresetTema, TipoTipografia, TipoRadio, TipoSombra, LayoutCatalogo } from '@/lib/booking-types';
+import { PRESETS } from '@/lib/booking-theme';
+
+const PRESET_LABELS: Record<PresetTema, string> = { sora: 'Sora', rose: 'Rosé Atelier', noir: 'Noir Couture' };
+const TYPO_LABELS: Record<TipoTipografia, string> = { elegante: 'Elegante', moderna: 'Moderna', clasica: 'Clásica' };
+const LAYOUT_LABELS: Record<LayoutCatalogo, string> = { lista: 'Lista', tarjetas: 'Tarjetas', grilla: 'Grilla' };
+const RADIUS_LABELS: Record<TipoRadio, string> = { marcado: 'Marcado', suave: 'Suave', redondeado: 'Redondeado' };
+const SHADOW_LABELS: Record<TipoSombra, string> = { plana: 'Plana', sutil: 'Sutil', elevada: 'Elevada' };
+
+function aparienciaFromPreset(preset: PresetTema): Apariencia {
+  const p = PRESETS[preset];
+  return { preset, colors: p.colors, typo: p.typo, radius: p.radius, shadow: p.shadow, layout: p.layout };
+}
 
 const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
@@ -40,6 +53,7 @@ interface TenantConfig {
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
   stat_rating: number | null; stat_barberos: number | null; stat_clientes: number | null;
+  apariencia: Apariencia | null;
 }
 
 const DEFAULT_HORARIOS: Horario[] = Array.from({ length: 7 }, (_, i) => ({
@@ -135,7 +149,9 @@ export default function ConfiguracionPage() {
     setLoading(true);
     const res = await fetch(`/api/admin/${tenantSlug}/configuracion`);
     const data = await res.json();
-    setTenant(data.tenant);
+    // Sin apariencia guardada: precargamos el preset Sora para que los
+    // controles del panel tengan de dónde partir (no se persiste hasta guardar).
+    setTenant(data.tenant ? { ...data.tenant, apariencia: data.tenant.apariencia ?? aparienciaFromPreset('sora') } : data.tenant);
     if (data.horarios.length > 0) {
       // Postgres TIME llega como "HH:MM:SS"; los <option> son "HH:MM".
       // Recortamos a 5 chars para que el <select> matchee el valor guardado.
@@ -249,6 +265,21 @@ export default function ConfiguracionPage() {
   const eliminarDiaBloqueado = async (id: string) => {
     await fetch(`/api/admin/${tenantSlug}/horarios?id=${id}`, { method: 'DELETE' });
     fetch_();
+  };
+
+  // ── Apariencia (solo estética) ───────────────────────────────────────────
+  const setPreset = (preset: PresetTema) => {
+    setTenant(t => t ? { ...t, apariencia: aparienciaFromPreset(preset) } : t);
+  };
+  const setAparienciaField = <K extends keyof Apariencia>(field: K, value: Apariencia[K]) => {
+    setTenant(t => t ? { ...t, apariencia: { ...(t.apariencia ?? aparienciaFromPreset('sora')), [field]: value } } : t);
+  };
+  const setAparienciaColor = (key: keyof AparienciaColors, value: string) => {
+    setTenant(t => {
+      if (!t) return t;
+      const base = t.apariencia ?? aparienciaFromPreset('sora');
+      return { ...t, apariencia: { ...base, colors: { ...base.colors, [key]: value } } };
+    });
   };
 
   if (loading) return (
@@ -800,62 +831,73 @@ export default function ConfiguracionPage() {
                 {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
               </div>
 
-              {/* Colores */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-                <h3 className="font-semibold text-gray-900">Colores</h3>
+              {tenant.tipo_negocio === 'barberia' ? (
+                <>
+                  {/* Colores (barbería: sin cambios) */}
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+                    <h3 className="font-semibold text-gray-900">Colores</h3>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Primario</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={/^#[0-9A-Fa-f]{6}$/.test(tenant.color_primario ?? '') ? tenant.color_primario! : '#7c3aed'}
-                        onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value } : t)}
-                        className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
-                      />
-                      <input
-                        value={tenant.color_primario ?? ''}
-                        onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value || null } : t)}
-                        placeholder="#7c3aed"
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Primario</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={/^#[0-9A-Fa-f]{6}$/.test(tenant.color_primario ?? '') ? tenant.color_primario! : '#7c3aed'}
+                            onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value } : t)}
+                            className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
+                          />
+                          <input
+                            value={tenant.color_primario ?? ''}
+                            onChange={(e) => setTenant(t => t ? { ...t, color_primario: e.target.value || null } : t)}
+                            placeholder="#7c3aed"
+                            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Acento</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={/^#[0-9A-Fa-f]{6}$/.test(tenant.color_acento ?? '') ? tenant.color_acento! : '#a78bfa'}
+                            onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value } : t)}
+                            className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
+                          />
+                          <input
+                            value={tenant.color_acento ?? ''}
+                            onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value || null } : t)}
+                            placeholder="#a78bfa"
+                            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Acento</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={/^#[0-9A-Fa-f]{6}$/.test(tenant.color_acento ?? '') ? tenant.color_acento! : '#a78bfa'}
-                        onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value } : t)}
-                        className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
-                      />
-                      <input
-                        value={tenant.color_acento ?? ''}
-                        onChange={(e) => setTenant(t => t ? { ...t, color_acento: e.target.value || null } : t)}
-                        placeholder="#a78bfa"
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
 
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Vista previa</p>
-                  <div className="flex gap-2 h-10 rounded-xl overflow-hidden border border-gray-100">
-                    <div className="flex-1" style={{ backgroundColor: tenant.color_primario || '#7c3aed' }} />
-                    <div className="flex-1" style={{ backgroundColor: tenant.color_acento || '#a78bfa' }} />
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Vista previa</p>
+                      <div className="flex gap-2 h-10 rounded-xl overflow-hidden border border-gray-100">
+                        <div className="flex-1" style={{ backgroundColor: tenant.color_primario || '#7c3aed' }} />
+                        <div className="flex-1" style={{ backgroundColor: tenant.color_acento || '#a78bfa' }} />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTenant(t => t ? { ...t, color_primario: null, color_acento: null } : t)}
+                      className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      Restaurar colores por defecto
+                    </button>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setTenant(t => t ? { ...t, color_primario: null, color_acento: null } : t)}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  Restaurar colores por defecto
-                </button>
-              </div>
+                </>
+              ) : (
+                <AparienciaEsteticaPanel
+                  apariencia={tenant.apariencia ?? aparienciaFromPreset('sora')}
+                  onPreset={setPreset}
+                  onField={setAparienciaField}
+                  onColorField={setAparienciaColor}
+                />
+              )}
 
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -924,5 +966,164 @@ export default function ConfiguracionPage() {
         </>
       )}
     </div>
+  );
+}
+
+// ── Panel de Apariencia (solo estética) ─────────────────────────────────────
+
+function ThemeCard({ preset, colors, active, onClick }: {
+  preset: PresetTema; colors: AparienciaColors; active: boolean; onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'rounded-2xl border-2 p-3 text-left transition-colors',
+        active ? 'border-violet-500' : 'border-gray-100 hover:border-gray-200'
+      )}
+    >
+      <div className="flex gap-1 h-8 rounded-lg overflow-hidden mb-2">
+        <div className="flex-1" style={{ backgroundColor: colors.bg }} />
+        <div className="flex-1" style={{ backgroundColor: colors.primary }} />
+        <div className="flex-1" style={{ backgroundColor: colors.accent }} />
+      </div>
+      <p className="text-xs font-semibold text-gray-900">{PRESET_LABELS[preset]}</p>
+    </button>
+  );
+}
+
+function OptionPills<T extends string>({ options, labels, value, onChange }: {
+  options: readonly T[]; labels: Record<T, string>; value: T; onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {options.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onChange(opt)}
+          className={cn(
+            'px-3.5 py-2 rounded-xl text-sm font-medium border transition-colors',
+            value === opt ? 'bg-violet-600 border-violet-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+          )}
+        >
+          {labels[opt]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const COLOR_FIELDS: { key: keyof AparienciaColors; label: string }[] = [
+  { key: 'bg', label: 'Fondo' },
+  { key: 'card', label: 'Tarjetas' },
+  { key: 'text', label: 'Texto' },
+  { key: 'border', label: 'Bordes' },
+  { key: 'primary', label: 'Botones' },
+  { key: 'accent', label: 'Acento' },
+];
+
+function AparienciaEsteticaPanel({ apariencia, onPreset, onField, onColorField }: {
+  apariencia: Apariencia;
+  onPreset: (preset: PresetTema) => void;
+  onField: <K extends keyof Apariencia>(field: K, value: Apariencia[K]) => void;
+  onColorField: (key: keyof AparienciaColors, value: string) => void;
+}) {
+  return (
+    <>
+      {/* Tema */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <h3 className="font-semibold text-gray-900">Tema</h3>
+        <div className="grid grid-cols-3 gap-3">
+          {(Object.keys(PRESET_LABELS) as PresetTema[]).map((preset) => (
+            <ThemeCard
+              key={preset}
+              preset={preset}
+              colors={PRESETS[preset].colors}
+              active={apariencia.preset === preset}
+              onClick={() => onPreset(preset)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Colores */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <h3 className="font-semibold text-gray-900">Colores</h3>
+        <div className="grid grid-cols-2 gap-4">
+          {COLOR_FIELDS.map(({ key, label }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{label}</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={apariencia.colors[key]}
+                  onChange={(e) => onColorField(key, e.target.value)}
+                  className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer flex-shrink-0"
+                />
+                <input
+                  value={apariencia.colors[key]}
+                  onChange={(e) => onColorField(key, e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Vista previa</p>
+          <div className="flex gap-2 h-10 rounded-xl overflow-hidden border border-gray-100">
+            <div className="flex-1" style={{ backgroundColor: apariencia.colors.bg }} />
+            <div className="flex-1" style={{ backgroundColor: apariencia.colors.primary }} />
+            <div className="flex-1" style={{ backgroundColor: apariencia.colors.accent }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Tipografía */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <h3 className="font-semibold text-gray-900">Tipografía</h3>
+        <OptionPills
+          options={['elegante', 'moderna', 'clasica'] as const}
+          labels={TYPO_LABELS}
+          value={apariencia.typo}
+          onChange={(v) => onField('typo', v)}
+        />
+      </div>
+
+      {/* Layout del catálogo */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <h3 className="font-semibold text-gray-900">Layout del catálogo</h3>
+        <OptionPills
+          options={['lista', 'tarjetas', 'grilla'] as const}
+          labels={LAYOUT_LABELS}
+          value={apariencia.layout}
+          onChange={(v) => onField('layout', v)}
+        />
+      </div>
+
+      {/* Bordes */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <h3 className="font-semibold text-gray-900">Bordes</h3>
+        <OptionPills
+          options={['marcado', 'suave', 'redondeado'] as const}
+          labels={RADIUS_LABELS}
+          value={apariencia.radius}
+          onChange={(v) => onField('radius', v)}
+        />
+      </div>
+
+      {/* Sombra */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <h3 className="font-semibold text-gray-900">Sombra</h3>
+        <OptionPills
+          options={['plana', 'sutil', 'elevada'] as const}
+          labels={SHADOW_LABELS}
+          value={apariencia.shadow}
+          onChange={(v) => onField('shadow', v)}
+        />
+      </div>
+    </>
   );
 }

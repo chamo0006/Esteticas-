@@ -66,10 +66,10 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
     return false;
   };
 
-  const bgColor = getBookingTheme(tenant.tipo_negocio, tenant.color_primario, tenant.color_acento).bg;
+  const theme = getBookingTheme(tenant.tipo_negocio, tenant.color_primario, tenant.color_acento, tenant.apariencia);
 
   return (
-    <main className="min-h-screen pb-28" style={{ backgroundColor: bgColor }}>
+    <main className="min-h-screen pb-28" style={{ backgroundColor: theme.bg, fontFamily: theme.fontBody }}>
       {currentStep === 'services' && (
         <ServicesCatalog
           services={filteredServices}

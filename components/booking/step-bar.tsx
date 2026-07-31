@@ -14,7 +14,7 @@ export function StepBar({ current, theme }: { current: number; theme: BookingThe
         <div key={label} className="flex-1 h-[2px] rounded-full transition-colors duration-300"
           style={{ backgroundColor: i <= current ? theme.accent : theme.border }} />
       ))}
-      <span className="text-[10px] ml-2 whitespace-nowrap tracking-[0.06em]" style={{ color: theme.muted }}>
+      <span className="text-[10px] ml-2 whitespace-nowrap tracking-[0.06em]" style={{ color: theme.muted, fontFamily: theme.fontBody }}>
         {current + 1} / {STEPS.length}
       </span>
     </div>
