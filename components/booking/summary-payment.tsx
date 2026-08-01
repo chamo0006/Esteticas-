@@ -374,6 +374,19 @@ export function SummaryPayment({
               </button>
             ))}
           </div>
+
+          {paymentMethod === "transferencia" && (
+            <div className="mt-3 p-4" style={{ backgroundColor: `${primaryColor}12`, border: `1px solid ${T.border}`, borderRadius: T.radCtl }}>
+              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: T.muted, fontFamily: T.fontBody }}>Alias / CBU para transferir</p>
+              {tenantConfig?.alias_pago ? (
+                <p className="text-sm font-semibold" style={{ color: T.text, fontFamily: T.fontBody }}>{tenantConfig.alias_pago}</p>
+              ) : (
+                <p className="text-sm" style={{ color: T.muted, fontFamily: T.fontBody }}>
+                  Todavía no cargaron un alias. Coordiná el pago directamente con el local.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Error */}
