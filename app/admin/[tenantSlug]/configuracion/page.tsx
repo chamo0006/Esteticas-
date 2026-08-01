@@ -281,9 +281,9 @@ export default function ConfiguracionPage() {
       return { ...t, apariencia: { ...base, colors: { ...base.colors, [key]: value } } };
     });
   };
-  // Vuelve al diseño por defecto (preset Sora, sin apariencia personalizada guardada).
+  // Vuelve al diseño por defecto: tema, colores y logo, sin nada personalizado guardado.
   const resetApariencia = () => {
-    setTenant(t => t ? { ...t, apariencia: null } : t);
+    setTenant(t => t ? { ...t, apariencia: null, logo_url: null, color_primario: null, color_acento: null } : t);
   };
 
   if (loading) return (
@@ -900,13 +900,19 @@ export default function ConfiguracionPage() {
                   onPreset={setPreset}
                   onField={setAparienciaField}
                   onColorField={setAparienciaColor}
-                  onReset={resetApariencia}
                 />
               )}
 
               <button onClick={saveTenant} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saved ? '¡Guardado!' : 'Guardar cambios'}
+              </button>
+              <button
+                type="button"
+                onClick={resetApariencia}
+                className="w-full text-center text-xs text-gray-400 hover:text-red-500 transition-colors"
+              >
+                Reiniciar apariencia al diseño por defecto
               </button>
             </div>
           )}
@@ -1029,27 +1035,17 @@ const COLOR_FIELDS: { key: keyof AparienciaColors; label: string }[] = [
   { key: 'accent', label: 'Acento' },
 ];
 
-function AparienciaEsteticaPanel({ apariencia, onPreset, onField, onColorField, onReset }: {
+function AparienciaEsteticaPanel({ apariencia, onPreset, onField, onColorField }: {
   apariencia: Apariencia;
   onPreset: (preset: PresetTema) => void;
   onField: <K extends keyof Apariencia>(field: K, value: Apariencia[K]) => void;
   onColorField: (key: keyof AparienciaColors, value: string) => void;
-  onReset: () => void;
 }) {
   return (
     <>
       {/* Tema */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Tema</h3>
-          <button
-            type="button"
-            onClick={onReset}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-          >
-            Reiniciar apariencia
-          </button>
-        </div>
+        <h3 className="font-semibold text-gray-900">Tema</h3>
         <div className="grid grid-cols-3 gap-3">
           {(Object.keys(PRESET_LABELS) as PresetTema[]).map((preset) => (
             <ThemeCard
