@@ -5,6 +5,7 @@ const resend = process.env.RESEND_API_KEY
   : null;
 
 const FROM = process.env.EMAIL_FROM ?? 'Reservas <noreply@tudominio.com>';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
 
 // ── Templates ───────────────────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ function baseTemplate(content: string) {
 <style>
   body{margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
   .wrapper{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.08);}
+  .brand{padding:20px 32px 0;text-align:center;}
   .header{background:#7c3aed;padding:28px 32px;text-align:center;}
   .header h1{margin:0;color:#fff;font-size:20px;font-weight:700;}
   .header p{margin:4px 0 0;color:#ddd6fe;font-size:13px;}
@@ -32,6 +34,7 @@ function baseTemplate(content: string) {
 </head>
 <body>
 <div class="wrapper">
+<div class="brand"><img src="${BASE_URL}/turfull-logo-transparent.png" alt="Turfull" height="28" style="height:28px;width:auto;"/></div>
 ${content}
 </div>
 </body>

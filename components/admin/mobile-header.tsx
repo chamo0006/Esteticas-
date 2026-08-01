@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Sparkles, LogOut } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Calendar, Scissors, Users, UserCog, Settings, CreditCard } from 'lucide-react';
@@ -42,8 +42,9 @@ export function MobileHeader({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
       {/* Header top bar — solo mobile */}
       <header className="md:hidden sticky top-0 z-40 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+          <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/turfull-icon.png" alt="Turfull" className="w-5 h-5" />
           </div>
           <span className="font-semibold text-gray-900 text-sm">{currentLabel}</span>
         </div>

@@ -612,7 +612,7 @@ export default function ConfiguracionPage() {
                 {mpStatus.conectado ? (
                   <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
                     <span className="text-sm text-gray-600">
-                      {mpStatus.via_oauth ? 'Vinculada con MercadoPago' : <>Token: <span className="font-mono">{mpStatus.preview}</span></>}
+                      {mpStatus.via_oauth ? 'Vinculada con MercadoPago' : <>Clave conectada: <span className="font-mono">{mpStatus.preview}</span></>}
                     </span>
                     <button
                       onClick={desconectarMP}
@@ -641,13 +641,13 @@ export default function ConfiguracionPage() {
                         onClick={() => setMpManual(true)}
                         className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        {mpStatus.oauth_disponible ? '¿Preferís pegar el token manualmente?' : 'Conectar con tu Access Token'}
+                        {mpStatus.oauth_disponible ? '¿Preferís ingresar la clave a mano?' : 'Conectar con tu clave de MercadoPago'}
                       </button>
                     ) : (
                       <div className="space-y-3 pt-1">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                            Access Token
+                            Clave de acceso
                           </label>
                           <input
                             type="password"
@@ -657,12 +657,12 @@ export default function ConfiguracionPage() {
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet-400"
                           />
                           <p className="text-xs text-gray-400 mt-1.5">
-                            Lo obtenés en MercadoPago → Tus integraciones → Credenciales de producción.
+                            La encontrás en MercadoPago → Tus integraciones → Credenciales de producción.
                           </p>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                            Public Key <span className="text-gray-300 normal-case">(opcional)</span>
+                            Clave pública <span className="text-gray-300 normal-case">(opcional)</span>
                           </label>
                           <input
                             type="text"
@@ -678,7 +678,7 @@ export default function ConfiguracionPage() {
                           className="w-full py-3 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
                         >
                           {mpSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                          Conectar con token
+                          Conectar
                         </button>
                       </div>
                     )}

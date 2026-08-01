@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Calendar, Scissors, Users, UserCog, LogOut, Sparkles, Settings, CreditCard,
+  LayoutDashboard, Calendar, Scissors, Users, UserCog, LogOut, Settings, CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,8 +45,9 @@ export function AdminSidebar({ tenantSlug, tenantNombre, adminNombre, tipoNegoci
           className="flex items-center gap-3 mb-1 rounded-lg -m-1 p-1 hover:bg-gray-800 transition-colors"
           title="Ver tienda pública"
         >
-          <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-900/50">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-900/50 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/turfull-icon.png" alt="Turfull" className="w-6 h-6" />
           </div>
           <div className="min-w-0">
             <p className="text-white font-semibold text-sm leading-tight truncate">{tenantNombre}</p>

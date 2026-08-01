@@ -32,6 +32,13 @@ const ESTADOS = [
   { key: 'bloqueada', label: 'Bloqueadas' },
 ] as const;
 
+const ESTADO_PREAPPROVAL_LABEL: Record<string, string> = {
+  pending: 'Pendiente de autorización del dueño',
+  authorized: 'Autorizada y cobrando',
+  paused: 'Pausada',
+  cancelled: 'Cancelada',
+};
+
 export function ComerciosTable({ rol, canSeeBilling, tenants }: Props) {
   const router = useRouter();
   const [rubro, setRubro] = useState<string>('todos');
@@ -195,7 +202,7 @@ export function ComerciosTable({ rol, canSeeBilling, tenants }: Props) {
                     <td className="px-4 py-3">
                       {t.modalidad_cobro === 'automatico' ? (
                         <span
-                          title={t.mp_preapproval_status ?? undefined}
+                          title={t.mp_preapproval_status ? ESTADO_PREAPPROVAL_LABEL[t.mp_preapproval_status] ?? t.mp_preapproval_status : undefined}
                           className={cn(
                             'inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border',
                             t.mp_preapproval_status === 'authorized'
