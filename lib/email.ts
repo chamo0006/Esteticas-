@@ -151,6 +151,40 @@ export async function enviarRecordatorio(to: string, data: {
   });
 }
 
+// Email de RECORDATORIO 2hs antes
+export async function enviarRecordatorio2h(to: string, data: {
+  clienteNombre: string;
+  tenantNombre: string;
+  servicios: string[];
+  fecha: string;
+  hora: string;
+}) {
+  if (!resend) return;
+  const html = baseTemplate(`
+    <div class="header">
+      <h1>¡Tu turno es en 2 horas! ⏰</h1>
+      <p>${data.tenantNombre}</p>
+    </div>
+    <div class="body">
+      <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, te recordamos que en <strong>2 horas</strong> tenés tu turno:</p>
+      <div class="card">
+        <div class="row"><span class="label">Servicio</span><span class="value">${data.servicios.join(', ')}</span></div>
+        <div class="row"><span class="label">Fecha</span><span class="value">${data.fecha}</span></div>
+        <div class="row"><span class="label">Horario</span><span class="value">${data.hora} hs</span></div>
+      </div>
+      <p style="color:#374151;font-size:14px;">¡Te esperamos! Si necesitás cancelar, avisanos con anticipación.</p>
+    </div>
+    <div class="footer">${data.tenantNombre}</div>
+  `);
+
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: `⏰ ¡Tu turno es en 2 horas! — ${data.tenantNombre}`,
+    html,
+  });
+}
+
 // Email de CONTACTO desde la landing — lead nuevo
 export async function enviarContacto(data: {
   nombre: string;
