@@ -50,6 +50,7 @@ interface TenantConfig {
   exige_sena_efectivo: boolean; exige_sena_transferencia: boolean; exige_sena_mercadopago: boolean;
   porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
   horas_limite_cancelacion: number | null;
+  horas_limite_reserva: number | null;
   alias_pago: string | null;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
   tipo_negocio: 'estetica' | 'barberia';
@@ -753,10 +754,30 @@ export default function ConfiguracionPage() {
                 ))}
               </div>
 
+              {/* Anticipación mínima para reservar */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Anticipación mínima para reservar
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text" inputMode="numeric" pattern="[0-9]*"
+                    value={tenant.horas_limite_reserva?.toString() ?? ''}
+                    onChange={(e) => { const d = digitsOnly(e.target.value); setTenant(t => t ? { ...t, horas_limite_reserva: d === '' ? null : Number(d) } : t); }}
+                    className="w-24 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                  <span className="text-gray-500 text-sm font-medium">horas antes</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1.5">
+                  El cliente no va a poder reservar un turno que empiece antes de esa cantidad de horas desde ahora.
+                  Ej: 3 horas y son las 13:15 → el turno más próximo que puede sacar es a las 16:15. 0 = sin restricción.
+                </p>
+              </div>
+
               {saveError && (
                 <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{saveError}</p>
               )}
-              <button onClick={saveHorarios} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
+              <button onClick={() => { saveHorarios(); saveTenant(); }} disabled={saving} className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saved ? '¡Guardado!' : 'Guardar horarios'}
               </button>

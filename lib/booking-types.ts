@@ -70,6 +70,7 @@ export interface TenantConfig {
   tipo_negocio: TipoNegocio;
   alias_pago: string | null;       // alias/CBU para transferencias
   horas_limite_cancelacion: number; // horas antes del turno hasta las que el cliente puede cancelar (0 = siempre)
+  horas_limite_reserva: number;     // anticipación mínima para reservar, en horas desde "ahora" (0 = sin restricción)
   apariencia: Apariencia | null;    // solo estéticas; null = preset Sora
 }
 

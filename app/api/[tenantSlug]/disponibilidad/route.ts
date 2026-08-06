@@ -83,13 +83,10 @@ export async function GET(
       : null;
     const totalProfesionales = elegibles !== null ? elegibles.length : (profesionalesRes.count ?? 0);
 
-    // Compute "today" in Argentine timezone to correctly filter past slots
+    // No se puede reservar antes de "ahora" ni dentro de la anticipación
+    // mínima que pida el tenant (0 = sin restricción, o sea solo filtra pasado).
     const ahoraMs = Date.now();
-    const ahoraLocal = new Date(ahoraMs + AR_OFFSET_MS); // shift to Argentine time
-    const esHoy =
-      ahoraLocal.getUTCFullYear() === year &&
-      ahoraLocal.getUTCMonth() + 1 === month &&
-      ahoraLocal.getUTCDate() === day;
+    const leadMs = (tenant.horas_limite_reserva ?? 0) * 60 * 60 * 1000;
 
     const slots = [];
 
@@ -103,8 +100,8 @@ export async function GET(
       const slotStartMs = new Date(`${fecha}T${hh}:${mm}:00-03:00`).getTime();
       const slotEndMs   = slotStartMs + duracion * 60_000;
 
-      // Skip slots that are already past (compare UTC epochs, timezone-agnostic)
-      if (esHoy && slotStartMs <= ahoraMs) continue;
+      // Skip slots that are in the past or dentro de la ventana de anticipación mínima
+      if (slotStartMs <= ahoraMs + leadMs) continue;
 
       // Turnos que se solapan con este slot
       const solapados = turnosDelDia.filter((t: Record<string, unknown>) => {

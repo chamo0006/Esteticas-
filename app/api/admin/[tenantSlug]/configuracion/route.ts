@@ -26,7 +26,7 @@ export async function GET(
   const [tenantResult, horariosResult, diasResult] = await Promise.all([
     supabase
       .from('tenants')
-      .select('nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion, logo_url, exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes, apariencia')
+      .select('nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion, logo_url, exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, horas_limite_reserva, permite_efectivo, alias_pago, color_primario, color_acento, tipo_negocio, stat_rating, stat_barberos, stat_clientes, apariencia')
       .eq('id', payload.tenantId)
       .single(),
     supabase
@@ -71,7 +71,7 @@ export async function PATCH(
   const raw = body as Record<string, unknown>;
   const {
     nombre, email_contacto, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, bio, direccion,
-    exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, permite_efectivo, alias_pago,
+    exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, porcentaje_retencion, horas_limite_cancelacion, horas_limite_reserva, permite_efectivo, alias_pago,
     stat_rating, stat_barberos, stat_clientes,
   } = parsed.data;
   // logo_url queda fuera del schema (raw passthrough): los tenants viejos
@@ -102,6 +102,7 @@ export async function PATCH(
   if (porcentaje_sena  !== undefined) updateData.porcentaje_sena   = porcentaje_sena;
   if (porcentaje_retencion !== undefined) updateData.porcentaje_retencion = porcentaje_retencion ?? 0;
   if (horas_limite_cancelacion !== undefined) updateData.horas_limite_cancelacion = horas_limite_cancelacion ?? 0;
+  if (horas_limite_reserva     !== undefined) updateData.horas_limite_reserva     = horas_limite_reserva ?? 0;
   if (permite_efectivo !== undefined) updateData.permite_efectivo  = permite_efectivo;
   if (alias_pago       !== undefined) updateData.alias_pago        = alias_pago;
   if (stat_rating      !== undefined) updateData.stat_rating       = stat_rating;

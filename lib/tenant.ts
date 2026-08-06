@@ -5,7 +5,7 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
   try {
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, slug, nombre, logo_url, bio, direccion, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio, alias_pago, horas_limite_cancelacion, apariencia')
+      .select('id, slug, nombre, logo_url, bio, direccion, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio, alias_pago, horas_limite_cancelacion, horas_limite_reserva, apariencia')
       .eq('slug', slug)
       .eq('activo', true)
       .single();
@@ -35,6 +35,7 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
       tipo_negocio: (data.tipo_negocio as 'estetica' | 'barberia') ?? 'estetica',
       alias_pago: data.alias_pago ?? null,
       horas_limite_cancelacion: data.horas_limite_cancelacion != null ? Number(data.horas_limite_cancelacion) : 0,
+      horas_limite_reserva: data.horas_limite_reserva != null ? Number(data.horas_limite_reserva) : 0,
       apariencia: (data.apariencia as Apariencia) ?? null,
     };
   } catch (err) {

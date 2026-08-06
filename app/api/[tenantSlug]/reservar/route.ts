@@ -61,6 +61,17 @@ export async function POST(
     return NextResponse.json({ error: 'Efectivo no habilitado en esta estética' }, { status: 400 });
   }
 
+  // Anticipación mínima para reservar (0 = sin restricción). Esto ya lo filtra
+  // /disponibilidad para que no se pueda ni elegir el horario, pero lo
+  // validamos también acá por si alguien pega directo a este endpoint.
+  const leadMs = (tenant.horas_limite_reserva ?? 0) * 60 * 60 * 1000;
+  if (new Date(fechaHora).getTime() <= Date.now() + leadMs) {
+    return NextResponse.json(
+      { error: `Este horario ya no está disponible: hace falta reservar con al menos ${tenant.horas_limite_reserva} hs de anticipación` },
+      { status: 400 }
+    );
+  }
+
   // ── Servicios ─────────────────────────────────────────────────────────────
   const { data: serviciosData, error: serviciosError } = await supabase
     .from('servicios')
