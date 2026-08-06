@@ -122,7 +122,9 @@ export function SummaryPayment({
 
       const data: BookingConfirmation = await res.json();
 
-      if (paymentMethod === "mercadopago") {
+      // No solo cuando eligieron MercadoPago: si el método elegido exige seña,
+      // el backend también pide pago online (la seña siempre se cobra por acá).
+      if (data.requierePagoOnline) {
         const mpRes = await fetch(`/api/${tenantSlug}/crear-preferencia`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

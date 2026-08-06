@@ -88,6 +88,12 @@ export async function POST(
       : totalMonto;
   const tipoPago = exigeSenaMetodo ? 'sena' : 'total';
 
+  // Si el método elegido exige seña, esa seña tiene que ser un cobro real: la
+  // mandamos siempre por MercadoPago (único método que este sistema puede
+  // verificar), sea cual sea el método que la clienta eligió para el resto.
+  // El turno se confirma recién cuando el webhook acredita ese pago.
+  const requierePagoOnline = metodoPago === 'mercadopago' || exigeSenaMetodo;
+
   // ── Crea o recupera cliente (evita duplicados por email) ─────────────────
   let clienteId: string;
   let isNewCliente = false;
@@ -244,7 +250,11 @@ export async function POST(
       tenant_id: tenant.id,
       turno_id: turnoIds[0],
       tipo: tipoPago,
-      metodo: metodoPago,
+      // Si el cobro se termina haciendo por MercadoPago (seña forzada u
+      // opción elegida), el método real del pago ES mercadopago, no lo que
+      // la clienta eligió para el resto — importa para el refund automático
+      // al cancelar (lib/cancelacion.ts) y para no decir "pagado" sin serlo.
+      metodo: requierePagoOnline ? 'mercadopago' : metodoPago,
       monto: montoAPagar,
       estado: 'pendiente',
     })
@@ -275,11 +285,12 @@ export async function POST(
     turnoId: turnoIds[0],
   };
 
-  // Con MercadoPago la reserva todavía NO está pagada: el turno queda 'pendiente'
-  // solo para reservar el horario mientras la clienta paga la seña. Los emails de
-  // confirmación se envían recién cuando el pago se acredita (ver webhook). Para
-  // efectivo/transferencia no hay pago online, así que confirmamos al instante.
-  if (metodoPago !== 'mercadopago') {
+  // Si el pago requiere MercadoPago (elegido o porque la seña se fuerza por
+  // ahí), la reserva todavía NO está pagada: el turno queda 'pendiente' solo
+  // para reservar el horario mientras se completa el pago. Los emails de
+  // confirmación se envían recién cuando se acredita (ver webhook). Si no
+  // hace falta pago online, confirmamos al instante.
+  if (!requierePagoOnline) {
     enviarConfirmacionCliente(cliente.email, emailData).catch(console.error);
 
     (async () => {
@@ -306,5 +317,6 @@ export async function POST(
     monto: montoAPagar,
     tipo: tipoPago,
     profesionalNombre,
+    requierePagoOnline,
   });
 }

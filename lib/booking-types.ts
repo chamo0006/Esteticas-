@@ -146,4 +146,5 @@ export interface BookingConfirmation {
   monto: number;
   tipo: 'total' | 'sena';
   profesionalNombre?: string | null;   // profesional asignada (null si el negocio no tiene)
+  requierePagoOnline: boolean;         // true = hay que ir a MercadoPago antes de confirmar (elegido o seña forzada)
 }
