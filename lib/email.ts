@@ -75,7 +75,13 @@ interface ReservaData {
 // Email al CLIENTE al confirmar su reserva
 export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
   if (!resend) return;
-  const importeLabel = data.tipo === 'sena' ? 'Seña pagada' : 'Total pagado';
+  // Efectivo/transferencia no tienen cobro online: nadie verificó que ese monto
+  // se haya recibido, así que no podemos decir "pagado". Solo MercadoPago llega
+  // acá con el pago ya acreditado (ver reservar/route.ts y webhooks/mercadopago).
+  const abonado = data.metodo === 'mercadopago';
+  const importeLabel = data.tipo === 'sena'
+    ? (abonado ? 'Seña pagada' : 'Seña a abonar')
+    : (abonado ? 'Total pagado' : 'Total a abonar');
   const montoStr = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(data.monto);
 
   const html = baseTemplate(`

@@ -199,7 +199,10 @@ export function SummaryPayment({
             </div>
             <div className="h-px" style={{ backgroundColor: T.border }} />
             <div className="flex justify-between text-sm">
-              <span style={{ color: T.muted }}>{bookingResult.tipo === "sena" ? "Seña abonada" : "Total"}</span>
+              {/* Esta pantalla solo se muestra para efectivo/transferencia (MercadoPago
+                  redirige antes de llegar acá), así que nunca hay un cobro verificado
+                  todavía: el cliente todavía tiene que abonar en persona o transferir. */}
+              <span style={{ color: T.muted }}>{bookingResult.tipo === "sena" ? "Seña a abonar" : "Total a abonar"}</span>
               <span className="font-medium" style={{ color: accentColor }}>{formatPrice(bookingResult.monto)}</span>
             </div>
           </div>
