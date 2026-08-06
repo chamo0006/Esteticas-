@@ -117,7 +117,13 @@ export function SummaryPayment({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "Error al confirmar la reserva");
+        // Si el 400 trae detalles de validación por campo, mostramos el
+        // mensaje específico (ej. "El teléfono es demasiado corto") en vez
+        // del genérico "Datos inválidos" — así la clienta sabe qué corregir.
+        const primerDetalle = data.detalles
+          ? (Object.values(data.detalles).flat().find((m): m is string => typeof m === "string" && m.length > 0))
+          : undefined;
+        throw new Error(primerDetalle ?? data.error ?? "Error al confirmar la reserva");
       }
 
       const data: BookingConfirmation = await res.json();

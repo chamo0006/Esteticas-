@@ -4,10 +4,10 @@ export const reservarSchema = z.object({
   servicioIds: z.array(z.string().uuid()).min(1, 'Seleccioná al menos un servicio'),
   fechaHora:   z.string().datetime({ message: 'Fecha inválida', local: true, offset: true }),
   cliente: z.object({
-    nombre:   z.string().min(1).max(100),
-    apellido: z.string().min(1).max(100),
+    nombre:   z.string().min(1, 'Ingresá tu nombre').max(100, 'El nombre es demasiado largo'),
+    apellido: z.string().min(1, 'Ingresá tu apellido').max(100, 'El apellido es demasiado largo'),
     email:    z.string().email('Email inválido'),
-    telefono: z.string().min(6).max(20),
+    telefono: z.string().min(6, 'El teléfono es demasiado corto').max(20, 'El teléfono es demasiado largo'),
   }),
   metodoPago: z.enum(['efectivo', 'transferencia', 'mercadopago']),
   notas: z.string().max(500).optional(),

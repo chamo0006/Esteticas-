@@ -236,6 +236,13 @@ export default function RegistrarPage() {
           </button>
 
           <p className="text-center text-zinc-600 text-xs">
+            Al crear tu cuenta aceptás los{' '}
+            <a href="/terminos" target="_blank" className="text-violet-400 hover:underline">Términos y Condiciones</a>
+            {' '}y la{' '}
+            <a href="/privacidad" target="_blank" className="text-violet-400 hover:underline">Política de Privacidad</a>.
+          </p>
+
+          <p className="text-center text-zinc-600 text-xs">
             ¿Ya tenés cuenta?{' '}
             <a href="/admin/login" className="text-violet-400 hover:underline">Iniciar sesión</a>
           </p>

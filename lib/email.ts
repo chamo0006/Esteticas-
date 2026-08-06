@@ -16,6 +16,16 @@ async function send(params: Parameters<NonNullable<typeof resend>['emails']['sen
   return res;
 }
 
+// Todo dato que viene de un formulario público (nombre, notas, etc.) se
+// interpola en HTML crudo — sin esto, alguien podría meter <img onerror=...>
+// en el campo "nombre" al reservar y llegaría ejecutable en el mail que
+// recibe la estética.
+function esc(str: string): string {
+  return str.replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+  ));
+}
+
 // ── Templates ───────────────────────────────────────────────────────────────
 
 function baseTemplate(content: string) {
@@ -53,8 +63,8 @@ function card(rows: [string, string][]) {
   const trs = rows.map(([label, value], i) => {
     const border = i === rows.length - 1 ? '' : 'border-bottom:1px solid #ede9fe;';
     return `<tr>
-        <td style="padding:6px 0;${border}color:#6b7280;font-size:13px;">${label}:</td>
-        <td style="padding:6px 0;${border}color:#111827;font-size:13px;font-weight:600;text-align:right;">${value}</td>
+        <td style="padding:6px 0;${border}color:#6b7280;font-size:13px;">${esc(label)}:</td>
+        <td style="padding:6px 0;${border}color:#111827;font-size:13px;font-weight:600;text-align:right;">${esc(value)}</td>
       </tr>`;
   }).join('');
   return `<div class="card"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${trs}</table></div>`;
@@ -87,10 +97,10 @@ export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
   const html = baseTemplate(`
     <div class="header">
       <h1>¡Reserva confirmada! 🎉</h1>
-      <p>${data.tenantNombre}</p>
+      <p>${esc(data.tenantNombre)}</p>
     </div>
     <div class="body">
-      <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, tu turno quedó reservado. Acá están los detalles:</p>
+      <p style="color:#374151;font-size:15px;">Hola <strong>${esc(data.clienteNombre)}</strong>, tu turno quedó reservado. Acá están los detalles:</p>
       ${card([
         ['Servicio', data.servicios.join(', ')],
         ['Fecha', data.fecha],
@@ -100,7 +110,7 @@ export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
       ])}
       <p style="color:#374151;font-size:14px;">Te recordaremos 24 horas antes de tu turno. Si necesitás cancelar o modificar, contactate directamente con la estética.</p>
     </div>
-    <div class="footer">Este email fue enviado porque realizaste una reserva en ${data.tenantNombre}.</div>
+    <div class="footer">Este email fue enviado porque realizaste una reserva en ${esc(data.tenantNombre)}.</div>
   `);
 
   return send({
@@ -119,7 +129,7 @@ export async function enviarNotificacionAdmin(to: string, data: ReservaData) {
   const html = baseTemplate(`
     <div class="header">
       <h1>Nueva reserva 📅</h1>
-      <p>${data.tenantNombre}</p>
+      <p>${esc(data.tenantNombre)}</p>
     </div>
     <div class="body">
       <p style="color:#374151;font-size:15px;">Recibiste una nueva reserva:</p>
@@ -154,10 +164,10 @@ export async function enviarRecordatorio(to: string, data: {
   const html = baseTemplate(`
     <div class="header">
       <h1>Recordatorio de turno ⏰</h1>
-      <p>${data.tenantNombre}</p>
+      <p>${esc(data.tenantNombre)}</p>
     </div>
     <div class="body">
-      <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, te recordamos que mañana tenés turno:</p>
+      <p style="color:#374151;font-size:15px;">Hola <strong>${esc(data.clienteNombre)}</strong>, te recordamos que mañana tenés turno:</p>
       ${card([
         ['Servicio', data.servicios.join(', ')],
         ['Fecha', data.fecha],
@@ -165,7 +175,7 @@ export async function enviarRecordatorio(to: string, data: {
       ])}
       <p style="color:#374151;font-size:14px;">¡Te esperamos! Si necesitás cancelar, avisanos con anticipación.</p>
     </div>
-    <div class="footer">${data.tenantNombre}</div>
+    <div class="footer">${esc(data.tenantNombre)}</div>
   `);
 
   return send({
@@ -188,10 +198,10 @@ export async function enviarRecordatorio2h(to: string, data: {
   const html = baseTemplate(`
     <div class="header">
       <h1>¡Tu turno es en 2 horas! ⏰</h1>
-      <p>${data.tenantNombre}</p>
+      <p>${esc(data.tenantNombre)}</p>
     </div>
     <div class="body">
-      <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, te recordamos que en <strong>2 horas</strong> tenés tu turno:</p>
+      <p style="color:#374151;font-size:15px;">Hola <strong>${esc(data.clienteNombre)}</strong>, te recordamos que en <strong>2 horas</strong> tenés tu turno:</p>
       ${card([
         ['Servicio', data.servicios.join(', ')],
         ['Fecha', data.fecha],
@@ -199,7 +209,7 @@ export async function enviarRecordatorio2h(to: string, data: {
       ])}
       <p style="color:#374151;font-size:14px;">¡Te esperamos! Si necesitás cancelar, avisanos con anticipación.</p>
     </div>
-    <div class="footer">${data.tenantNombre}</div>
+    <div class="footer">${esc(data.tenantNombre)}</div>
   `);
 
   return send({
@@ -249,7 +259,6 @@ export async function enviarBienvenida(to: string, data: {
   adminNombre: string;
   tenantNombre: string;
   tenantSlug: string;
-  password: string;
 }) {
   if (!resend) return;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
@@ -260,15 +269,14 @@ export async function enviarBienvenida(to: string, data: {
       <p>Tu estética está lista</p>
     </div>
     <div class="body">
-      <p style="color:#374151;font-size:15px;">Hola <strong>${data.adminNombre}</strong>, tu cuenta en la plataforma fue creada con éxito.</p>
+      <p style="color:#374151;font-size:15px;">Hola <strong>${esc(data.adminNombre)}</strong>, tu cuenta en la plataforma fue creada con éxito.</p>
       ${card([
         ['Estética', data.tenantNombre],
         ['URL pública', `${baseUrl}/${data.tenantSlug}`],
         ['Email admin', to],
-        ['Contraseña temporal', data.password],
       ])}
       <a href="${baseUrl}/admin/login" class="btn">Ingresar al panel admin →</a>
-      <p style="color:#6b7280;font-size:12px;margin-top:16px;">Por seguridad, cambiá tu contraseña la primera vez que ingreses.</p>
+      <p style="color:#6b7280;font-size:12px;margin-top:16px;">Ingresá con el email de esta estética y la contraseña que elegiste al registrarte.</p>
     </div>
     <div class="footer">Plataforma de reservas para estéticas.</div>
   `);

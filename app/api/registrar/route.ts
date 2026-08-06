@@ -106,7 +106,7 @@ export async function POST(req: Request) {
   if (suscError) console.error('[registrar] error creando suscripción trial:', suscError);
 
   // Email de bienvenida (no bloquea la respuesta)
-  enviarBienvenida(email, { adminNombre, tenantNombre: nombre, tenantSlug: slug, password }).catch(console.error);
+  enviarBienvenida(email, { adminNombre, tenantNombre: nombre, tenantSlug: slug }).catch(console.error);
 
   return NextResponse.json({ slug, tenantId }, { status: 201 });
 }

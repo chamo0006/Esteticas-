@@ -5,6 +5,7 @@ import { rateLimit, getClientIP } from '@/lib/ratelimit';
 import { enviarConfirmacionCliente, enviarNotificacionAdmin } from '@/lib/email';
 import { supabase } from '@/lib/supabase';
 import { getProfesionalesPorServicio } from '@/lib/servicio-profesionales';
+import { puedeCrearTurno } from '@/lib/plan-limites';
 
 const MONTHS   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -69,6 +70,16 @@ export async function POST(
     return NextResponse.json(
       { error: `Este horario ya no está disponible: hace falta reservar con al menos ${tenant.horas_limite_reserva} hs de anticipación` },
       { status: 400 }
+    );
+  }
+
+  // El motivo de puedeCrearTurno menciona el plan/límite — eso es info interna
+  // del negocio, no algo para mostrarle a un cliente público reservando.
+  const limiteTurnos = await puedeCrearTurno(tenant.id);
+  if (!limiteTurnos.ok) {
+    return NextResponse.json(
+      { error: 'No hay turnos disponibles por el momento. Contactate directamente con el local.' },
+      { status: 403 }
     );
   }
 

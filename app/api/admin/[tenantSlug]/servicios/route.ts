@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { puedeActivarServicio } from '@/lib/plan-limites';
 
 async function getAdminPayload(tenantSlug: string) {
   const cookieStore = await cookies();
@@ -76,6 +77,12 @@ export async function POST(
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
   }
 
+  // Un servicio nuevo nace activo, así que cuenta contra el límite del plan.
+  const limite = await puedeActivarServicio(payload.tenantId);
+  if (!limite.ok) {
+    return NextResponse.json({ error: limite.motivo }, { status: 403 });
+  }
+
   const { data, error } = await supabase
     .from('servicios')
     .insert({
@@ -114,6 +121,13 @@ export async function PATCH(
 
   const { id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url, profesionalIds } = await req.json();
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+
+  if (activo === true) {
+    const limite = await puedeActivarServicio(payload.tenantId, id);
+    if (!limite.ok) {
+      return NextResponse.json({ error: limite.motivo }, { status: 403 });
+    }
+  }
 
   // Build update object with only defined fields
   const updateData: Record<string, unknown> = {};

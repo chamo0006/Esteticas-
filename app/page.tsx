@@ -533,6 +533,15 @@ export default function LandingPage() {
               </a>
             ))}
           </div>
+
+          <div className="flex items-center gap-5">
+            <a href="/terminos" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Términos y Condiciones
+            </a>
+            <a href="/privacidad" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Privacidad
+            </a>
+          </div>
         </div>
       </footer>
 
