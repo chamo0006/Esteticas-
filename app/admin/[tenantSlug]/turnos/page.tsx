@@ -594,10 +594,14 @@ export default function TurnosPage() {
 
   // Tarjeta de un turno — compartida por la vista lista y la vista "Todos".
   const turnoCard = (t: Turno) => (
-    <div key={t.id} className={cn(
-      'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all',
-      t.estado === 'cancelado' ? 'opacity-50' : ''
-    )}>
+    <div
+      key={t.id}
+      onClick={() => setModalTurno(t)}
+      className={cn(
+        'bg-white rounded-2xl border shadow-sm overflow-hidden transition-all cursor-pointer hover:border-violet-200',
+        t.estado === 'cancelado' ? 'opacity-50' : ''
+      )}
+    >
       <div className="p-4 flex items-start gap-3 md:gap-4">
         <div className="text-center min-w-[52px] flex-shrink-0">
           <p className="text-lg font-bold text-gray-900">{formatHora(t.fecha_hora)}</p>
@@ -636,7 +640,7 @@ export default function TurnosPage() {
         <div className="flex gap-2 px-4 pb-4">
           {t.estado === 'pendiente' && (
             <button
-              onClick={() => changeEstado(t.id, 'confirmado')}
+              onClick={(e) => { e.stopPropagation(); changeEstado(t.id, 'confirmado'); }}
               disabled={!!updating}
               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold rounded-lg transition-colors"
             >
@@ -646,7 +650,7 @@ export default function TurnosPage() {
           )}
           {t.estado === 'confirmado' && (
             <button
-              onClick={() => changeEstado(t.id, 'completado')}
+              onClick={(e) => { e.stopPropagation(); changeEstado(t.id, 'completado'); }}
               disabled={!!updating}
               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-lg transition-colors"
             >
@@ -655,7 +659,7 @@ export default function TurnosPage() {
             </button>
           )}
           <button
-            onClick={() => changeEstado(t.id, 'cancelado')}
+            onClick={(e) => { e.stopPropagation(); changeEstado(t.id, 'cancelado'); }}
             disabled={!!updating}
             className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-semibold rounded-lg transition-colors"
           >
