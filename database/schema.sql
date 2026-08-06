@@ -98,6 +98,10 @@ CREATE INDEX        IF NOT EXISTS idx_turnos_estado       ON turnos (tenant_id, 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_turnos_no_overlap
     ON turnos (tenant_id, servicio_id, fecha_hora)
     WHERE estado NOT IN ('cancelado');
+-- Nota: este índice no distingue profesional_id porque esa columna todavía no
+-- existe en este punto del schema (la agrega migrate_profesionales.sql más
+-- abajo en la cadena de migraciones). El fix que la incluye está en
+-- migrate_fix_no_overlap_profesional.sql, que corre después.
 
 -- ── PAGOS ─────────────────────────────────────────────────────
 
