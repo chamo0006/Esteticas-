@@ -7,6 +7,15 @@ const resend = process.env.RESEND_API_KEY
 const FROM = process.env.EMAIL_FROM ?? 'Reservas <noreply@tudominio.com>';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
 
+// El SDK de Resend no lanza excepción si el envío falla del lado de la API
+// (devuelve { data, error } en vez de rechazar la promesa), así que lo
+// logueamos acá para no perder errores silenciosos.
+async function send(params: Parameters<NonNullable<typeof resend>['emails']['send']>[0]) {
+  const res = await resend!.emails.send(params);
+  if (res.error) console.error('[email] error al enviar:', res.error);
+  return res;
+}
+
 // ── Templates ───────────────────────────────────────────────────────────────
 
 function baseTemplate(content: string) {
@@ -78,7 +87,7 @@ export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
     <div class="footer">Este email fue enviado porque realizaste una reserva en ${data.tenantNombre}.</div>
   `);
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to,
     subject: `✅ Turno confirmado — ${data.tenantNombre}`,
@@ -109,7 +118,7 @@ export async function enviarNotificacionAdmin(to: string, data: ReservaData) {
     <div class="footer">Panel admin: ${process.env.NEXT_PUBLIC_BASE_URL}/admin/${data.turnoId}</div>
   `);
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to,
     subject: `📅 Nueva reserva — ${data.clienteNombre}`,
@@ -143,7 +152,7 @@ export async function enviarRecordatorio(to: string, data: {
     <div class="footer">${data.tenantNombre}</div>
   `);
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to,
     subject: `⏰ Recordatorio: turno mañana en ${data.tenantNombre}`,
@@ -177,7 +186,7 @@ export async function enviarRecordatorio2h(to: string, data: {
     <div class="footer">${data.tenantNombre}</div>
   `);
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to,
     subject: `⏰ ¡Tu turno es en 2 horas! — ${data.tenantNombre}`,
@@ -211,7 +220,7 @@ export async function enviarContacto(data: {
 
   const to = process.env.CONTACT_EMAIL ?? process.env.EMAIL_FROM ?? 'admin@tudominio.com';
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to,
     subject: `🌸 Nuevo lead: ${data.nombre} (${data.estetica || 'sin estética'})`,
@@ -248,7 +257,7 @@ export async function enviarBienvenida(to: string, data: {
     <div class="footer">Plataforma de reservas para estéticas.</div>
   `);
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to,
     subject: `🌸 ¡Bienvenida! Tu estética "${data.tenantNombre}" está activa`,
