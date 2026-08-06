@@ -274,16 +274,23 @@ function DailyCalendar({
     return ((startMinutes - HORA_INICIO * 60) / 30) * SLOT_HEIGHT + 2;
   };
 
+  // Altura mínima para que el cuadrado se vea prolijo independientemente de
+  // la duración real del servicio (un turno de 10 min no debería ser un
+  // cuadradito ilegible) — TurnoCard va sacando líneas de texto a medida que
+  // hay menos alto disponible, para que nunca se corte contenido a la mitad.
+  const CARD_HEIGHT_FULL = 46; // hora + cliente + servicio
+  const CARD_HEIGHT_MIN  = 22; // piso absoluto, aunque el próximo turno esté pegado
+
   const cardStyle = (t: Turno, nextTurno?: Turno): React.CSSProperties => {
     const top = getTurnoTop(t);
     const naturalHeight = (t.duracion_minutos / 30) * SLOT_HEIGHT - 4;
-    let height = Math.max(naturalHeight, 28);
+    let height = Math.max(naturalHeight, CARD_HEIGHT_FULL);
     if (nextTurno) {
       // Clip to available space before the next card so they don't overlap
       const maxHeight = getTurnoTop(nextTurno) - top - 4;
       height = Math.min(height, maxHeight);
     }
-    return { position: 'absolute', top, height: Math.max(height, 20), left: 3, right: 3 };
+    return { position: 'absolute', top, height: Math.max(height, CARD_HEIGHT_MIN), left: 3, right: 3 };
   };
 
   return (
@@ -385,12 +392,18 @@ function TurnoCard({
   style: React.CSSProperties;
   onOpen: () => void;
 }) {
+  // Con poco alto disponible (turnos cortos pegados a otro), vamos sacando
+  // líneas en vez de dejar que el texto se corte a la mitad.
+  const h = typeof style.height === 'number' ? style.height : 46;
+  const showServicio = h >= 46;
+  const showCliente  = h >= 32;
+
   return (
     <div
       className="absolute rounded-lg overflow-hidden cursor-default select-none"
       style={{ ...style, backgroundColor: color }}
     >
-      <div className="relative h-full px-2 py-1 flex flex-col gap-0.5">
+      <div className="relative h-full px-2 py-1 flex flex-col gap-0.5 justify-center">
         <button
           onClick={onOpen}
           className="absolute top-1 right-1 p-0.5 rounded hover:bg-white/20 transition-colors text-white/80 hover:text-white flex-shrink-0"
@@ -402,12 +415,16 @@ function TurnoCard({
         <p className="text-[11px] font-bold text-white leading-tight pr-5" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {formatHora(turno.fecha_hora)}
         </p>
-        <p className="text-[11px] text-white/90 leading-tight" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {turno.cliente_nombre}
-        </p>
-        <p className="text-[10px] text-white/70 leading-tight" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {turno.servicio_nombre}
-        </p>
+        {showCliente && (
+          <p className="text-[11px] text-white/90 leading-tight" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {turno.cliente_nombre}
+          </p>
+        )}
+        {showServicio && (
+          <p className="text-[10px] text-white/70 leading-tight" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {turno.servicio_nombre}
+          </p>
+        )}
       </div>
     </div>
   );

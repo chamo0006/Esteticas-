@@ -90,21 +90,13 @@ export async function GET(
     };
   });
 
-  // Ocultamos las reservas de MercadoPago cuya seña todavía no se acreditó:
-  // el turno existe solo para retener el horario mientras la clienta paga, y no
-  // debe figurar en la agenda hasta que la seña esté paga. Al acreditarse, el
-  // webhook lo pasa a 'confirmado' y entonces sí aparece. Efectivo/transferencia
-  // no tienen pago online, así que se muestran apenas se reservan.
-  const visibles = rows.filter(
-    (r) =>
-      !(
-        r.estado === 'pendiente' &&
-        r.pago_metodo === 'mercadopago' &&
-        r.pago_estado !== 'acreditado'
-      )
-  );
-
-  return NextResponse.json(visibles);
+  // Antes ocultábamos acá las reservas de MercadoPago sin acreditar todavía,
+  // pensado para cuando el cliente elegía MP a mano. Desde que la seña se
+  // fuerza por MP también en efectivo/transferencia (ver reservar/route.ts),
+  // eso escondía turnos reales que sí están reteniendo el horario — el local
+  // los veía como "libres" sin estarlo. Ahora se muestran siempre; el estado
+  // 'pendiente' + pago_estado ya deja ver que todavía no se confirmó el pago.
+  return NextResponse.json(rows);
 }
 
 // PATCH /api/admin/[tenantSlug]/turnos  body: { id, estado }
