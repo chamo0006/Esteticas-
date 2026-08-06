@@ -76,12 +76,17 @@ export async function POST(
     serviciosData.find((s) => s.id === id)!
   );
 
+  const exigeSenaMetodo =
+    metodoPago === 'efectivo'      ? tenant.exige_sena_efectivo :
+    metodoPago === 'transferencia' ? tenant.exige_sena_transferencia :
+    tenant.exige_sena_mercadopago;
+
   const totalMonto = servicios.reduce((sum, s) => sum + Number(s.precio), 0);
   const montoAPagar =
-    tenant.exige_sena && tenant.porcentaje_sena
+    exigeSenaMetodo && tenant.porcentaje_sena
       ? Math.round((totalMonto * tenant.porcentaje_sena) / 100 * 100) / 100
       : totalMonto;
-  const tipoPago = tenant.exige_sena ? 'sena' : 'total';
+  const tipoPago = exigeSenaMetodo ? 'sena' : 'total';
 
   // ── Crea o recupera cliente (evita duplicados por email) ─────────────────
   let clienteId: string;

@@ -12,7 +12,9 @@ INSERT INTO tenants (
     email_contacto,
     telefono,
     activo,
-    exige_sena,
+    exige_sena_efectivo,
+    exige_sena_transferencia,
+    exige_sena_mercadopago,
     porcentaje_sena,
     permite_efectivo
 ) VALUES (
@@ -23,7 +25,9 @@ INSERT INTO tenants (
     '+54 11 5555-1234',
     TRUE,
     TRUE,
-    30,      -- exige 30% de seña
+    TRUE,
+    TRUE,
+    30,      -- exige 30% de seña en los 3 métodos
     TRUE
 );
 

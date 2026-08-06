@@ -5,7 +5,7 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
   try {
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, slug, nombre, logo_url, bio, direccion, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, exige_sena, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio, alias_pago, horas_limite_cancelacion, apariencia')
+      .select('id, slug, nombre, logo_url, bio, direccion, telefono, instagram, facebook, tiktok, sitio_web, whatsapp, exige_sena_efectivo, exige_sena_transferencia, exige_sena_mercadopago, porcentaje_sena, permite_efectivo, color_primario, color_acento, tipo_negocio, alias_pago, horas_limite_cancelacion, apariencia')
       .eq('slug', slug)
       .eq('activo', true)
       .single();
@@ -19,7 +19,9 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
       logo_url: data.logo_url,
       bio: data.bio ?? null,
       direccion: data.direccion ?? null,
-      exige_sena: data.exige_sena,
+      exige_sena_efectivo: data.exige_sena_efectivo,
+      exige_sena_transferencia: data.exige_sena_transferencia,
+      exige_sena_mercadopago: data.exige_sena_mercadopago,
       porcentaje_sena: data.porcentaje_sena != null ? Number(data.porcentaje_sena) : null,
       permite_efectivo: data.permite_efectivo,
       color_primario: data.color_primario ?? null,

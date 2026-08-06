@@ -47,7 +47,8 @@ interface TenantConfig {
   nombre: string; email_contacto: string; telefono: string; instagram: string | null;
   facebook: string | null; tiktok: string | null; sitio_web: string | null; whatsapp: string | null;
   bio: string | null; direccion: string | null;
-  exige_sena: boolean; porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
+  exige_sena_efectivo: boolean; exige_sena_transferencia: boolean; exige_sena_mercadopago: boolean;
+  porcentaje_sena: number | null; porcentaje_retencion: number | null; permite_efectivo: boolean;
   horas_limite_cancelacion: number | null;
   alias_pago: string | null;
   logo_url: string | null; color_primario: string | null; color_acento: string | null;
@@ -494,28 +495,39 @@ export default function ConfiguracionPage() {
                 <p className="text-xs text-gray-400 mt-1.5">Se le muestra al cliente cuando elige pagar por transferencia.</p>
               </div>
 
-              {/* Seña toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Exigir seña</p>
-                  <p className="text-xs text-gray-400 mt-0.5">El cliente paga un % al reservar</p>
+              {/* Seña por método de pago */}
+              <div>
+                <p className="font-medium text-gray-900 text-sm">Exigir seña</p>
+                <p className="text-xs text-gray-400 mt-0.5 mb-3">
+                  Elegí en qué métodos el cliente tiene que señar un % al reservar. Si un método no la exige, se le cobra/muestra el total.
+                </p>
+                <div className="space-y-2">
+                  {([
+                    ['exige_sena_efectivo', 'Efectivo'],
+                    ['exige_sena_transferencia', 'Transferencia'],
+                    ['exige_sena_mercadopago', 'MercadoPago'],
+                  ] as const).map(([field, label]) => (
+                    <div key={field} className="flex items-center justify-between">
+                      <p className="text-sm text-gray-700">{label}</p>
+                      <button
+                        onClick={() => setTenant(t => t ? { ...t, [field]: !t[field] } : t)}
+                        className={cn(
+                          'w-12 h-6 rounded-full transition-colors relative overflow-hidden',
+                          tenant[field] ? 'bg-violet-600' : 'bg-gray-200'
+                        )}
+                      >
+                        <span className={cn(
+                          'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
+                          tenant[field] ? 'translate-x-6' : 'translate-x-0'
+                        )} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  onClick={() => setTenant(t => t ? { ...t, exige_sena: !t.exige_sena } : t)}
-                  className={cn(
-                    'w-12 h-6 rounded-full transition-colors relative overflow-hidden',
-                    tenant.exige_sena ? 'bg-violet-600' : 'bg-gray-200'
-                  )}
-                >
-                  <span className={cn(
-                    'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
-                    tenant.exige_sena ? 'translate-x-6' : 'translate-x-0'
-                  )} />
-                </button>
               </div>
 
               {/* Porcentaje seña */}
-              {tenant.exige_sena && (
+              {(tenant.exige_sena_efectivo || tenant.exige_sena_transferencia || tenant.exige_sena_mercadopago) && (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                     Porcentaje de seña
@@ -529,11 +541,12 @@ export default function ConfiguracionPage() {
                     />
                     <span className="text-gray-500 text-sm font-medium">%</span>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1.5">Se aplica en todos los métodos que tengan la seña activada arriba.</p>
                 </div>
               )}
 
-              {/* Retención al devolver la seña */}
-              {tenant.exige_sena && (
+              {/* Retención al devolver la seña (solo aplica a MercadoPago, único método que cobra online) */}
+              {tenant.exige_sena_mercadopago && (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                     Retención al cancelar

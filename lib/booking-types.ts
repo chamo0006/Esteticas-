@@ -54,7 +54,9 @@ export interface TenantConfig {
   logo_url: string | null;
   bio: string | null;              // descripción corta del negocio
   direccion: string | null;        // dirección en texto libre
-  exige_sena: boolean;
+  exige_sena_efectivo: boolean;
+  exige_sena_transferencia: boolean;
+  exige_sena_mercadopago: boolean;
   porcentaje_sena: number | null;
   permite_efectivo: boolean;
   color_primario: string | null;   // hex, ej: "#FFD1DC"
@@ -87,7 +89,9 @@ export interface Tenant {
   telefono: string | null;
   logo_url: string | null;
   activo: boolean;
-  exige_sena: boolean;
+  exige_sena_efectivo: boolean;
+  exige_sena_transferencia: boolean;
+  exige_sena_mercadopago: boolean;
   porcentaje_sena: number | null;
   permite_efectivo: boolean;
   created_at: Date;

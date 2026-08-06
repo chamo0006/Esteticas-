@@ -39,7 +39,9 @@ export const configuracionSchema = z.object({
   whatsapp:         z.string().max(30).nullish(),
   bio:              z.string().max(500).nullish(),
   direccion:        z.string().max(255).nullish(),
-  exige_sena:       z.boolean().optional(),
+  exige_sena_efectivo:      z.boolean().optional(),
+  exige_sena_transferencia: z.boolean().optional(),
+  exige_sena_mercadopago:   z.boolean().optional(),
   porcentaje_sena:  z.number().min(0).max(100).nullish(),
   // % que se RETIENE al devolver una seña de MP al cancelar (0 = devuelve todo).
   porcentaje_retencion: z.number().min(0).max(100).nullish(),

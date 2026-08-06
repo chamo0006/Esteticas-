@@ -53,7 +53,10 @@ export function SummaryPayment({
   const primaryColor = T.primary;
   const accentColor  = T.accent;
 
-  const exigeSena = tenantConfig?.exige_sena ?? false;
+  const exigeSena =
+    paymentMethod === "efectivo"      ? (tenantConfig?.exige_sena_efectivo ?? false) :
+    paymentMethod === "transferencia" ? (tenantConfig?.exige_sena_transferencia ?? false) :
+    (tenantConfig?.exige_sena_mercadopago ?? false);
   const porcentajeSena = tenantConfig?.porcentaje_sena ?? 0;
   const permiteEfectivo = tenantConfig?.permite_efectivo ?? true;
   const montoAPagar = exigeSena ? Math.round((totalAmount * porcentajeSena) / 100 * 100) / 100 : totalAmount;

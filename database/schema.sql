@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS tenants (
     logo_url        TEXT,
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
 
-    exige_sena          BOOLEAN NOT NULL DEFAULT FALSE,
+    exige_sena_efectivo      BOOLEAN NOT NULL DEFAULT FALSE,
+    exige_sena_transferencia BOOLEAN NOT NULL DEFAULT FALSE,
+    exige_sena_mercadopago   BOOLEAN NOT NULL DEFAULT FALSE,
     porcentaje_sena     NUMERIC(5,2) CHECK (porcentaje_sena BETWEEN 0 AND 100),
     permite_efectivo    BOOLEAN NOT NULL DEFAULT TRUE,
 
