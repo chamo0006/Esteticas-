@@ -607,6 +607,12 @@ export default function TurnosPage() {
         ? turnosDelProfesional.filter(esVencido)
         : turnosDelProfesional.filter(t => t.estado === filtroEstado);
 
+  // El calendario pinta cada turno como si ocupara el horario — un cancelado
+  // no lo ocupa, así que no tiene sentido dibujarlo ahí salvo que el filtro
+  // "Cancelados" esté activo a propósito (ahí sí, turnosFiltrados ya viene así).
+  const turnosCalendario =
+    filtroEstado === 'todos' ? turnosFiltrados.filter(t => t.estado !== 'cancelado') : turnosFiltrados;
+
   // ── Agenda (list) view ─────────────────────────────────────────────────────
 
   // Tarjeta de un turno — compartida por la vista lista y la vista "Todos".
@@ -897,7 +903,7 @@ export default function TurnosPage() {
         renderTodos()
       ) : vista === 'calendario' ? (
         <DailyCalendar
-          turnos={turnosFiltrados}
+          turnos={turnosCalendario}
           profesionales={profesionalesCalendario}
           selectedDate={selectedDate}
           onOpenModal={setModalTurno}
