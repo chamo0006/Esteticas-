@@ -33,10 +33,6 @@ function baseTemplate(content: string) {
   .header p{margin:4px 0 0;color:#ddd6fe;font-size:13px;}
   .body{padding:28px 32px;}
   .card{background:#f8f7ff;border-radius:12px;padding:16px 20px;margin:16px 0;}
-  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ede9fe;}
-  .row:last-child{border-bottom:none;}
-  .label{color:#6b7280;font-size:13px;}
-  .value{color:#111827;font-size:13px;font-weight:600;text-align:right;}
   .btn{display:block;background:#7c3aed;color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:600;font-size:14px;margin-top:20px;}
   .footer{padding:16px 32px;text-align:center;color:#9ca3af;font-size:12px;border-top:1px solid #f3f4f6;}
 </style>
@@ -48,6 +44,20 @@ ${content}
 </div>
 </body>
 </html>`;
+}
+
+// Tabla de label/valor usada en las tarjetas de los emails. Los clientes de
+// mail (Gmail incluido) no soportan flexbox de forma confiable, así que el
+// alineado label/valor se resuelve con una tabla en vez de divs con flex.
+function card(rows: [string, string][]) {
+  const trs = rows.map(([label, value], i) => {
+    const border = i === rows.length - 1 ? '' : 'border-bottom:1px solid #ede9fe;';
+    return `<tr>
+        <td style="padding:6px 0;${border}color:#6b7280;font-size:13px;">${label}:</td>
+        <td style="padding:6px 0;${border}color:#111827;font-size:13px;font-weight:600;text-align:right;">${value}</td>
+      </tr>`;
+  }).join('');
+  return `<div class="card"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${trs}</table></div>`;
 }
 
 interface ReservaData {
@@ -75,13 +85,13 @@ export async function enviarConfirmacionCliente(to: string, data: ReservaData) {
     </div>
     <div class="body">
       <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, tu turno quedó reservado. Acá están los detalles:</p>
-      <div class="card">
-        <div class="row"><span class="label">Servicio</span><span class="value">${data.servicios.join(', ')}</span></div>
-        <div class="row"><span class="label">Fecha</span><span class="value">${data.fecha}</span></div>
-        <div class="row"><span class="label">Horario</span><span class="value">${data.hora} hs</span></div>
-        <div class="row"><span class="label">${importeLabel}</span><span class="value">${montoStr}</span></div>
-        <div class="row"><span class="label">Método</span><span class="value">${data.metodo}</span></div>
-      </div>
+      ${card([
+        ['Servicio', data.servicios.join(', ')],
+        ['Fecha', data.fecha],
+        ['Horario', `${data.hora} hs`],
+        [importeLabel, montoStr],
+        ['Método', data.metodo],
+      ])}
       <p style="color:#374151;font-size:14px;">Te recordaremos 24 horas antes de tu turno. Si necesitás cancelar o modificar, contactate directamente con la estética.</p>
     </div>
     <div class="footer">Este email fue enviado porque realizaste una reserva en ${data.tenantNombre}.</div>
@@ -107,13 +117,13 @@ export async function enviarNotificacionAdmin(to: string, data: ReservaData) {
     </div>
     <div class="body">
       <p style="color:#374151;font-size:15px;">Recibiste una nueva reserva:</p>
-      <div class="card">
-        <div class="row"><span class="label">Cliente</span><span class="value">${data.clienteNombre}</span></div>
-        <div class="row"><span class="label">Servicio</span><span class="value">${data.servicios.join(', ')}</span></div>
-        <div class="row"><span class="label">Fecha</span><span class="value">${data.fecha}</span></div>
-        <div class="row"><span class="label">Horario</span><span class="value">${data.hora} hs</span></div>
-        <div class="row"><span class="label">Monto</span><span class="value">${montoStr} (${data.tipo === 'sena' ? 'seña' : 'total'})</span></div>
-      </div>
+      ${card([
+        ['Cliente', data.clienteNombre],
+        ['Servicio', data.servicios.join(', ')],
+        ['Fecha', data.fecha],
+        ['Horario', `${data.hora} hs`],
+        ['Monto', `${montoStr} (${data.tipo === 'sena' ? 'seña' : 'total'})`],
+      ])}
     </div>
     <div class="footer">Panel admin: ${process.env.NEXT_PUBLIC_BASE_URL}/admin/${data.turnoId}</div>
   `);
@@ -142,11 +152,11 @@ export async function enviarRecordatorio(to: string, data: {
     </div>
     <div class="body">
       <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, te recordamos que mañana tenés turno:</p>
-      <div class="card">
-        <div class="row"><span class="label">Servicio</span><span class="value">${data.servicios.join(', ')}</span></div>
-        <div class="row"><span class="label">Fecha</span><span class="value">${data.fecha}</span></div>
-        <div class="row"><span class="label">Horario</span><span class="value">${data.hora} hs</span></div>
-      </div>
+      ${card([
+        ['Servicio', data.servicios.join(', ')],
+        ['Fecha', data.fecha],
+        ['Horario', `${data.hora} hs`],
+      ])}
       <p style="color:#374151;font-size:14px;">¡Te esperamos! Si necesitás cancelar, avisanos con anticipación.</p>
     </div>
     <div class="footer">${data.tenantNombre}</div>
@@ -176,11 +186,11 @@ export async function enviarRecordatorio2h(to: string, data: {
     </div>
     <div class="body">
       <p style="color:#374151;font-size:15px;">Hola <strong>${data.clienteNombre}</strong>, te recordamos que en <strong>2 horas</strong> tenés tu turno:</p>
-      <div class="card">
-        <div class="row"><span class="label">Servicio</span><span class="value">${data.servicios.join(', ')}</span></div>
-        <div class="row"><span class="label">Fecha</span><span class="value">${data.fecha}</span></div>
-        <div class="row"><span class="label">Horario</span><span class="value">${data.hora} hs</span></div>
-      </div>
+      ${card([
+        ['Servicio', data.servicios.join(', ')],
+        ['Fecha', data.fecha],
+        ['Horario', `${data.hora} hs`],
+      ])}
       <p style="color:#374151;font-size:14px;">¡Te esperamos! Si necesitás cancelar, avisanos con anticipación.</p>
     </div>
     <div class="footer">${data.tenantNombre}</div>
@@ -208,12 +218,12 @@ export async function enviarContacto(data: {
       <p>Alguien completó el formulario de contacto</p>
     </div>
     <div class="body">
-      <div class="card">
-        <div class="row"><span class="label">Nombre</span><span class="value">${data.nombre}</span></div>
-        <div class="row"><span class="label">Email</span><span class="value">${data.email}</span></div>
-        <div class="row"><span class="label">Teléfono</span><span class="value">${data.telefono || '—'}</span></div>
-        <div class="row"><span class="label">Estética</span><span class="value">${data.estetica || '—'}</span></div>
-      </div>
+      ${card([
+        ['Nombre', data.nombre],
+        ['Email', data.email],
+        ['Teléfono', data.telefono || '—'],
+        ['Estética', data.estetica || '—'],
+      ])}
     </div>
     <div class="footer">Turfull — Panel de contactos</div>
   `);
@@ -245,12 +255,12 @@ export async function enviarBienvenida(to: string, data: {
     </div>
     <div class="body">
       <p style="color:#374151;font-size:15px;">Hola <strong>${data.adminNombre}</strong>, tu cuenta en la plataforma fue creada con éxito.</p>
-      <div class="card">
-        <div class="row"><span class="label">Estética</span><span class="value">${data.tenantNombre}</span></div>
-        <div class="row"><span class="label">URL pública</span><span class="value">${baseUrl}/${data.tenantSlug}</span></div>
-        <div class="row"><span class="label">Email admin</span><span class="value">${to}</span></div>
-        <div class="row"><span class="label">Contraseña temporal</span><span class="value">${data.password}</span></div>
-      </div>
+      ${card([
+        ['Estética', data.tenantNombre],
+        ['URL pública', `${baseUrl}/${data.tenantSlug}`],
+        ['Email admin', to],
+        ['Contraseña temporal', data.password],
+      ])}
       <a href="${baseUrl}/admin/login" class="btn">Ingresar al panel admin →</a>
       <p style="color:#6b7280;font-size:12px;margin-top:16px;">Por seguridad, cambiá tu contraseña la primera vez que ingreses.</p>
     </div>
