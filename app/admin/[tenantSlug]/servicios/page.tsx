@@ -6,6 +6,7 @@ import { Plus, Edit2, ToggleLeft, ToggleRight, Loader2, X, Check, Trash2, AlertT
 import { cn, digitsOnly } from '@/lib/utils';
 
 interface Categoria { id: string; nombre: string }
+interface Profesional { id: string; nombre: string; activo: boolean }
 
 interface Servicio {
   id: string;
@@ -16,6 +17,7 @@ interface Servicio {
   categoria: string;
   activo: boolean;
   imagen_url: string | null;
+  profesional_ids: string[];
 }
 
 const CAT_STYLES: Record<string, string> = {
@@ -42,9 +44,10 @@ interface ServicioForm {
   precio: string;
   categoria: string;
   imagen_url: string | null;
+  profesionalIds: string[];
 }
 
-const EMPTY: ServicioForm = { nombre: '', descripcion: '', duracion_minutos: '60', precio: '0', categoria: 'general', imagen_url: null };
+const EMPTY: ServicioForm = { nombre: '', descripcion: '', duracion_minutos: '60', precio: '0', categoria: 'general', imagen_url: null, profesionalIds: [] };
 
 export default function ServiciosPage() {
   const params = useParams();
@@ -53,6 +56,9 @@ export default function ServiciosPage() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [tipoNegocio, setTipoNegocio] = useState<'estetica' | 'barberia'>('estetica');
   const [loading, setLoading] = useState(true);
+
+  // Profesionales (para el checklist "quiénes lo hacen")
+  const [profesionales, setProfesionales] = useState<Profesional[]>([]);
 
   // Categorías
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -85,7 +91,12 @@ export default function ServiciosPage() {
     if (res.ok) setCategorias(await res.json());
   }, [tenantSlug]);
 
-  useEffect(() => { fetch_(); fetchCategorias(); }, [fetch_, fetchCategorias]);
+  const fetchProfesionales = useCallback(async () => {
+    const res = await fetch(`/api/admin/${tenantSlug}/profesionales`);
+    if (res.ok) setProfesionales(await res.json());
+  }, [tenantSlug]);
+
+  useEffect(() => { fetch_(); fetchCategorias(); fetchProfesionales(); }, [fetch_, fetchCategorias, fetchProfesionales]);
 
   useEffect(() => {
     fetch(`/api/admin/${tenantSlug}/configuracion`)
@@ -119,10 +130,16 @@ export default function ServiciosPage() {
     setDeletingCatId(null);
   };
 
-  const openNew = () => { setEditing(null); setForm({ ...EMPTY, categoria: categorias[0]?.nombre ?? '' }); setConfirmDelete(false); setSaveError(null); setDeleteError(null); setImgUploadError(null); setShowModal(true); };
+  const openNew = () => {
+    setEditing(null);
+    // Por defecto, todas las profesionales activas hacen el servicio nuevo —
+    // mismo comportamiento que antes de que existiera este checklist.
+    setForm({ ...EMPTY, categoria: categorias[0]?.nombre ?? '', profesionalIds: profesionales.filter(p => p.activo).map(p => p.id) });
+    setConfirmDelete(false); setSaveError(null); setDeleteError(null); setImgUploadError(null); setShowModal(true);
+  };
   const openEdit = (s: Servicio) => {
     setEditing(s);
-    setForm({ nombre: s.nombre, descripcion: s.descripcion ?? '', duracion_minutos: String(s.duracion_minutos), precio: String(Number(s.precio)), categoria: s.categoria, imagen_url: s.imagen_url ?? null });
+    setForm({ nombre: s.nombre, descripcion: s.descripcion ?? '', duracion_minutos: String(s.duracion_minutos), precio: String(Number(s.precio)), categoria: s.categoria, imagen_url: s.imagen_url ?? null, profesionalIds: s.profesional_ids });
     setConfirmDelete(false);
     setSaveError(null);
     setDeleteError(null);
@@ -197,6 +214,15 @@ export default function ServiciosPage() {
     } finally {
       setDeleting(false);
     }
+  };
+
+  const toggleProfesional = (id: string) => {
+    setForm(f => ({
+      ...f,
+      profesionalIds: f.profesionalIds.includes(id)
+        ? f.profesionalIds.filter(pid => pid !== id)
+        : [...f.profesionalIds, id],
+    }));
   };
 
   const toggleActivo = async (s: Servicio) => {
@@ -469,6 +495,31 @@ export default function ServiciosPage() {
                 )}
                 <p className="text-xs text-gray-400 mt-1">Solo aparecen tus categorías. Para crear una nueva, usá &quot;Nueva categoría&quot; arriba.</p>
               </div>
+              {profesionales.length > 0 && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                    Quiénes lo hacen
+                  </label>
+                  <div className="border border-gray-200 rounded-xl divide-y divide-gray-100 max-h-40 overflow-y-auto">
+                    {profesionales.filter(p => p.activo).map(p => (
+                      <label key={p.id} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={form.profesionalIds.includes(p.id)}
+                          onChange={() => toggleProfesional(p.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-400"
+                        />
+                        {p.nombre}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    {form.profesionalIds.length === 0
+                      ? 'Sin nadie seleccionado: no se va a poder reservar este servicio.'
+                      : 'Solo estas van a aparecer disponibles para reservar este servicio.'}
+                  </p>
+                </div>
+              )}
             </div>
             {(saveError || deleteError) && (
               <div className="px-6 pt-4">

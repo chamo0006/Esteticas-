@@ -24,7 +24,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('servicios')
-    .select('id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url')
+    .select('id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url, servicio_profesionales(profesional_id)')
     .eq('tenant_id', payload.tenantId)
     .order('categoria')
     .order('nombre');
@@ -34,7 +34,32 @@ export async function GET(
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  const servicios = (data ?? []).map((s) => {
+    const { servicio_profesionales, ...rest } = s as typeof s & { servicio_profesionales: { profesional_id: string }[] };
+    return { ...rest, profesional_ids: servicio_profesionales.map((sp) => sp.profesional_id) };
+  });
+
+  return NextResponse.json(servicios);
+}
+
+// Reemplaza el set de profesionales vinculadas a un servicio. undefined =
+// no tocar el vínculo (ej. al togglear "activo" no mandamos profesionalIds).
+async function setProfesionales(tenantId: string, servicioId: string, profesionalIds: string[]) {
+  // Solo vincula profesionales que sean de este tenant, por las dudas.
+  const { data: validas } = await supabase
+    .from('profesionales')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .in('id', profesionalIds);
+
+  const idsValidos = (validas ?? []).map((p) => p.id);
+
+  await supabase.from('servicio_profesionales').delete().eq('servicio_id', servicioId);
+  if (idsValidos.length > 0) {
+    await supabase
+      .from('servicio_profesionales')
+      .insert(idsValidos.map((profesional_id) => ({ servicio_id: servicioId, profesional_id })));
+  }
 }
 
 // POST crear servicio
@@ -46,7 +71,7 @@ export async function POST(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { nombre, descripcion, duracion_minutos, precio, categoria, imagen_url } = await req.json();
+  const { nombre, descripcion, duracion_minutos, precio, categoria, imagen_url, profesionalIds } = await req.json();
   if (!nombre || !duracion_minutos || precio == null) {
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
   }
@@ -70,6 +95,10 @@ export async function POST(
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 
+  if (Array.isArray(profesionalIds)) {
+    await setProfesionales(payload.tenantId, data.id, profesionalIds);
+  }
+
   revalidatePath(`/${tenantSlug}`);
   return NextResponse.json({ id: data.id });
 }
@@ -83,7 +112,7 @@ export async function PATCH(
   const payload = await getAdminPayload(tenantSlug);
   if (!payload) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url } = await req.json();
+  const { id, nombre, descripcion, duracion_minutos, precio, categoria, activo, imagen_url, profesionalIds } = await req.json();
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
   // Build update object with only defined fields
@@ -96,15 +125,21 @@ export async function PATCH(
   if (activo           !== undefined) updateData.activo            = activo;
   if (imagen_url       !== undefined) updateData.imagen_url        = imagen_url;
 
-  const { error } = await supabase
-    .from('servicios')
-    .update(updateData)
-    .eq('id', id)
-    .eq('tenant_id', payload.tenantId);
+  if (Object.keys(updateData).length > 0) {
+    const { error } = await supabase
+      .from('servicios')
+      .update(updateData)
+      .eq('id', id)
+      .eq('tenant_id', payload.tenantId);
 
-  if (error) {
-    console.error('[servicios PATCH]', error);
-    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+    if (error) {
+      console.error('[servicios PATCH]', error);
+      return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+    }
+  }
+
+  if (Array.isArray(profesionalIds)) {
+    await setProfesionales(payload.tenantId, id, profesionalIds);
   }
 
   revalidatePath(`/${tenantSlug}`);

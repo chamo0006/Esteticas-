@@ -22,6 +22,7 @@ interface ReservationCalendarProps {
   onSchedulingModeChange: (mode: SchedulingMode) => void;
   tenantSlug?: string;
   totalDuracion?: number;
+  servicioIds?: string[];
   selectedProfesional?: string | null;
   onSelectProfesional?: (id: string | null) => void;
   tenantConfig?: TenantConfig;
@@ -44,7 +45,7 @@ const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
 export function ReservationCalendar({
   onBack, selectedDate, onSelectDate, selectedTime, onSelectTime,
   schedulingMode, onSchedulingModeChange, tenantSlug, totalDuracion = 60,
-  selectedProfesional, onSelectProfesional, tenantConfig,
+  servicioIds = [], selectedProfesional, onSelectProfesional, tenantConfig,
 }: ReservationCalendarProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -58,9 +59,14 @@ export function ReservationCalendar({
   const primaryColor = T.primary;
   const accentColor  = T.accent;
 
+  // String estable para usar como dependencia (servicioIds llega como array
+  // nuevo en cada render del padre, así que comparamos por su contenido).
+  const servicioIdsKey = servicioIds.join(",");
+
   useEffect(() => {
     if (!tenantSlug) return;
-    fetch(`/api/${tenantSlug}/profesionales`)
+    const qs = servicioIdsKey ? `?servicioIds=${servicioIdsKey}` : "";
+    fetch(`/api/${tenantSlug}/profesionales${qs}`)
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return;
@@ -69,7 +75,7 @@ export function ReservationCalendar({
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantSlug]);
+  }, [tenantSlug, servicioIdsKey]);
 
   useEffect(() => {
     if (!tenantSlug || !selectedDate || !selectedTime || profesionales.length === 0) return;
@@ -77,14 +83,15 @@ export function ReservationCalendar({
     const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
     const day   = String(selectedDate.getDate()).padStart(2, "0");
     const fecha = `${year}-${month}-${day}`;
+    const qs = servicioIdsKey ? `&servicioIds=${servicioIdsKey}` : "";
     setProfLoading(true);
-    fetch(`/api/${tenantSlug}/profesionales?fecha=${fecha}&hora=${selectedTime}&duracion=${totalDuracion}`)
+    fetch(`/api/${tenantSlug}/profesionales?fecha=${fecha}&hora=${selectedTime}&duracion=${totalDuracion}${qs}`)
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setProfesionales(data); })
       .catch(() => {})
       .finally(() => setProfLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantSlug, selectedDate, selectedTime, totalDuracion]);
+  }, [tenantSlug, selectedDate, selectedTime, totalDuracion, servicioIdsKey]);
 
   useEffect(() => {
     if (!tenantSlug || !selectedDate) return;
@@ -92,17 +99,18 @@ export function ReservationCalendar({
     const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
     const day   = String(selectedDate.getDate()).padStart(2, "0");
     const fecha = `${year}-${month}-${day}`;
+    const qs = servicioIdsKey ? `&servicioIds=${servicioIdsKey}` : "";
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     setSlotsLoading(true);
     setSlots([]);
-    fetch(`/api/${tenantSlug}/disponibilidad?fecha=${fecha}&duracion=${totalDuracion}`, { signal: controller.signal })
+    fetch(`/api/${tenantSlug}/disponibilidad?fecha=${fecha}&duracion=${totalDuracion}${qs}`, { signal: controller.signal })
       .then(res => res.json())
       .then((data: TimeSlot[]) => setSlots(Array.isArray(data) ? data : []))
       .catch(() => setSlots([]))
       .finally(() => { clearTimeout(timeout); setSlotsLoading(false); });
     return () => { controller.abort(); clearTimeout(timeout); };
-  }, [tenantSlug, selectedDate, totalDuracion]);
+  }, [tenantSlug, selectedDate, totalDuracion, servicioIdsKey]);
 
   const calendarDays = useMemo(() => {
     const year     = currentMonth.getFullYear();

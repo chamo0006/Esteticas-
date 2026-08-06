@@ -4,6 +4,7 @@ import { reservarSchema } from '@/lib/schemas';
 import { rateLimit, getClientIP } from '@/lib/ratelimit';
 import { enviarConfirmacionCliente, enviarNotificacionAdmin } from '@/lib/email';
 import { supabase } from '@/lib/supabase';
+import { getProfesionalesPorServicio } from '@/lib/servicio-profesionales';
 
 const MONTHS   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const WEEKDAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -127,15 +128,8 @@ export async function POST(
     clienteId = clienteData.id;
   }
 
-  // ── Obtener profesionales activos para asignar ────────────────────────────
-  const { data: profesionalesData } = await supabase
-    .from('profesionales')
-    .select('id')
-    .eq('tenant_id', tenant.id)
-    .eq('activo', true)
-    .order('created_at');
-
-  const profesionales = profesionalesData ?? [];
+  // ── Profesionales que hacen cada servicio pedido (para asignar) ───────────
+  const profesionalesPorServicio = await getProfesionalesPorServicio(servicioIds);
 
   // ── Crea turnos consecutivos ──────────────────────────────────────────────
   const turnoIds: string[] = [];
@@ -152,8 +146,9 @@ export async function POST(
 
   for (const servicio of servicios) {
     let profesionalId: string | null = null;
+    const profesionalesDelServicio = profesionalesPorServicio.get(servicio.id) ?? [];
 
-    if (profesionales.length > 0) {
+    if (profesionalesDelServicio.length > 0) {
       const slotStartMs = currentTime.getTime();
       const slotEndMs   = slotStartMs + servicio.duracion_minutos * 60_000;
 
@@ -187,7 +182,7 @@ export async function POST(
           .map((t) => t.profesional_id)
       );
 
-      if (profesionalIdReq && profesionales.some((p: { id: string }) => p.id === profesionalIdReq)) {
+      if (profesionalIdReq && profesionalesDelServicio.includes(profesionalIdReq)) {
         // Client requested a specific professional — reject if they're busy
         if (ocupadosIds.has(profesionalIdReq)) {
           await cleanup();
@@ -198,7 +193,7 @@ export async function POST(
         }
         profesionalId = profesionalIdReq;
       } else {
-        const libre = profesionales.find((p: { id: string }) => !ocupadosIds.has(p.id));
+        const libre = profesionalesDelServicio.find((id) => !ocupadosIds.has(id));
         if (!libre) {
           await cleanup();
           return NextResponse.json(
@@ -206,7 +201,7 @@ export async function POST(
             { status: 409 }
           );
         }
-        profesionalId = libre.id;
+        profesionalId = libre;
       }
     }
 

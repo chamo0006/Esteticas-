@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getTenantBySlug } from '@/lib/tenant';
 import { supabase } from '@/lib/supabase';
+import { getProfesionalesPorServicio, interseccionProfesionales } from '@/lib/servicio-profesionales';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/[tenantSlug]/profesionales
-// Opcional: ?fecha=YYYY-MM-DD&hora=HH:MM&duracion=60
+// Opcional: ?fecha=YYYY-MM-DD&hora=HH:MM&duracion=60&servicioIds=id1,id2
 // Con los params opcionales devuelve { id, nombre, disponible: boolean }
 export async function GET(
   req: Request,
@@ -15,6 +16,9 @@ export async function GET(
   const tenant = await getTenantBySlug(tenantSlug);
   if (!tenant) return NextResponse.json([], { status: 200 });
 
+  const url = new URL(req.url);
+  const servicioIds = (url.searchParams.get('servicioIds') ?? '').split(',').filter(Boolean);
+
   const { data } = await supabase
     .from('profesionales')
     .select('id, nombre')
@@ -22,9 +26,16 @@ export async function GET(
     .eq('activo', true)
     .order('nombre');
 
-  const profesionales = data ?? [];
+  let profesionales = data ?? [];
 
-  const url = new URL(req.url);
+  // Si pidieron servicioIds, restringe a quienes hacen TODOS los servicios
+  // del carrito (para que el picker "¿con quién?" solo ofrezca a alguien que
+  // realmente pueda atender la visita completa).
+  if (servicioIds.length > 0) {
+    const elegibles = new Set(interseccionProfesionales(await getProfesionalesPorServicio(servicioIds), servicioIds));
+    profesionales = profesionales.filter((p) => elegibles.has(p.id));
+  }
+
   const fecha    = url.searchParams.get('fecha');
   const hora     = url.searchParams.get('hora');
   const duracion = parseInt(url.searchParams.get('duracion') ?? '60', 10);

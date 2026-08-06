@@ -95,6 +95,7 @@ export function BookingClient({ tenant, services }: BookingClientProps) {
           onSchedulingModeChange={setSchedulingMode}
           tenantSlug={tenant.slug}
           totalDuracion={totalDuracion}
+          servicioIds={cart.map((item) => item.id)}
           selectedProfesional={selectedProfesional}
           onSelectProfesional={setSelectedProfesional}
           tenantConfig={tenant}

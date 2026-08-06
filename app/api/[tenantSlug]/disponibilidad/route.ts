@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getTenantBySlug } from '@/lib/tenant';
 import { supabase } from '@/lib/supabase';
+import { getProfesionalesPorServicio, interseccionProfesionales } from '@/lib/servicio-profesionales';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,7 @@ export async function GET(
   const fecha = url.searchParams.get('fecha');
   const duracion = Math.max(15, Math.min(480, parseInt(url.searchParams.get('duracion') ?? '60', 10)));
   const profesionalId = url.searchParams.get('profesionalId');
+  const servicioIds = (url.searchParams.get('servicioIds') ?? '').split(',').filter(Boolean);
 
   if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
     return NextResponse.json({ error: 'Parámetro fecha requerido (YYYY-MM-DD)' }, { status: 400 });
@@ -72,7 +74,14 @@ export async function GET(
     const cierreTotal   = cierreH   * 60 + cierreM;
 
     const turnosDelDia = turnosRes.data ?? [];
-    const totalProfesionales = profesionalesRes.count ?? 0;
+
+    // Si pidieron servicioIds, restringe a las profesionales que hacen TODOS
+    // los servicios del carrito (intersección). Sin servicioIds, cae al
+    // comportamiento viejo: cualquier profesional activa cuenta.
+    const elegibles = servicioIds.length > 0
+      ? interseccionProfesionales(await getProfesionalesPorServicio(servicioIds), servicioIds)
+      : null;
+    const totalProfesionales = elegibles !== null ? elegibles.length : (profesionalesRes.count ?? 0);
 
     // Compute "today" in Argentine timezone to correctly filter past slots
     const ahoraMs = Date.now();
@@ -114,8 +123,13 @@ export async function GET(
         // Sin gestión de profesionales: cualquier solapamiento bloquea el slot
         ocupado = solapados.length > 0;
       } else {
-        // Con profesionales: el slot está lleno solo cuando todos están ocupados
-        ocupado = solapados.length >= totalProfesionales;
+        // Con profesionales: el slot está lleno solo cuando todas las elegibles
+        // para este servicio están ocupadas (un solapado de alguien que no hace
+        // este servicio no cuenta).
+        const solapadosRelevantes = elegibles
+          ? solapados.filter((t: Record<string, unknown>) => elegibles.includes(t.profesional_id as string))
+          : solapados;
+        ocupado = solapadosRelevantes.length >= totalProfesionales;
       }
 
       const hora12    = slotH % 12 || 12;
