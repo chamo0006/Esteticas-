@@ -109,7 +109,7 @@ const pricingPlans = [
       'Gestión de clientes',
       'Soporte 24/7',
     ],
-    cta: 'Empezar gratis',
+    cta: 'Empezar gratis 14 días',
     ctaNote: 'Sin tarjeta de crédito',
   },
   {
@@ -148,7 +148,7 @@ const pricingPlans = [
       'Recordatorios automáticos',
       'Posibilidad de agregar sucursales adicionales',
     ],
-    cta: 'Hablar con ventas',
+    cta: 'Empezar gratis 14 días',
     ctaNote: 'Te contactamos en menos de 24hs',
   },
 ];
