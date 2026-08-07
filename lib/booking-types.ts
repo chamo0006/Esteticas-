@@ -19,7 +19,9 @@ export type SchedulingMode = 'together' | 'separate';
 
 export type TipoNegocio = 'estetica' | 'barberia';
 
-export type PresetTema      = 'sora' | 'rose' | 'noir' | 'carbon';
+export type PresetTema      =
+  | 'sora' | 'rose' | 'noir' | 'carbon'
+  | 'carbon-oro' | 'noche-cobre' | 'verde-bosque' | 'crema-tinta' | 'nordico' | 'vino-arena';
 export type TipoTipografia  = 'elegante' | 'moderna' | 'clasica';
 export type TipoRadio       = 'marcado' | 'suave' | 'redondeado';
 export type TipoSombra      = 'plana' | 'sutil' | 'elevada';

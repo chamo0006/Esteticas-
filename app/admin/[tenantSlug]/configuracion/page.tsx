@@ -7,7 +7,11 @@ import { cn, digitsOnly } from '@/lib/utils';
 import type { Apariencia, AparienciaColors, PresetTema, TipoTipografia, TipoRadio, TipoSombra, LayoutCatalogo } from '@/lib/booking-types';
 import { PRESETS } from '@/lib/booking-theme';
 
-const PRESET_LABELS: Record<PresetTema, string> = { sora: 'Sora', rose: 'Rosé Atelier', noir: 'Noir Couture', carbon: 'Carbón' };
+const PRESET_LABELS: Record<PresetTema, string> = {
+  sora: 'Sora', rose: 'Rosé Atelier', noir: 'Noir Couture', carbon: 'Carbón',
+  'carbon-oro': 'Carbón & Oro', 'noche-cobre': 'Noche & Cobre', 'verde-bosque': 'Verde Bosque',
+  'crema-tinta': 'Crema & Tinta', nordico: 'Nórdico', 'vino-arena': 'Vino & Arena',
+};
 const TYPO_LABELS: Record<TipoTipografia, string> = { elegante: 'Elegante', moderna: 'Moderna', clasica: 'Clásica' };
 const LAYOUT_LABELS: Record<LayoutCatalogo, string> = { lista: 'Lista', tarjetas: 'Tarjetas', grilla: 'Grilla' };
 const RADIUS_LABELS: Record<TipoRadio, string> = { marcado: 'Marcado', suave: 'Suave', redondeado: 'Redondeado' };
@@ -1027,7 +1031,7 @@ function AparienciaEsteticaPanel({ apariencia, onPreset, onField, onColorField }
       {/* Tema */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
         <h3 className="font-semibold text-gray-900">Tema</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {(Object.keys(PRESET_LABELS) as PresetTema[]).map((preset) => (
             <ThemeCard
               key={preset}

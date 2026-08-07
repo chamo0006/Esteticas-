@@ -99,6 +99,37 @@ export const PRESETS: Record<PresetTema, PresetDef> = {
     typo: 'moderna', radius: 'suave', shadow: 'elevada', layout: 'lista',
     deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
   },
+  // ── Paletas "central de turnos" ──────────────────────────────────────────
+  'carbon-oro': {
+    colors: { bg: '#0f0f10', text: '#f4efe4', muted: '#8b8676', card: '#1a1a1c', border: 'rgba(255,255,255,.07)', primary: '#d4a24e', accent: '#d4a24e', surf2: '#211f1a' },
+    typo: 'moderna', radius: 'suave', shadow: 'elevada', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
+  'noche-cobre': {
+    colors: { bg: '#101319', text: '#eef1f6', muted: '#7d8794', card: '#1a1f27', border: 'rgba(255,255,255,.07)', primary: '#cc7a44', accent: '#cc7a44', surf2: '#1f2530' },
+    typo: 'moderna', radius: 'suave', shadow: 'elevada', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
+  'verde-bosque': {
+    colors: { bg: '#0d1310', text: '#e9f1ec', muted: '#7f938a', card: '#161e19', border: 'rgba(255,255,255,.07)', primary: '#4fbf8a', accent: '#4fbf8a', surf2: '#1b241e' },
+    typo: 'moderna', radius: 'suave', shadow: 'elevada', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
+  'crema-tinta': {
+    colors: { bg: '#f2eee6', text: '#1b1b1b', muted: '#8b8579', card: '#ffffff', border: 'rgba(0,0,0,.08)', primary: '#b23a2c', accent: '#b23a2c', surf2: '#ece6da' },
+    typo: 'moderna', radius: 'suave', shadow: 'sutil', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
+  nordico: {
+    colors: { bg: '#eef1f5', text: '#1a2130', muted: '#788292', card: '#ffffff', border: 'rgba(0,0,0,.07)', primary: '#2f6df0', accent: '#2f6df0', surf2: '#e4e8ee' },
+    typo: 'moderna', radius: 'suave', shadow: 'sutil', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
+  'vino-arena': {
+    colors: { bg: '#161010', text: '#f1e8dd', muted: '#9c8b7d', card: '#211815', border: 'rgba(255,255,255,.07)', primary: '#9c3242', accent: '#9c3242', surf2: '#291e1a' },
+    typo: 'moderna', radius: 'suave', shadow: 'elevada', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
 };
 
 const TYPO: Record<TipoTipografia, { head: string; body: string; weight: number }> = {
