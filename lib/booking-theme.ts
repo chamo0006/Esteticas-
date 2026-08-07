@@ -24,8 +24,8 @@ export interface BookingTheme {
   accent: string;       // acento: precios, líneas, detalles
   surf2: string;        // superficie sutil (filas/estados seleccionados suaves)
   ctaGradient?: string; // fondo alternativo para el CTA principal (degradado); si no está, se usa `primary` sólido
-  tagline?: string;     // texto corto bajo el logo (solo estética)
-  sub?: string;         // subtítulo debajo del nombre (solo estética)
+  tagline?: string;     // texto corto bajo el logo
+  sub?: string;         // subtítulo debajo del nombre
   // Tipografía
   fontHead: string;     // font-family para títulos
   fontBody: string;     // font-family para textos
@@ -91,6 +91,14 @@ export const PRESETS: Record<PresetTema, PresetDef> = {
     typo: 'elegante', radius: 'marcado', shadow: 'elevada', layout: 'grilla',
     deco: '◆', tagline: 'Alta estética', sub: 'Reservá una experiencia premium',
   },
+  carbon: {
+    // Carbón con azul (estados seleccionados) y rojo/coral (acentos, precios).
+    // Preset por defecto de las barberías — mismos colores que el tema fijo
+    // que tenían antes de que barbería pasara a usar el sistema de Apariencia.
+    colors: { bg: '#111111', text: '#F0EDE8', muted: '#888880', card: '#1C1C1C', border: '#2C2C2C', primary: '#4361EE', accent: '#E14D5D', surf2: '#252525' },
+    typo: 'moderna', radius: 'suave', shadow: 'elevada', layout: 'lista',
+    deco: '✂️', tagline: 'Barbería', sub: 'Reservá tu turno',
+  },
 };
 
 const TYPO: Record<TipoTipografia, { head: string; body: string; weight: number }> = {
@@ -111,52 +119,20 @@ const SHAD: Record<TipoSombra, string> = {
   elevada: '0 16px 40px rgba(0,0,0,0.16)',
 };
 
-// Barbería — carbón con azul (estados seleccionados) y rojo/coral (acentos,
-// precios). Poste de barbería clásico, look "app" moderno. Tema fijo: no se
-// toca desde el panel de Apariencia.
-const BARBERIA: BookingTheme = {
-  bg: '#111111',
-  bgSticky: 'rgba(17,17,17,0.97)',
-  border: '#2C2C2C',
-  text: '#F0EDE8',
-  muted: '#888880',
-  shadow: 'rgba(0,0,0,0.5)',
-  cardBg: '#1C1C1C',
-  inputBg: '#252525',
-  cta: 'Reservar turno',
-  decoration: '✂️',
-  primary: '#4361EE',
-  accent: '#E14D5D',
-  surf2: '#252525',
-  fontHead: "'Inter', system-ui, sans-serif",
-  fontBody: "'Inter', system-ui, sans-serif",
-  headWeight: 400,
-  radCard: '16px',
-  radBtn: '9999px',
-  radCtl: '4px',
-  radPill: '9999px',
-  shadowBox: '0 2px 20px rgba(0,0,0,0.5)',
-  layout: 'lista',
-};
-
 // Colores personalizados del tenant (Configuración → Apariencia) pisan el
-// primary/accent del preset fijo (Sora para estética, rojo/carbón para barbería);
-// si no están cargados, se usa el preset tal cual. En estéticas, `apariencia`
-// (preset + colores granulares + tipografía + layout + bordes/sombras) manda
-// por completo sobre el par color_primario/color_acento legado.
+// primary/accent del preset elegido; si no están cargados, se usa el preset
+// tal cual. Con `apariencia` guardada (preset + colores granulares +
+// tipografía + layout + bordes/sombras), esta manda por completo sobre el
+// par color_primario/color_acento legado. Mismo sistema para estética y
+// barbería — solo cambia el preset por defecto cuando no hay nada guardado.
 export function getBookingTheme(
   tipo: TipoNegocio | undefined,
   colorPrimario?: string | null,
   colorAcento?: string | null,
   apariencia?: Apariencia | null,
 ): BookingTheme {
-  if (tipo === 'barberia') {
-    const primary = colorPrimario || BARBERIA.primary;
-    const accent = colorAcento || BARBERIA.accent;
-    return { ...BARBERIA, primary, accent, ctaGradient: `linear-gradient(90deg, ${primary}, ${accent})` };
-  }
-
-  const p = PRESETS[apariencia?.preset ?? 'sora'];
+  const presetPorDefecto: PresetTema = tipo === 'barberia' ? 'carbon' : 'sora';
+  const p = PRESETS[apariencia?.preset ?? presetPorDefecto];
   const colors = apariencia?.colors ?? p.colors;
   const typo = TYPO[apariencia?.typo ?? p.typo];
   const rad = RAD[apariencia?.radius ?? p.radius];
@@ -180,7 +156,7 @@ export function getBookingTheme(
     surf2: colors.surf2,
     primary,
     accent,
-    cta: 'Confirmar reserva',
+    cta: tipo === 'barberia' ? 'Reservar turno' : 'Confirmar reserva',
     decoration: p.deco,
     tagline: p.tagline,
     sub: p.sub,

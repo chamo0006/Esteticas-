@@ -19,7 +19,7 @@ export type SchedulingMode = 'together' | 'separate';
 
 export type TipoNegocio = 'estetica' | 'barberia';
 
-export type PresetTema      = 'sora' | 'rose' | 'noir';
+export type PresetTema      = 'sora' | 'rose' | 'noir' | 'carbon';
 export type TipoTipografia  = 'elegante' | 'moderna' | 'clasica';
 export type TipoRadio       = 'marcado' | 'suave' | 'redondeado';
 export type TipoSombra      = 'plana' | 'sutil' | 'elevada';
@@ -36,8 +36,9 @@ export interface AparienciaColors {
   surf2: string;
 }
 
-// Apariencia avanzada del sitio de reservas (solo estéticas). Se guarda como
-// JSONB en `tenants.apariencia`; null = usar el preset Sora por defecto.
+// Apariencia avanzada del sitio de reservas (estéticas y barberías). Se
+// guarda como JSONB en `tenants.apariencia`; null = usar el preset por
+// defecto del tipo de negocio (Sora para estética, Carbón para barbería).
 export interface Apariencia {
   preset: PresetTema;
   colors: AparienciaColors;
@@ -71,7 +72,7 @@ export interface TenantConfig {
   alias_pago: string | null;       // alias/CBU para transferencias
   horas_limite_cancelacion: number; // horas antes del turno hasta las que el cliente puede cancelar (0 = siempre)
   horas_limite_reserva: number;     // anticipación mínima para reservar, en horas desde "ahora" (0 = sin restricción)
-  apariencia: Apariencia | null;    // solo estéticas; null = preset Sora
+  apariencia: Apariencia | null;    // null = preset por defecto (Sora estética / Carbón barbería)
 }
 
 export interface TimeSlot {
